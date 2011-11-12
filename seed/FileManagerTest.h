@@ -11,6 +11,4 @@
 
 #include "FileManager.h"
 
-int fileManagerTest();
-
 #endif

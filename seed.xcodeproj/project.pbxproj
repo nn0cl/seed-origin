@@ -124,6 +124,7 @@
 		75E808A6146E602000DE8367 /* manager */ = {
 			isa = PBXGroup;
 			children = (
+				75E808C0146E611F00DE8367 /* NodeItemCode.h */,
 				75E808B2146E60F800DE8367 /* Manager.h */,
 			);
 			name = manager;
@@ -164,7 +165,6 @@
 			isa = PBXGroup;
 			children = (
 				75E808BF146E611F00DE8367 /* Manager.cpp */,
-				75E808C0146E611F00DE8367 /* NodeItemCode.h */,
 			);
 			name = manager;
 			sourceTree = "<group>";
@@ -304,7 +304,7 @@
 				75E8089D146E5FB400DE8367 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 		75E8089E146E5FB400DE8367 /* Build configuration list for PBXNativeTarget "seed" */ = {
 			isa = XCConfigurationList;
@@ -313,6 +313,7 @@
 				75E808A0146E5FB400DE8367 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 	};

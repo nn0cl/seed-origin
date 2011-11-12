@@ -9,11 +9,15 @@
 #ifndef seeds_SeedBinary_h
 #define seeds_SeedBinary_h
 
-#define STANDARD_BINARY_SIZE 4096
+#define STANDARD_BINARY_SIZE 1024
+
+typedef struct{
+    int64_t idx;
+    char data[STANDARD_BINARY_SIZE];
+} Binary;
 
 class SeedBinary{
 private:
-    typedef char Binary[STANDARD_BINARY_SIZE];
     bool isValid;
     Binary bData;
 public:
@@ -21,11 +25,12 @@ public:
     SeedBinary();
     /** Destructor */
     ~SeedBinary();
+    SeedBinary(const SeedBinary& cpy);
     /** バイナリーデータを指定されたアドレスへセットする。*/
-    int setBinary(const Binary data);
+    int setBinary(char data[STANDARD_BINARY_SIZE]);
     /** 指定されたアドレスのバイナリーデータを取得する。 */
-    int getBinary(Binary &binary,bool &isValid);
-    int getBinary(Binary &binary);
+    int getBinary(char* &data,bool &isValid);
+    int getBinary(char* &data);
 };
 
 #endif

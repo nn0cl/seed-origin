@@ -7,7 +7,13 @@
 //
 
 #include <iostream>
+#include <fstream.h>
+#include <stdint.h>
+
+#include <vector>
+#include "Seedbinary.h"
 #include "FileManager.h"
+
 namespace io{
     
     FileManager::FileManager(){
@@ -18,22 +24,37 @@ namespace io{
     }
     int 
     FileManager::sublime(char *buff,std::string& fPath,char* rw){
-    	FILE *fp;
-        size_t size;       /* 読み込めたデータサイズ */
-        fp = fopen( fPath.c_str(), rw );  /* ビットマップファイルを開く */
-        if(fp!=NULL){
-            int i=0;
-            size = fread( buff, 1, 5000, fp );  /* 5000バイト分読み込む */
-            for(i=0; i<size; ++i)  /* 実際に読み込めた分だけ繰り返す */
-            {
-                printf( "%d", buff[i] );  /* 10進整数として表示 */
-            }
-        }else {
-            std::cout<<"file read faild"<<std::endl;
-        }
-        fclose( fp );
         
-        return 1;        
+        ifstream fin(fPath.c_str(),std::ios::in | std::ios::binary );
+        if(fin.eof()){
+            std::cout<<"ERROR"<<std::endl;
+            return -1;
+        }
+               
+        fin.seekg(0, fstream::end);
+        uint64_t eofPos = fin.tellg();
+        fin.clear();
+        
+        fin.seekg(0, std::fstream::beg);
+        uint64_t begPos = fin.tellg();
+        fin.clear();
+
+        uint64_t size = eofPos - begPos;
+        std::vector<SeedBinary> sVec;
+        
+        for(int idx=0;idx*STANDARD_BINARY_SIZE*sizeof(char)<size;idx++){
+          char ch[STANDARD_BINARY_SIZE];
+          fin.seekg (idx*STANDARD_BINARY_SIZE*sizeof(char));  //ポインタの位置を移動
+          fin.read(ch,STANDARD_BINARY_SIZE*sizeof(char));  //文字列ではないデータを読みこむ
+            SeedBinary msb;
+            msb.setBinary(ch);
+            
+            sVec.push_back(msb);
+        }
+        
+        fin.close();
+        
+        return 0;        
     }
 
     

@@ -14,8 +14,17 @@
 int main(int argc,char** argv)
 {
     
-    fileManagerTest();
+    io::FileManager* fm = new io::FileManager();
+    char buff[4096];
+    //strcpy(buff,NULL);
+    std::string fPath = "/Users/nn0cl/Pictures/Konachan.com - 72141 blame cibo killy monochrome.jpg";
+    char mode[4096];
+    strcpy(mode,"rb");
+    fm->sublime(buff, fPath, mode);
     
+    delete fm;
+    sleep(10);
+
     int tType = 1;
     int r = 0;
     
@@ -37,6 +46,6 @@ int main(int argc,char** argv)
     }
     
     std::cout<<"End"<<std::endl;
-    
+     
     return 0;
 }

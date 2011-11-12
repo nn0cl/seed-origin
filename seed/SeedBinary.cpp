@@ -18,22 +18,28 @@ SeedBinary::SeedBinary()
 SeedBinary::~SeedBinary(){
     
 }
+
+SeedBinary::SeedBinary(const SeedBinary& cpy){
+    isValid = new bool;
+    bData = cpy.bData;
+}
 /** バイナリーデータを指定されたアドレスへセットする。*/
 int 
-SeedBinary::setBinary(const Binary data){
-    strncpy(bData,data,sizeof(bData));
-    isValid = true;
+SeedBinary::setBinary(char data[STANDARD_BINARY_SIZE]){
+    strncpy(bData.data,data,sizeof(bData.data)/sizeof(char));
+        isValid = true;
     return 0;
 }
 /** 指定されたアドレスのバイナリーデータを取得する。 */
 int 
-SeedBinary::getBinary(Binary &binary,bool &isValid){
-    getBinary(binary);
-    isValid = this->isValid;
+SeedBinary::getBinary(char* &data,bool &isValid){
+    getBinary(data);
+    isValid = isValid;
+    
     return 0;
 }
 int 
-SeedBinary::getBinary(Binary &binary){
-    strncpy(binary,bData,sizeof(binary));
+SeedBinary::getBinary(char* &data){
+    strncpy(data,bData.data,sizeof(data));
     return 0;
 }
