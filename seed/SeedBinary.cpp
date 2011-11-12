@@ -26,20 +26,24 @@ SeedBinary::SeedBinary(const SeedBinary& cpy){
 /** バイナリーデータを指定されたアドレスへセットする。*/
 int 
 SeedBinary::setBinary(char data[STANDARD_BINARY_SIZE]){
-    strncpy(bData.data,data,sizeof(bData.data)/sizeof(char));
-        isValid = true;
+    for(int i=0;i<STANDARD_BINARY_SIZE;++i){
+        bData.data[i] = data[i];
+    }
+    isValid = true;
     return 0;
 }
 /** 指定されたアドレスのバイナリーデータを取得する。 */
 int 
-SeedBinary::getBinary(char* &data,bool &isValid){
+SeedBinary::getBinary(char* data,uint64_t idx,bool &isValid){
     getBinary(data);
     isValid = isValid;
     
     return 0;
 }
 int 
-SeedBinary::getBinary(char* &data){
-    strncpy(data,bData.data,sizeof(data));
+SeedBinary::getBinary(char* data){
+    for(int i;i<STANDARD_BINARY_SIZE;++i){
+        data[i] = bData.data[i];
+    }
     return 0;
 }

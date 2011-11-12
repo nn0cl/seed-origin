@@ -10,7 +10,7 @@
 #include <fstream.h>
 #include <stdint.h>
 
-#include <vector>
+#include <map>
 #include "Seedbinary.h"
 #include "FileManager.h"
 
@@ -40,7 +40,7 @@ namespace io{
         fin.clear();
 
         uint64_t size = eofPos - begPos;
-        std::vector<SeedBinary> sVec;
+        std::map<int,SeedBinary> sMap;
         
         for(int idx=0;idx*STANDARD_BINARY_SIZE*sizeof(char)<size;idx++){
           char ch[STANDARD_BINARY_SIZE];
@@ -48,10 +48,13 @@ namespace io{
           fin.read(ch,STANDARD_BINARY_SIZE*sizeof(char));  //文字列ではないデータを読みこむ
             SeedBinary msb;
             msb.setBinary(ch);
-            
-            sVec.push_back(msb);
+            sMap.insert(std::pair<int,SeedBinary>(idx,msb));
         }
-        
+        std::map<int,SeedBinary>::iterator itr = sMap.begin();
+        while(itr!=sMap.end()){
+            char line[STANDARD_BINARY_SIZE];
+            itr->second.getBinary(line);
+        }
         fin.close();
         
         return 0;        

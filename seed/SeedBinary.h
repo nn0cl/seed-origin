@@ -29,8 +29,8 @@ public:
     /** バイナリーデータを指定されたアドレスへセットする。*/
     int setBinary(char data[STANDARD_BINARY_SIZE]);
     /** 指定されたアドレスのバイナリーデータを取得する。 */
-    int getBinary(char* &data,bool &isValid);
-    int getBinary(char* &data);
+    int getBinary(char* data,uint64_t idx,bool &isValid);
+    int getBinary(char* data);
 };
 
 #endif
