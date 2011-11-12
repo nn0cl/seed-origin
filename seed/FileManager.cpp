@@ -10,7 +10,7 @@
 #include <fstream.h>
 #include <stdint.h>
 
-#include <map>
+#include <vector>
 #include "Seedbinary.h"
 #include "FileManager.h"
 
@@ -23,12 +23,12 @@ namespace io{
         
     }
     int 
-    FileManager::sublime(char *buff,std::string& fPath,char* rw){
+    FileManager::load(SeedBinary& sb,std::string& fPath,char* rw){
         
         ifstream fin(fPath.c_str(),std::ios::in | std::ios::binary );
         if(fin.eof()){
             std::cout<<"ERROR"<<std::endl;
-            return -1;
+            return 0;
         }
                
         fin.seekg(0, fstream::end);
@@ -38,27 +38,48 @@ namespace io{
         fin.seekg(0, std::fstream::beg);
         uint64_t begPos = fin.tellg();
         fin.clear();
-
-        uint64_t size = eofPos - begPos;
-        std::map<int,SeedBinary> sMap;
         
-        for(int idx=0;idx*STANDARD_BINARY_SIZE*sizeof(char)<size;idx++){
-          char ch[STANDARD_BINARY_SIZE];
-          fin.seekg (idx*STANDARD_BINARY_SIZE*sizeof(char));  //ポインタの位置を移動
-          fin.read(ch,STANDARD_BINARY_SIZE*sizeof(char));  //文字列ではないデータを読みこむ
-            SeedBinary msb;
-            msb.setBinary(ch);
-            sMap.insert(std::pair<int,SeedBinary>(idx,msb));
-        }
-        std::map<int,SeedBinary>::iterator itr = sMap.begin();
-        while(itr!=sMap.end()){
-            char line[STANDARD_BINARY_SIZE];
-            itr->second.getBinary(line);
+        uint64_t size = eofPos - begPos;
+        
+        int idx=0;
+        char ch[STANDARD_BINARY_SIZE];
+        size_t readsize = STANDARD_BINARY_SIZE*sizeof(char);;
+        for(idx=0;idx*STANDARD_BINARY_SIZE*sizeof(char)<size;++idx){
+            memset(ch,NULL,STANDARD_BINARY_SIZE);
+            fin.seekg((size_t)(idx*STANDARD_BINARY_SIZE*sizeof(char)));  //ポインタの位置を移動
+            if((idx+1)*STANDARD_BINARY_SIZE*sizeof(char)>=size){
+                readsize = size-idx*STANDARD_BINARY_SIZE*sizeof(char);
+            }
+            fin.read(ch,readsize);  //文字列ではないデータを読みこむ
+            if( fin.fail() ){
+                printf( "ERROR:\n");
+                break;
+            }
+            sb.setBinary(ch,readsize,idx);
+
         }
         fin.close();
+                
+        return 1;        
+    }    
+    int
+    FileManager::save(SeedBinary& sb,std::string& dstPath){
         
-        return 0;        
+        ofstream fout(dstPath.c_str(),std::ios::out | std::ios_base::trunc | std::ios::binary );
+        int max_index;
+        sb.getFileIndex(max_index);
+        for(int i=0;i<max_index;++i){
+            bool isValid;
+            size_t size;
+            char ch[1024];
+            sb.getBinary(ch,size,i,isValid);
+            if(isValid==true){
+                fout.write(ch,size);
+            }
+            std::cout<<"WRITING"<<i<<"/"<<max_index<<":"<<i*100/max_index<<"[%]"<<std::endl;
+        }
+        fout.close();
+        
+    return 1;
     }
-
-    
 }

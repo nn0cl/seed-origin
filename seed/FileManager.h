@@ -11,13 +11,15 @@
 
 #include <iostream>
 #include <string.h>
+#include "SeedBinary.h"
 
 namespace io{
     class FileManager{
     public:
         FileManager();
         ~FileManager();
-        int sublime(char *buff,std::string& fPath,char* rw);
+        int load(SeedBinary& sb,std::string& fPath,char* rw);
+        int save(SeedBinary& sb,std::string& dstPath);
     };
 }
 

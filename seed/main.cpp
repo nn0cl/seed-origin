@@ -15,14 +15,17 @@ int main(int argc,char** argv)
 {
     
     io::FileManager* fm = new io::FileManager();
-    char buff[4096];
-    //strcpy(buff,NULL);
-    std::string fPath = "/Users/nn0cl/Pictures/Konachan.com - 72141 blame cibo killy monochrome.jpg";
+    std::string fPath = "/Users/nn0cl/Downloads/Amo's style Rena.mp4";
+    std::string dstPath = "/Users/nn0cl/Pictures/amoamo.mp4";
     char mode[4096];
     strcpy(mode,"rb");
-    fm->sublime(buff, fPath, mode);
-    
+    SeedBinary sb;
+    fm->load(sb, fPath, mode);
+    fm->save(sb, dstPath);
     delete fm;
+    
+    return 0;
+    
     sleep(10);
 
     int tType = 1;
