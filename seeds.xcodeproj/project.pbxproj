@@ -9,6 +9,13 @@
 /* Begin PBXBuildFile section */
 		752AE618185C2FC500C70483 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 752AE617185C2FC500C70483 /* main.cpp */; };
 		752AE61A185C2FC500C70483 /* seeds.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 752AE619185C2FC500C70483 /* seeds.1 */; };
+		752AE622185C319500C70483 /* Player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 752AE621185C319500C70483 /* Player.cpp */; };
+		752AE625185C373300C70483 /* Buff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 752AE624185C373300C70483 /* Buff.cpp */; };
+		752AE629185C4F1700C70483 /* Status.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 752AE628185C4F1700C70483 /* Status.cpp */; };
+		752AE630185D7C7500C70483 /* Position.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 752AE62F185D7C7500C70483 /* Position.cpp */; };
+		752AE632185D7D3A00C70483 /* Field.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 752AE631185D7D3A00C70483 /* Field.cpp */; };
+		752AE634185D9D7000C70483 /* Action.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 752AE633185D9D7000C70483 /* Action.cpp */; };
+		756765C118682D1600BA1903 /* Connection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 756765BF18682D1600BA1903 /* Connection.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,6 +35,22 @@
 		752AE614185C2FC500C70483 /* seeds */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = seeds; sourceTree = BUILT_PRODUCTS_DIR; };
 		752AE617185C2FC500C70483 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		752AE619185C2FC500C70483 /* seeds.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = seeds.1; sourceTree = "<group>"; };
+		752AE620185C300B00C70483 /* Player.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Player.h; sourceTree = "<group>"; };
+		752AE621185C319500C70483 /* Player.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Player.cpp; sourceTree = "<group>"; };
+		752AE623185C337A00C70483 /* Buff.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Buff.h; sourceTree = "<group>"; };
+		752AE624185C373300C70483 /* Buff.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Buff.cpp; sourceTree = "<group>"; };
+		752AE626185C37D800C70483 /* Logger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Logger.h; sourceTree = "<group>"; };
+		752AE627185C4E9600C70483 /* Status.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Status.h; sourceTree = "<group>"; };
+		752AE628185C4F1700C70483 /* Status.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Status.cpp; sourceTree = "<group>"; };
+		752AE62B185D68AE00C70483 /* ActionQueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ActionQueue.h; sourceTree = "<group>"; };
+		752AE62C185D691900C70483 /* Action.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Action.h; sourceTree = "<group>"; };
+		752AE62D185D6AD000C70483 /* Field.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Field.h; sourceTree = "<group>"; };
+		752AE62E185D7BFB00C70483 /* Position.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Position.h; sourceTree = "<group>"; };
+		752AE62F185D7C7500C70483 /* Position.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Position.cpp; sourceTree = "<group>"; };
+		752AE631185D7D3A00C70483 /* Field.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Field.cpp; sourceTree = "<group>"; };
+		752AE633185D9D7000C70483 /* Action.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Action.cpp; sourceTree = "<group>"; };
+		756765BF18682D1600BA1903 /* Connection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Connection.cpp; sourceTree = "<group>"; };
+		756765C018682D1600BA1903 /* Connection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Connection.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -62,6 +85,22 @@
 			children = (
 				752AE617185C2FC500C70483 /* main.cpp */,
 				752AE619185C2FC500C70483 /* seeds.1 */,
+				752AE620185C300B00C70483 /* Player.h */,
+				752AE621185C319500C70483 /* Player.cpp */,
+				752AE623185C337A00C70483 /* Buff.h */,
+				752AE624185C373300C70483 /* Buff.cpp */,
+				752AE626185C37D800C70483 /* Logger.h */,
+				752AE627185C4E9600C70483 /* Status.h */,
+				752AE628185C4F1700C70483 /* Status.cpp */,
+				752AE62B185D68AE00C70483 /* ActionQueue.h */,
+				752AE62C185D691900C70483 /* Action.h */,
+				752AE62D185D6AD000C70483 /* Field.h */,
+				752AE62E185D7BFB00C70483 /* Position.h */,
+				752AE62F185D7C7500C70483 /* Position.cpp */,
+				752AE631185D7D3A00C70483 /* Field.cpp */,
+				752AE633185D9D7000C70483 /* Action.cpp */,
+				756765BF18682D1600BA1903 /* Connection.cpp */,
+				756765C018682D1600BA1903 /* Connection.h */,
 			);
 			path = seeds;
 			sourceTree = "<group>";
@@ -117,7 +156,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				752AE634185D9D7000C70483 /* Action.cpp in Sources */,
+				752AE625185C373300C70483 /* Buff.cpp in Sources */,
+				752AE622185C319500C70483 /* Player.cpp in Sources */,
 				752AE618185C2FC500C70483 /* main.cpp in Sources */,
+				752AE629185C4F1700C70483 /* Status.cpp in Sources */,
+				752AE632185D7D3A00C70483 /* Field.cpp in Sources */,
+				752AE630185D7C7500C70483 /* Position.cpp in Sources */,
+				756765C118682D1600BA1903 /* Connection.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -225,6 +271,7 @@
 				752AE61F185C2FC500C70483 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
