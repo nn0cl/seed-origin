@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 #include <vector>
+#include <ctype.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <unistd.h>
@@ -38,6 +39,12 @@ namespace io{
             const std::string filename = separator == std::string::npos
                 ? path : path.substr(separator + 1);
             if (filename.empty() || filename == "." || filename == "..") return false;
+            for (std::string::const_iterator it = filename.begin(); it != filename.end(); ++it) {
+                if (!isalnum(static_cast<unsigned char>(*it)) && *it != '.' &&
+                    *it != '_' && *it != '-') {
+                    return false;
+                }
+            }
 
             char resolvedParent[PATH_MAX];
             if (realpath(parent.c_str(), resolvedParent) == nullptr) return false;
