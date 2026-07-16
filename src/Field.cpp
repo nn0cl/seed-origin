@@ -23,10 +23,11 @@ Field::getInstance(){
 };
 
 bool
-Field::gainStatus(Status& status){
-    
+Field::gainStatus(const Status& status){
+    fieldStatus.gainHp(status.getHp());
+    fieldStatus.gainMp(status.getMp());
     return true;
-};
+}
 
 bool
 Field::setActionQueue(Action action){
@@ -51,9 +52,9 @@ Field::setPlayer(Player player){
 
 bool
 Field::unsetPlayer(Player player){
-    
-    return true;
-};
+    Field* instance = Field::getInstance();
+    return instance->playerList.erase(player.getPlayerId()) > 0;
+}
 
 void
 Field::processFrame(){
@@ -61,7 +62,7 @@ Field::processFrame(){
     //playerへのポジションキュー判定
     std::list<Position>::iterator positionItt = this->positionQueue.begin();
     while(positionItt != this->positionQueue.end()) {
-        std::map<int,Player>::iterator playerItt = playerList.find(positionItt->getPlayerId());
+        std::map<int64_t,Player>::iterator playerItt = playerList.find(positionItt->getPlayerId());
         if (playerItt != playerList.end()) {
             playerItt->second.setPosition(*positionItt);
         }
@@ -78,8 +79,25 @@ Field::processFrame(){
                 this->gainStatus(actionItt->getStatus());
                 break;
             case 1:
+                {
+                    std::map<int64_t,Player>::iterator playerItt =
+                        playerList.find(actionItt->getPlayerTo()->getPlayerId());
+                    if (playerItt != playerList.end()) {
+                        playerItt->second.getStatus().gainHp(actionItt->getStatus().getHp());
+                        playerItt->second.getStatus().gainMp(actionItt->getStatus().getMp());
+                    }
+                }
                 break;
             case 2:
+            case 3:
+                {
+                    std::map<int64_t,Player>::iterator playerItt =
+                        playerList.find(actionItt->getPlayerFrom()->getPlayerId());
+                    if (playerItt != playerList.end()) {
+                        playerItt->second.getStatus().gainHp(actionItt->getStatus().getHp());
+                        playerItt->second.getStatus().gainMp(actionItt->getStatus().getMp());
+                    }
+                }
                 break;
         }
         ++actionItt;
@@ -87,7 +105,7 @@ Field::processFrame(){
     this->actionQueue.clear();
     
     //
-    std::map<int,Player>::iterator playerItt = this->playerList.begin();
+    std::map<int64_t,Player>::iterator playerItt = this->playerList.begin();
     while(playerItt != this->playerList.end()){
         ++playerItt;
     }

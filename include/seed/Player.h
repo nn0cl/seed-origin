@@ -32,7 +32,7 @@ public:
     Player();
     Player(Player* player);
     Player(const Player& player);
-    Player(int playerId,const Status& status,const Position& position);
+    Player(int64_t playerId,const Status& status,const Position& position);
     ~Player();
     
     int64_t getPlayerId();

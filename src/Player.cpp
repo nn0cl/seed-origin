@@ -19,7 +19,7 @@ Player::Player(const Player& player)
       position(player.position) {}
 
 
-Player::Player(int playerId,const Status& status,const Position& position){
+Player::Player(int64_t playerId,const Status& status,const Position& position){
     this->id = playerId;
     this->status = status;
     this->position = position;

@@ -9,6 +9,8 @@
 #ifndef seeds_Position_h
 #define seeds_Position_h
 
+#include <stdint.h>
+
 class Position{
 private:
     float x;
@@ -18,12 +20,12 @@ private:
     int playerId;
 
 public:
-    Position(int playerId, float x, float y, float z);
+    Position(int64_t playerId, float x, float y, float z);
     Position(Position* position);
     ~Position();
     void setPosition(const float x, const float y, const float z);
     void movePosition(const float x, const float y, const float z);
-    int getPlayerId();
+    int64_t getPlayerId() const;
     float getX();
     float getY();
     float getZ();

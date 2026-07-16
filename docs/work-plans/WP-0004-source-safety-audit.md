@@ -17,6 +17,7 @@
 | LISS-0025 | SeedBinary/FileManager buffer and I/O safety | critical | LISS-0019 | in_progress |
 | LISS-0035 | SeedBinary/FileManager boundary safety slice | critical | LISS-0025 | review |
 | LISS-0026 | Field state and queue contract | high | LISS-0019 | proposed |
+| LISS-0036 | Field state/update slice | high | LISS-0026 | review |
 | LISS-0027 | Status/Position/Buff lifecycle | high | LISS-0019 | proposed |
 | LISS-0028 | Action domain result contract | high | LISS-0019, LISS-0020 | proposed |
 | LISS-0030 | TDD/build/test foundation | high | LISS-0019 | proposed |

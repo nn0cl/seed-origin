@@ -11,6 +11,7 @@
 
 #include <list>
 #include <map>
+#include <stdint.h>
 
 #include "Position.h"
 #include "Player.h"
@@ -18,16 +19,16 @@
 
 class Field {
 private:
-    static Field* fieldInstance;
-    std::map<int,Player> playerList;
+    std::map<int64_t,Player> playerList;
     std::list<Position> positionQueue;
     std::list<Action> actionQueue;
+    Status fieldStatus;
 protected:
     Field();
 public:
     ~Field();
     static Field* getInstance();
-    bool gainStatus(Status& status);
+    bool gainStatus(const Status& status);
     static bool setActionQueue(Action action);
     static bool setPosition(Position position);
     static bool setPlayer(Player player);

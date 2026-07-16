@@ -32,12 +32,12 @@ Status::setMp(const long& _mp){
 };
 
 long
-Status::getHp(){
+Status::getHp() const{
     return this->hp;
 };
 
 long
-Status::getMp() {
+Status::getMp() const {
     return this->mp;
 };
 

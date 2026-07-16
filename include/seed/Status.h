@@ -20,8 +20,8 @@ public:
     Status(const Status& _status);
     bool setHp(const long& _hp);
     bool setMp(const long& _mp);
-    long getHp();
-    long getMp();
+    long getHp() const;
+    long getMp() const;
     bool gainHp(const long& _hp);
     bool gainMp(const long& _mp);
 };

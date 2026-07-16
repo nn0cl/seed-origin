@@ -8,7 +8,7 @@
 
 #include "Position.h"
 
-Position::Position(int playerId, float x, float y, float z)
+Position::Position(int64_t playerId, float x, float y, float z)
     : x(x), y(y), z(z), mapId(0), playerId(playerId) {
 };
 
@@ -53,6 +53,6 @@ Position::getZ(){
     return this->z;
 };
 
-int Position::getPlayerId() {
+int64_t Position::getPlayerId() const {
     return this->playerId;
 }
