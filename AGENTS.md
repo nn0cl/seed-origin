@@ -64,8 +64,9 @@ Relevant architecture documents:
   `docs/collaboration/prompt-instruction-change-control.md`.
 - Session start and resume:
   `docs/collaboration/session-start-and-resume.md`.
-- `<Add one line per stack-specific architecture document you create, e.g.
-  "React UI: docs/architecture/frontend-architecture.md.">`
+- C++ core and server: `include/seed/`, `src/`, and `docs/architecture/`.
+- Tests and test runner: `tests/` and `CMakeLists.txt`.
+- Future client: `client/` after LISS-0064 selects the client technology.
 
 ## Clean Architecture Dependency Rule
 
@@ -90,19 +91,19 @@ Forbidden dependencies:
 
 ## External Resources Must Be Ports
 
-Represent these as ports before using concrete implementations. Replace this
-list with the project's actual external dependencies:
+Represent these as ports before using concrete implementations.
 
-- `<External data source A>`.
-- `<External data source B>`.
-- `<Primary datastore>`.
-- `<Secondary datastore, if any>`.
+- Local filesystem and binary files through file/I/O adapters.
+- POSIX TCP sockets through the Connection adapter.
+- GitHub Actions and CodeQL as repository security tooling.
+- CMake/CTest and Xcode as build/test tooling, not domain dependencies.
+- Future identity persistence through a declared storage port.
+- Future client renderer and UI framework through a client adapter boundary.
 - Settings storage and validation.
 - Secret storage.
 - Dependency policy checks.
-- `<Optional local runtime services, e.g. Docker-hosted DB>`.
-- `<External API / third-party service>`.
-- `<LLM or agent provider>`.
+- No external runtime service is currently required by the core.
+- LLM/agent providers are untrusted development inputs, never game state.
 
 ## Adjudicator Interaction
 
