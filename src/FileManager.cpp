@@ -12,10 +12,41 @@
 #include <stdint.h>
 
 #include <vector>
+#include <stdlib.h>
+#include <limits.h>
+#include <unistd.h>
 #include "SeedBinary.h"
 #include "FileManager.h"
 
 namespace io{
+
+    namespace {
+        bool normalizeInputPath(const std::string& path, std::string& normalized) {
+            if (path.empty() || path.find('\0') != std::string::npos) return false;
+            char resolved[PATH_MAX];
+            if (realpath(path.c_str(), resolved) == nullptr) return false;
+            normalized.assign(resolved);
+            return true;
+        }
+
+        bool normalizeOutputPath(const std::string& path, std::string& normalized) {
+            if (path.empty() || path.find('\0') != std::string::npos) return false;
+
+            const std::string::size_type separator = path.find_last_of('/');
+            const std::string parent = separator == std::string::npos
+                ? "." : path.substr(0, separator);
+            const std::string filename = separator == std::string::npos
+                ? path : path.substr(separator + 1);
+            if (filename.empty() || filename == "." || filename == "..") return false;
+
+            char resolvedParent[PATH_MAX];
+            if (realpath(parent.c_str(), resolvedParent) == nullptr) return false;
+            normalized.assign(resolvedParent);
+            normalized.append("/");
+            normalized.append(filename);
+            return true;
+        }
+    }
 
     FileManager::FileManager(){
 
@@ -26,7 +57,10 @@ namespace io{
     int
     FileManager::load(SeedBinary& sb,const std::string& fPath){
 
-        std::ifstream fin(fPath.c_str(),std::ios::in | std::ios::binary );
+        std::string normalizedPath;
+        if (!normalizeInputPath(fPath, normalizedPath)) return 0;
+
+        std::ifstream fin(normalizedPath.c_str(),std::ios::in | std::ios::binary );
         if (!fin) {
             std::cout<<"ERROR"<<std::endl;
             return 0;
@@ -58,7 +92,10 @@ namespace io{
     int
     FileManager::save(const SeedBinary& sb,const std::string& dstPath){
 
-        std::ofstream fout(dstPath.c_str(),std::ios::out | std::ios_base::trunc | std::ios::binary );
+        std::string normalizedPath;
+        if (!normalizeOutputPath(dstPath, normalizedPath)) return 0;
+
+        std::ofstream fout(normalizedPath.c_str(),std::ios::out | std::ios_base::trunc | std::ios::binary );
         if (!fout) return 0;
         int max_index = 0;
         if (!sb.getFileIndex(max_index) || max_index < 0) return 0;
