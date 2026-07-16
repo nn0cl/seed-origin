@@ -40,16 +40,16 @@ Position::movePosition(const float x, const float y, const float z){
 };
 
 float
-Position::getX(){
+Position::getX() const {
     return this->x;
 };
 float
-Position::getY(){
+Position::getY() const {
     return this->y;
 };
 
 float
-Position::getZ(){
+Position::getZ() const {
     return this->z;
 };
 

@@ -17,7 +17,7 @@ private:
     float y;
     float z;
     int mapId;
-    int playerId;
+    int64_t playerId;
 
 public:
     Position(int64_t playerId, float x, float y, float z);
@@ -26,9 +26,9 @@ public:
     void setPosition(const float x, const float y, const float z);
     void movePosition(const float x, const float y, const float z);
     int64_t getPlayerId() const;
-    float getX();
-    float getY();
-    float getZ();
+    float getX() const;
+    float getY() const;
+    float getZ() const;
 };
 
 #endif

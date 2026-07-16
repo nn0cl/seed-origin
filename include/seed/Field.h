@@ -33,6 +33,8 @@ public:
     static bool setPosition(Position position);
     static bool setPlayer(Player player);
     static bool unsetPlayer(Player player);
+    bool queueMovement(int64_t playerId, float dx, float dy, float dz);
+    bool hasPlayer(int64_t playerId) const;
     void processFrame();
     
     void putPositionQueue(Position position);

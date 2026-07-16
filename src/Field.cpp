@@ -56,6 +56,21 @@ Field::unsetPlayer(Player player){
     return instance->playerList.erase(player.getPlayerId()) > 0;
 }
 
+bool
+Field::queueMovement(int64_t playerId, float dx, float dy, float dz){
+    std::map<int64_t,Player>::iterator playerItt = playerList.find(playerId);
+    if (playerItt == playerList.end()) return false;
+    Position next = playerItt->second.getPosition();
+    next.movePosition(dx, dy, dz);
+    positionQueue.push_back(next);
+    return true;
+}
+
+bool
+Field::hasPlayer(int64_t playerId) const {
+    return playerList.find(playerId) != playerList.end();
+}
+
 void
 Field::processFrame(){
 

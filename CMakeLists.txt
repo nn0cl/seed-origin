@@ -20,6 +20,7 @@ set(SEED_CORE_SOURCES
     src/FrameAccumulator.cpp
     src/LoginCommandHandler.cpp
     src/ServerCommandDispatcher.cpp
+    src/MovementCommandHandler.cpp
     src/Player.cpp
     src/Position.cpp
     src/SeedBinary.cpp
@@ -48,6 +49,7 @@ add_executable(seed_tests
     tests/FrameAccumulatorTest.cpp
     tests/LoginCommandHandlerTest.cpp
     tests/ServerCommandDispatcherTest.cpp
+    tests/MovementCommandHandlerTest.cpp
     tests/StatusSaturationTest.cpp
     tests/TestMain.cpp
 )

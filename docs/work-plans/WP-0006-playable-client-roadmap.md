@@ -18,6 +18,7 @@
 | LISS-0075 | Stream frame accumulator slice | critical | LISS-0044, LISS-0074 | review |
 | LISS-0076 | Server command dispatch boundary | critical | LISS-0058, LISS-0057 | review |
 | LISS-0077 | Runtime-to-dispatch bridge | critical | LISS-0058, LISS-0076 | review |
+| LISS-0078 | Movement command validation and Field application | critical | LISS-0060, LISS-0058 | review |
 | LISS-0058 | Authoritative world command pipeline | critical | LISS-0020, LISS-0022, LISS-0055 | proposed |
 | LISS-0059 | Chat implementation | medium | LISS-0045, LISS-0058 | proposed |
 | LISS-0060 | 3D movement implementation | high | LISS-0048, LISS-0058 | proposed |

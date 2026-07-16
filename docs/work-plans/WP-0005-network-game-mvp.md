@@ -27,6 +27,7 @@
 | LISS-0075 | TCP partial-read frame accumulator | critical | LISS-0044, LISS-0074 | review |
 | LISS-0076 | Server command dispatch boundary | critical | LISS-0058, LISS-0057 | review |
 | LISS-0077 | Runtime-to-dispatch bridge | critical | LISS-0058, LISS-0076 | review |
+| LISS-0078 | Movement command validation and Field application | critical | LISS-0060, LISS-0058 | review |
 | LISS-0043 | Identity persistence | high | LISS-0053 | proposed |
 | LISS-0044 | Network frame/command boundary | critical | LISS-0029, LISS-0042 | proposed |
 | LISS-0045 | Chat | medium | LISS-0044, LISS-0051 | proposed |

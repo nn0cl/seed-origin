@@ -63,6 +63,11 @@ void accepts_login();
 void rejects_unimplemented_command();
 }
 
+namespace movement_command_handler_tests {
+void rejects_malformed_or_unknown_move();
+void accepts_bounded_move_for_existing_player();
+}
+
 int main() {
     action_input_tests::rejects_missing_players_for_target_action();
     action_input_tests::permits_field_action_without_players();
@@ -92,5 +97,7 @@ int main() {
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();
+    movement_command_handler_tests::rejects_malformed_or_unknown_move();
+    movement_command_handler_tests::accepts_bounded_move_for_existing_player();
     return 0;
 }
