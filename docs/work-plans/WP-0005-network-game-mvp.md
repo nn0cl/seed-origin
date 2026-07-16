@@ -23,6 +23,7 @@
 | LISS-0070 | Network command validation | critical | LISS-0044 | review |
 | LISS-0072 | Login command handler | high | LISS-0057, LISS-0070 | review |
 | LISS-0073 | Server runtime and bounded command queue | critical | LISS-0056, LISS-0058 | review |
+| LISS-0074 | Protocol v1 frame codec | critical | LISS-0055 | review |
 | LISS-0043 | Identity persistence | high | LISS-0053 | proposed |
 | LISS-0044 | Network frame/command boundary | critical | LISS-0029, LISS-0042 | proposed |
 | LISS-0045 | Chat | medium | LISS-0044, LISS-0051 | proposed |
