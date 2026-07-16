@@ -88,7 +88,6 @@
 				75E80898146E5FB400DE8367 /* main.cpp */,
 				75E8089A146E5FB400DE8367 /* seed.1 */,
 			);
-			path = seed;
 			sourceTree = "<group>";
 		};
 		75E808A2146E5FD300DE8367 /* src */ = {

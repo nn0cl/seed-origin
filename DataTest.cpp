@@ -3,15 +3,13 @@
 //  seed_base
 //
 //  Created by Yonemura Suguru on 11/10/25.
-//  Copyright 2011年 __MyCompanyName__. All rights reserved.
+//  Copyright 2011年 sumstates.net. All rights reserved.
 //
 
-#include <iostream>
-#include "Data.h"
+#include "DataTest.h"
 
-int
-main(int argc,char** argv)
-{
+int 
+DataTest::utData(){
     //typdef for local
     typedef std::map<int64_t,int64_t> Node;
     
@@ -33,7 +31,6 @@ main(int argc,char** argv)
         dt->getParams(cMap,i,value);
         std::cout<<value<<std::endl;
     }
-
     
     return 0;
 }
