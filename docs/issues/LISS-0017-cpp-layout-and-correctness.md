@@ -12,7 +12,7 @@
 - Current planning size: L
 - Reclassification reason: N/A
 - Owner/agent: Codex
-- Related branch: feature/LISS-0017-cpp-layout-correctness
+- Related branch: `main`
 
 ## Summary
 

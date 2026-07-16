@@ -130,16 +130,23 @@ minimal.
 
 Before reporting completion, check `docs/collaboration/definition-of-done.md`.
 Create AI work traces under `docs/collaboration/traces/` when the trace policy
-requires it. Use feature-unit branches for feature work.
+requires it. This repository uses `main` as the working branch for issue work;
+do not create feature-unit branches unless the Adjudicator explicitly waives
+this rule.
 For feature work, identify local issue or GitHub issue dependencies before
-creating the branch.
+starting work on `main`.
 
 ## Issue Completion Delivery
 
-- An issue is not complete until its approved changes are committed on the
-  dedicated issue branch.
+- An issue is not complete until its approved changes are committed on
+  `main`.
 - After the commit succeeds and the working tree contains no issue-scoped
-  uncommitted changes, push the issue branch to its configured remote.
-- The completion report must include the commit and push result. If commit or
-  push is blocked, keep the issue open and record the blocker instead of
-  reporting completion.
+  uncommitted changes, push `main` to its configured remote.
+- After pushing `main`, wait for and inspect the GitHub CodeQL code-scanning
+  result before starting the next issue.
+- If CodeQL reports a finding, record it as a local or GitHub Issue, prioritize
+  it above the next planned issue, and resolve it before proceeding.
+- Only when the CodeQL review has no findings may the next issue begin.
+- The completion report must include the commit, push, and CodeQL review
+  result. If commit, push, or CodeQL review is blocked, keep the issue open and
+  record the blocker instead of reporting completion.

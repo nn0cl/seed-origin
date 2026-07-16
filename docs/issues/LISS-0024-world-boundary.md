@@ -11,7 +11,7 @@
 - Initial planning size: M
 - Current planning size: M
 - Owner/agent: Codex
-- Related branch: `feature/LISS-0024-world-boundary`
+- Related branch: `main`
 
 ## Summary
 

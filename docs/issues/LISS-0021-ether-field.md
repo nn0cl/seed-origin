@@ -11,7 +11,7 @@
 - Initial planning size: L
 - Current planning size: L
 - Owner/agent: Codex
-- Related branch: `feature/LISS-0021-ether-field`
+- Related branch: `main`
 
 ## Summary
 

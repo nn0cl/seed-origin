@@ -2,6 +2,13 @@
 
 This document defines Git workflow for AI-TDD collaboration.
 
+## Repository Policy
+
+`seed-origin` uses `main` as the working branch. Issue work, documentation,
+tests, implementation, commits, and pushes are performed on `main` unless the
+Adjudicator explicitly approves a temporary exception. The remote repository
+must expose the same branch as the authoritative working branch.
+
 ## Branches
 
 Create branches by feature or process task.
@@ -20,13 +27,9 @@ chore/<short-maintenance-topic>
 Rules:
 
 - one branch should represent one feature, process change, or reviewable unit.
-- direct pushes to `main` or the trunk branch are prohibited; all changes must
-  arrive through a reviewed pull request.
-- feature branches should be tied to a local issue, GitHub issue, or explicit
-  Adjudicator waiver.
-- work on any local issue (`docs/issues/LISS-*`) or GitHub Issue must happen on
-  a dedicated branch; do not implement issue work directly on `main` or the
-  trunk branch, even for a single commit.
+- for this repository, approved issue work may be committed directly to `main`.
+- feature branches are not used unless an explicit Adjudicator waiver records
+  the reason and scope.
 - do not mix unrelated documentation, tests, implementation, and refactor work.
 - do not start Phase 2 implementation on a branch whose Phase 1 tests have not
   been reviewed.
@@ -99,10 +102,16 @@ Rules:
 - when issue status changes, include the matching issue/documentation synchronization and any applicable work-plan update in the same reviewable unit.
 - mention AI assistance in PR notes when it materially shaped the change.
 - never commit secrets or full exports of private data.
-- an issue is not complete until its approved changes are committed on the
-  dedicated issue branch and that branch is pushed to its configured remote.
-- the completion report must include the commit and push result; if either
-  operation is blocked, keep the issue open and record the blocker.
+- an issue is not complete until its approved changes are committed on `main`
+  and `main` is pushed to its configured remote.
+- after pushing `main`, inspect the GitHub CodeQL code-scanning result before
+  starting the next issue.
+- any CodeQL finding must be recorded as an Issue and prioritized above the
+  next planned issue.
+- the next issue may begin only after the CodeQL review reports no findings.
+- the completion report must include the commit, push, and CodeQL review
+  result; if any operation or review is blocked, keep the issue open and
+  record the blocker.
 
 ## Pull Requests
 
@@ -124,7 +133,7 @@ When starting a new feature:
 1. create or update local issue and work plan files.
 2. verify issue dependencies are resolved or waived.
 3. create or update the design intake.
-4. create a feature branch.
+4. confirm that the working branch is `main`.
 5. add Phase 1 tests only.
 6. wait for Adjudicator review.
 7. continue with Phase 2 on the same feature branch or a clearly linked branch.
@@ -132,7 +141,7 @@ When starting a new feature:
 Recommended command shape:
 
 ```text
-git switch -c feature/<short-feature-name>
+git switch main
 ```
 
 Use `docs/architecture/agent-quickstart.md` before making changes on the branch.

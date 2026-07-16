@@ -11,7 +11,7 @@
 - Initial planning size: L
 - Current planning size: L
 - Owner/agent: Codex
-- Related branch: `feature/LISS-0019-world-safety-gate`
+- Related branch: `main`
 
 ## Summary
 
@@ -24,6 +24,8 @@ world移行前に、既存C++の所有権、コピー・代入、ポインタ公
 - `Buff`、`Action`、`Position`、`Status` の値・参照・所有ポインタの境界が文書化されている。
 - `ActionQueue` の未使用生ポインタをどう扱うか決定されている。
 - `SeedBinary` のサイズ・インデックス境界が仕様化されている。
+- `Field::putPlayer` の暗黙コピー代入、`Action` の値コピー、コンテナ格納時の破棄順を含む所有権表がある。
+- `SeedBinary::setBinary` と `FileManager::save` の境界・未初期化読み取りリスクが分類されている。
 - このIssue完了まで子IssueのPhase 1/2実装を開始しない。
 
 ## Dependencies

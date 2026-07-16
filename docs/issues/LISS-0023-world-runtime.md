@@ -11,7 +11,7 @@
 - Initial planning size: M
 - Current planning size: M
 - Owner/agent: Codex
-- Related branch: `feature/LISS-0023-world-runtime`
+- Related branch: `main`
 
 ## Summary
 

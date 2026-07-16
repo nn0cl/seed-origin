@@ -11,7 +11,7 @@
 - Initial planning size: L
 - Current planning size: L
 - Owner/agent: Codex
-- Related branch: 未作成（子Issueごとにfeature-unit branchを作成）
+- Related branch: `main`
 
 ## Summary
 
