@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+
+# Xcode user and build data
+DerivedData/
+build/
+xcuserdata/
+*.xcuserstate
+
+# Compiled artifacts
+*.o
+*.a
+*.out
+*.dSYM/
+
+# Editor and temporary files
+*.swp
+*.swo
+*.tmp
+*.log
+
+# Keep tracked project snapshots such as *.asta.bak; do not ignore *.bak.
