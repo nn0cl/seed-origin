@@ -4,8 +4,8 @@
 
 - Local issue ID: LISS-0030
 - GitHub issue: 未作成
-- Status: proposed
-- Phase: phase-0-design
+- Status: review
+- Phase: phase-1-red
 - Type: test + build
 - Priority: high
 - Initial planning size: M
@@ -22,6 +22,7 @@
 - Parent: LISS-0017
 - Depends on: LISS-0019
 - Related: LISS-0020〜LISS-0029
+- Active slice: LISS-0040
 
 ## Findings
 
