@@ -31,6 +31,7 @@ private:
 public:
     Player();
     Player(Player* player);
+    Player(const Player& player);
     Player(int playerId,const Status& status,const Position& position);
     ~Player();
     
@@ -39,7 +40,7 @@ public:
     bool setHp(long _hp);
     bool setMp(long _mp);
     void setStatus(Status* _status);
-    bool setBuff(Buff _buff);
+    bool setBuff(const Buff& _buff);
     bool processBuffs();
     bool setPosition(Position* position);
     Status* getStatus();

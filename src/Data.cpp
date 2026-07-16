@@ -12,7 +12,7 @@
 int
 Data::setMap(int64_t key,Node& node)
 {
-    dataMap.insert(std::pair<int64_t,Node>(key,node));
+    dataMap[key] = node;
     return 0;
 }
 
@@ -31,19 +31,18 @@ Data::getMap(int64_t key,Node& node)
         return -1;
     }
     
+    node = itData->second;
     return 0;
     
 }
 
-int 
-Data::getParams(Node &node,int64_t key,int64_t value)
+int
+Data::getParams(Node &node,int64_t key,int64_t &value)
 {
-    Node::iterator itData = node.begin();
-    while(itData != node.end()){
-        std::cout<<itData->second<<std::endl;
-        return 0;
+    Node::iterator itData = node.find(key);
+    if (itData == node.end()) {
+        return -1;
     }
-    std::cout<<"Data Not Found"<<std::endl;
-    return -1;
+    value = itData->second;
+    return 0;
 }
-

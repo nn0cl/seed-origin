@@ -8,14 +8,13 @@
 
 #include "Position.h"
 
-Position::Position(int playerId, float x, float y, float z) {
-    this->playerId = playerId;
-    this->x = x;
-    this->y = y;
-    this->z = z;
+Position::Position(int playerId, float x, float y, float z)
+    : x(x), y(y), z(z), mapId(0), playerId(playerId) {
 };
 
-Position::Position(Position* position){
+Position::Position(Position* position)
+    : x(0), y(0), z(0), mapId(0), playerId(0) {
+    if (position == nullptr) return;
     this->playerId = position->getPlayerId();
     this->x = position->getX();
     this->y = position->getY();
@@ -55,5 +54,5 @@ Position::getZ(){
 };
 
 int Position::getPlayerId() {
-    return this->getPlayerId();
+    return this->playerId;
 }

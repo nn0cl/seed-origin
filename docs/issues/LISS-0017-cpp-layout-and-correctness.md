@@ -4,8 +4,8 @@
 
 - Local issue ID: LISS-0017
 - GitHub issue: 未作成
-- Status: ready
-- Phase: phase-0-design
+- Status: completed
+- Phase: phase-3-verification
 - Type: refactor + bugfix
 - Priority: high
 - Initial planning size: L
@@ -74,9 +74,14 @@
 ## Work Notes
 
 - 2026-07-17: Source inspection found two merged implementation areas: binary/file data handling and player/status/field handling.
-- 2026-07-17: Design intake completed; implementation begins after this issue and work plan are recorded.
+- 2026-07-17: Design intake completed; implementation began after this issue and work plan were recorded.
+- 2026-07-17: Moved sources, headers, and tests to `src/`, `include/seed/`, and `tests/`; synchronized the Xcode groups.
+- 2026-07-17: Fixed Data/Status/Position/Field correctness issues, copy ownership hazards, legacy file I/O, listener hang, and the hard-coded CLI entry point.
 
 ## Verification
 
-- Pending implementation.
-
+- `plutil -lint seed.xcodeproj/project.pbxproj` passed.
+- `clang++ -std=c++17 -Wall -Wextra -Iinclude/seed -fsyntax-only src/*.cpp` passed with non-fatal legacy warnings.
+- The four test translation units, including the retained legacy test stub, passed the same syntax check.
+- A temporary CLI build passed and prints usage when invoked without input/output arguments.
+- 2026-07-17: Acceptance conditions satisfied; implementation is ready to commit on the feature branch.

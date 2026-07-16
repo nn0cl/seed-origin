@@ -15,8 +15,8 @@
 class Action {
 private:
     int actionType; //0:Field,1:Player,3:self
-    Player* playerFrom;
-    Player* playerTo;
+    Player playerFrom;
+    Player playerTo;
     Status status;
 public:
     Action(int actionType,Player* playerFrom,Player* playerTo,const Status status);

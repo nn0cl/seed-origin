@@ -8,40 +8,26 @@
 
 #include "Status.h"
 
-Status::Status(){
-    
-};
+Status::Status() : hp(0), mp(0) {}
 
-Status::~Status(){
-};
+Status::~Status() = default;
 
 
-Status::Status(const long _hp, const long _mp){
-    this->hp = _hp;
-    this->mp = _mp;
-};
+Status::Status(const long _hp, const long _mp)
+    : hp(_hp < 0 ? 0 : _hp), mp(_mp < 0 ? 0 : _mp) {}
 
-Status::Status(const Status& _status){
-    this->hp = _status.hp;
-    this->mp = _status.mp;
-};
+Status::Status(const Status& _status) = default;
 
 
 bool
 Status::setHp(const long& _hp){
-    long tmp = this->hp + _hp;
-    this->hp = tmp < 0.0f ? 0 : tmp;
-    
-    this->hp = _hp;
+    this->hp = _hp < 0 ? 0 : _hp;
     return true;
 };
 
 bool
 Status::setMp(const long& _mp){
-    long tmp = this->mp + _mp;
-    this->mp = tmp < 0.0f ? 0 : tmp;
-    
-    this->hp = _mp;
+    this->mp = _mp < 0 ? 0 : _mp;
     return true;
 };
 
@@ -58,11 +44,13 @@ Status::getMp() {
 bool
 Status::gainHp(const long& _hp){
     this->hp += _hp;
+    if (this->hp < 0) this->hp = 0;
     return true;
 };
 
 bool
 Status::gainMp(const long& _mp){
     this->mp += _mp;
+    if (this->mp < 0) this->mp = 0;
     return true;
 };

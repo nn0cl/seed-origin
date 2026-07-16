@@ -45,7 +45,7 @@ Field::setPosition(Position position){
 bool
 Field::setPlayer(Player player){
     Field* instance = Field::getInstance();
-    instance->setPlayer(player);
+    instance->putPlayer(player);
     return true;
 };
 
@@ -62,9 +62,12 @@ Field::processFrame(){
     std::list<Position>::iterator positionItt = this->positionQueue.begin();
     while(positionItt != this->positionQueue.end()) {
         std::map<int,Player>::iterator playerItt = playerList.find(positionItt->getPlayerId());
-        (*playerItt).second.setPosition(&(*positionItt));
+        if (playerItt != playerList.end()) {
+            playerItt->second.setPosition(&(*positionItt));
+        }
         ++positionItt;
     }
+    this->positionQueue.clear();
     
     // Actionキューを処理取得
     std::list<Action>::iterator actionItt = this->actionQueue.begin();
@@ -79,7 +82,9 @@ Field::processFrame(){
             case 2:
                 break;
         }
+        ++actionItt;
     }
+    this->actionQueue.clear();
     
     //
     std::map<int,Player>::iterator playerItt = this->playerList.begin();
@@ -100,5 +105,5 @@ Field::putActionQueue(Action action){
 
 void
 Field::putPlayer(Player player){
-    this->playerList.insert(std::pair<int,Player>(player.getPlayerId(),player));
+    this->playerList[player.getPlayerId()] = player;
 }

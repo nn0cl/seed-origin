@@ -28,7 +28,7 @@ DataTest::utData(){
     dt->getMap(1,rMap);
     int64_t value;
     for(int64_t i=0;i<100;++i){
-        dt->getParams(cMap,i,value);
+        dt->getParams(rMap,i,value);
         std::cout<<value<<std::endl;
     }
     

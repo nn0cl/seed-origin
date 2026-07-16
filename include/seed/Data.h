@@ -27,7 +27,7 @@ public:
     /** dataMapからNodeを取得する */
     int getMap(int64_t key,Node& node);
     /** Nodeからメンバーをセットする。 */
-    int getParams(Node &node,int64_t key,int64_t value);
+    int getParams(Node &node,int64_t key,int64_t &value);
 private:
     //key,nodeのmapをvalueに持つマップ
     std::map<int64_t,Node> dataMap;

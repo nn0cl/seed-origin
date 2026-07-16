@@ -24,7 +24,7 @@ private:
     // 効果開始日時
     long startTime;
     
-    Status* status;
+    Status status;
     
 public:
     Buff(int _id,

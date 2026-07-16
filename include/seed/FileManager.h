@@ -10,7 +10,7 @@
 #define seeds_FileManager_h
 
 #include <iostream>
-#include <string.h>
+#include <string>
 #include "SeedBinary.h"
 
 namespace io{

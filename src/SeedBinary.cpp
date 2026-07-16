@@ -34,12 +34,8 @@ SeedBinary::setBinary(char data[STANDARD_BINARY_SIZE],size_t size,int idx){
     mData.size = size;
     mData.isValid = true;
     
-    std::map<int,Binary>::iterator iter = bData.find(idx);
-    if(iter != bData.end()){
-        bData.erase(iter++);
-    }
-    bData.insert(std::pair<int,Binary>(idx,mData));
-    ++fIndex;
+    bData[idx] = mData;
+    if (idx >= fIndex) fIndex = idx + 1;
     return 1;
 }
 /** 指定されたアドレスのバイナリーデータを取得する。 */

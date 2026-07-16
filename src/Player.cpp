@@ -8,26 +8,27 @@
 
 #include "Player.h"
 
-Player::Player(){
-    this->status = new Status(10.0f,10.0f);
-    this->position = new Position(1,0.0f,0.0f,0.0f);
-};
+Player::Player()
+    : id(0), status(new Status(10, 10)), position(new Position(1, 0.0f, 0.0f, 0.0f)) {}
 
-Player::Player(Player* player){
-    this->setStatus(player->getStatus());
-    this->setPosition(player->getPosition());
+Player::Player(Player* player)
+    : Player(player ? *player : Player()) {}
 
-};
+Player::Player(const Player& player)
+    : id(player.id), status(new Status(*player.status)), buffs(player.buffs),
+      position(new Position(*player.position)) {}
 
 
 Player::Player(int playerId,const Status& status,const Position& position){
+    this->id = playerId;
     this->status = new Status(status);
     this->position = new Position(position);
 };
 
 
 Player::~Player(){
-    delete(status);
+    delete status;
+    delete position;
 };
 
 int64_t
@@ -36,7 +37,7 @@ Player::getPlayerId(){
 }
 
 bool
-Player::setBuff(Buff _buff){
+Player::setBuff(const Buff& _buff){
     this->buffs.push_back(_buff);
     return true;
 };
@@ -53,7 +54,9 @@ Player::setMp(long _mp){
 
 void
 Player::setStatus(Status* _status){
-    this->status = new Status(*_status);
+    if (_status == NULL) return;
+    if (this->status == NULL) this->status = new Status(*_status);
+    else *this->status = *_status;
 };
 
 bool
@@ -62,8 +65,6 @@ Player::processBuffs(){
     std::list<Buff>::iterator it = this->buffs.begin();
     Logger::log(1,"processing all buffs");
     while(it != this->buffs.end()){
-        struct timespec req = {1,0};
-        nanosleep(&req,NULL);
         bufStatus = it->getStatus();
         this->status->gainHp(bufStatus->getHp());
         this->status->gainMp(bufStatus->getMp());
@@ -75,7 +76,9 @@ Player::processBuffs(){
 
 bool
 Player::setPosition(Position* position){
-    this->position->setPosition(position->getX(), position->getY(), position->getZ());
+    if (position == NULL) return false;
+    if (this->position == NULL) this->position = new Position(*position);
+    else this->position->setPosition(position->getX(), position->getY(), position->getZ());
     return true;
 };
 
