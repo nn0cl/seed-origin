@@ -13,6 +13,7 @@
 | Issue | Area | Priority | Depends on | Status |
 | --- | --- | --- | --- | --- |
 | LISS-0019 | Player/Action/Buffer ownership and memory safety | critical | LISS-0017 | in_progress |
+| LISS-0034 | Player ownership and copy-assignment slice | critical | LISS-0019 approval | review |
 | LISS-0025 | SeedBinary/FileManager buffer and I/O safety | critical | LISS-0019 | proposed |
 | LISS-0026 | Field state and queue contract | high | LISS-0019 | proposed |
 | LISS-0027 | Status/Position/Buff lifecycle | high | LISS-0019 | proposed |

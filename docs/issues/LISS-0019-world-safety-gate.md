@@ -28,6 +28,10 @@ world移行前に、既存C++の所有権、コピー・代入、ポインタ公
 - `SeedBinary::setBinary` と `FileManager::save` の境界・未初期化読み取りリスクが分類されている。
 - このIssue完了まで子IssueのPhase 1/2実装を開始しない。
 
+## Active Slice
+
+- LISS-0034: Player所有権・コピー代入安全性
+
 ## Dependencies
 
 - Parent: LISS-0018

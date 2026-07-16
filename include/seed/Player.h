@@ -24,9 +24,9 @@ class Player{
 private:
     int64_t id;
     char name[64];
-    Status* status;
+    Status status;
     std::list<Buff> buffs;
-    Position* position;
+    Position position;
     
 public:
     Player();
@@ -39,12 +39,12 @@ public:
     
     bool setHp(long _hp);
     bool setMp(long _mp);
-    void setStatus(Status* _status);
+    void setStatus(const Status& _status);
     bool setBuff(const Buff& _buff);
     bool processBuffs();
-    bool setPosition(Position* position);
-    Status* getStatus();
-    Position* getPosition();
+    bool setPosition(const Position& position);
+    Status& getStatus();
+    Position& getPosition();
 };
 
 

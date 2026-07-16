@@ -63,7 +63,7 @@ Field::processFrame(){
     while(positionItt != this->positionQueue.end()) {
         std::map<int,Player>::iterator playerItt = playerList.find(positionItt->getPlayerId());
         if (playerItt != playerList.end()) {
-            playerItt->second.setPosition(&(*positionItt));
+            playerItt->second.setPosition(*positionItt);
         }
         ++positionItt;
     }
@@ -75,7 +75,7 @@ Field::processFrame(){
         switch(actionItt->getActionType()){
             case 0:
                 //0:Field,1:Player,3:self
-                this->gainStatus(*actionItt->getStatus());
+                this->gainStatus(actionItt->getStatus());
                 break;
             case 1:
                 break;

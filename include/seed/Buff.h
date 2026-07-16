@@ -35,7 +35,7 @@ public:
     ~Buff();
     
     void setStatus(const Status& status);
-    Status* getStatus();
+    Status& getStatus();
 };
 
 #endif

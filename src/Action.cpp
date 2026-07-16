@@ -31,7 +31,7 @@ Action::getPlayerTo(){
     return &this->playerTo;
 };
 
-Status*
+Status&
 Action::getStatus(){
-    return &status;
+    return status;
 };

@@ -24,7 +24,7 @@ public:
     int getActionType();
     Player* getPlayerFrom();
     Player* getPlayerTo();
-    Status* getStatus();
+    Status& getStatus();
 };
 
 
