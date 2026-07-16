@@ -33,6 +33,11 @@ void treats_invalid_claims_as_anonymous();
 void never_reuses_disconnected_ids();
 }
 
+namespace network_command_tests {
+void validates_login_without_client_internal_id();
+void rejects_invalid_session_and_oversized_payload();
+}
+
 int main() {
     action_input_tests::rejects_missing_players_for_target_action();
     action_input_tests::permits_field_action_without_players();
@@ -50,5 +55,7 @@ int main() {
     session_registry_tests::assigns_unique_internal_ids_and_stable_aliases();
     session_registry_tests::treats_invalid_claims_as_anonymous();
     session_registry_tests::never_reuses_disconnected_ids();
+    network_command_tests::validates_login_without_client_internal_id();
+    network_command_tests::rejects_invalid_session_and_oversized_payload();
     return 0;
 }

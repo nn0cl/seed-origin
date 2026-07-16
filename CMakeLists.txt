@@ -14,6 +14,7 @@ set(SEED_CORE_SOURCES
     src/Field.cpp
     src/FileManager.cpp
     src/Manager.cpp
+    src/NetworkCommand.cpp
     src/Player.cpp
     src/Position.cpp
     src/SeedBinary.cpp
@@ -36,6 +37,7 @@ add_executable(seed_tests
     tests/PlayerOwnershipTest.cpp
     tests/SeedBinaryTest.cpp
     tests/SessionRegistryTest.cpp
+    tests/NetworkCommandTest.cpp
     tests/StatusSaturationTest.cpp
     tests/TestMain.cpp
 )
