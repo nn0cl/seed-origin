@@ -57,6 +57,11 @@ namespace frame_accumulator_tests {
 void joins_partial_frame_and_preserves_multiple_frames();
 }
 
+namespace server_command_dispatcher_tests {
+void accepts_login();
+void rejects_unimplemented_command();
+}
+
 int main() {
     action_input_tests::rejects_missing_players_for_target_action();
     action_input_tests::permits_field_action_without_players();
@@ -83,5 +88,7 @@ int main() {
     network_frame_tests::round_trips_a_valid_command();
     network_frame_tests::rejects_incomplete_and_oversized_frames();
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
+    server_command_dispatcher_tests::accepts_login();
+    server_command_dispatcher_tests::rejects_unimplemented_command();
     return 0;
 }

@@ -16,6 +16,7 @@
 | LISS-0073 | Server runtime/command queue slice | critical | LISS-0056, LISS-0058 | review |
 | LISS-0074 | Protocol v1 frame codec slice | critical | LISS-0055, LISS-0064 | review |
 | LISS-0075 | Stream frame accumulator slice | critical | LISS-0044, LISS-0074 | review |
+| LISS-0076 | Server command dispatch boundary | critical | LISS-0058, LISS-0057 | review |
 | LISS-0058 | Authoritative world command pipeline | critical | LISS-0020, LISS-0022, LISS-0055 | proposed |
 | LISS-0059 | Chat implementation | medium | LISS-0045, LISS-0058 | proposed |
 | LISS-0060 | 3D movement implementation | high | LISS-0048, LISS-0058 | proposed |
