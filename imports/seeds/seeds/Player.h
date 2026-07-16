@@ -1,0 +1,50 @@
+//
+//  Player.h
+//  seeds
+//
+//  Created by nn0cl on 2013/12/14.
+//  Copyright (c) 2013年 nn0cl. All rights reserved.
+//
+
+#ifndef seeds_Player_h
+#define seeds_Player_h
+
+#include <stdint.h>
+#include <list>
+#include <map>
+#include <string>
+#include <iostream>
+
+#include "Position.h"
+#include "Buff.h"
+#include "Status.h"
+#include "Logger.h"
+
+class Player{
+private:
+    int64_t id;
+    char name[64];
+    Status* status;
+    std::list<Buff> buffs;
+    Position* position;
+    
+public:
+    Player();
+    Player(Player* player);
+    Player(int playerId,const Status& status,const Position& position);
+    ~Player();
+    
+    int64_t getPlayerId();
+    
+    bool setHp(long _hp);
+    bool setMp(long _mp);
+    void setStatus(Status* _status);
+    bool setBuff(Buff _buff);
+    bool processBuffs();
+    bool setPosition(Position* position);
+    Status* getStatus();
+    Position* getPosition();
+};
+
+
+#endif
