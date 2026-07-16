@@ -7,6 +7,7 @@
 //
 
 #include "Status.h"
+#include <limits>
 
 Status::Status() : hp(0), mp(0) {}
 
@@ -43,14 +44,42 @@ Status::getMp() const {
 
 bool
 Status::gainHp(const long& _hp){
-    this->hp += _hp;
-    if (this->hp < 0) this->hp = 0;
+    const long maxValue = std::numeric_limits<long>::max();
+    if (_hp > 0) {
+        if (this->hp > maxValue - _hp) {
+            this->hp = maxValue;
+        } else {
+            this->hp += _hp;
+        }
+    } else if (_hp < 0) {
+        const long magnitudeWithoutOne = -(_hp + 1);
+        if (this->hp <= magnitudeWithoutOne) {
+            this->hp = 0;
+        } else {
+            this->hp -= magnitudeWithoutOne;
+            this->hp -= 1;
+        }
+    }
     return true;
 };
 
 bool
 Status::gainMp(const long& _mp){
-    this->mp += _mp;
-    if (this->mp < 0) this->mp = 0;
+    const long maxValue = std::numeric_limits<long>::max();
+    if (_mp > 0) {
+        if (this->mp > maxValue - _mp) {
+            this->mp = maxValue;
+        } else {
+            this->mp += _mp;
+        }
+    } else if (_mp < 0) {
+        const long magnitudeWithoutOne = -(_mp + 1);
+        if (this->mp <= magnitudeWithoutOne) {
+            this->mp = 0;
+        } else {
+            this->mp -= magnitudeWithoutOne;
+            this->mp -= 1;
+        }
+    }
     return true;
 };
