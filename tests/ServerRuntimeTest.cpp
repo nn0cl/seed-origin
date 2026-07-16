@@ -1,6 +1,7 @@
 #include <cassert>
 
 #include "ServerRuntime.h"
+#include "ServerCommandDispatcher.h"
 
 namespace server_runtime_tests {
 
@@ -37,6 +38,27 @@ void drains_valid_commands_in_fifo_order() {
     assert(commands.size() == 2);
     assert(commands[0].payload == "first");
     assert(commands[1].payload == "second");
+    assert(runtime.stop());
+}
+
+void dispatches_pending_commands_in_fifo_order() {
+    session::SessionRegistry registry;
+    server::ServerCommandDispatcher dispatcher(registry);
+    server::ServerRuntime runtime;
+    const std::vector<network::NetworkCommand> commands = {
+        {network::CURRENT_PROTOCOL_VERSION, network::CommandType::Login, 0, "first"},
+        {network::CURRENT_PROTOCOL_VERSION, network::CommandType::Move, 0, "1,0,0"}
+    };
+
+    assert(runtime.start(0));
+    assert(runtime.submit(commands[0]));
+    assert(runtime.submit(commands[1]));
+    const std::vector<server::CommandDispatchResult> results =
+        runtime.dispatchPendingCommands(dispatcher);
+    assert(results.size() == 2);
+    assert(results[0].accepted);
+    assert(!results[1].accepted);
+    assert(runtime.pendingCommandCount() == 0);
     assert(runtime.stop());
 }
 

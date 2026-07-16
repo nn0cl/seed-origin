@@ -8,6 +8,7 @@
 
 #include "Connection.h"
 #include "NetworkCommand.h"
+#include "ServerCommandDispatcher.h"
 
 namespace server {
 
@@ -23,6 +24,8 @@ public:
     bool isRunning() const;
     bool submit(const network::NetworkCommand& command);
     std::vector<network::NetworkCommand> drainCommands();
+    std::vector<CommandDispatchResult> dispatchPendingCommands(
+        ServerCommandDispatcher& dispatcher);
     size_t pendingCommandCount() const;
 
 private:

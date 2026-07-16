@@ -1,4 +1,5 @@
 #include "ServerRuntime.h"
+#include "ServerCommandDispatcher.h"
 
 namespace server {
 
@@ -41,6 +42,11 @@ std::vector<network::NetworkCommand> ServerRuntime::drainCommands() {
         pendingCommands.pop_front();
     }
     return drained;
+}
+
+std::vector<CommandDispatchResult> ServerRuntime::dispatchPendingCommands(
+    ServerCommandDispatcher& dispatcher) {
+    return dispatcher.dispatchAll(drainCommands());
 }
 
 size_t ServerRuntime::pendingCommandCount() const {
