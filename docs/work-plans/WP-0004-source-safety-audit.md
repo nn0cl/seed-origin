@@ -24,6 +24,7 @@
 | LISS-0038 | Action input validation slice | high | LISS-0028 | review |
 | LISS-0030 | TDD/build/test foundation | high | LISS-0019 | proposed |
 | LISS-0040 | CMake/CTest test runner slice | high | LISS-0030 | review |
+| LISS-0053 | Session registry slice | high | LISS-0042 | review |
 | LISS-0031 | CodeQL review gate | critical | LISS-0019, LISS-0025〜LISS-0028 | review |
 | LISS-0039 | CodeQL path injection fix | critical | LISS-0031 | review |
 | LISS-0032 | main branch migration | high | repository administration | proposed |
