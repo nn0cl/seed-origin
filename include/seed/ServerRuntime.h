@@ -1,0 +1,36 @@
+#ifndef SEED_SERVER_RUNTIME_H
+#define SEED_SERVER_RUNTIME_H
+
+#include <stddef.h>
+#include <stdint.h>
+#include <deque>
+#include <vector>
+
+#include "Connection.h"
+#include "NetworkCommand.h"
+
+namespace server {
+
+static const size_t MAX_PENDING_COMMANDS = 1024;
+
+class ServerRuntime {
+public:
+    ServerRuntime();
+    ~ServerRuntime();
+
+    bool start(uint16_t port);
+    bool stop();
+    bool isRunning() const;
+    bool submit(const network::NetworkCommand& command);
+    std::vector<network::NetworkCommand> drainCommands();
+    size_t pendingCommandCount() const;
+
+private:
+    Connection listener;
+    bool running;
+    std::deque<network::NetworkCommand> pendingCommands;
+};
+
+}
+
+#endif

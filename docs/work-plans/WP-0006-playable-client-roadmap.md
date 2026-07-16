@@ -13,6 +13,7 @@
 | LISS-0056 | Server executable/runtime | critical | LISS-0023, LISS-0054 | proposed |
 | LISS-0057 | Login command adapter | high | LISS-0042, LISS-0055 | proposed |
 | LISS-0072 | Login command handler slice | high | LISS-0057, LISS-0070 | review |
+| LISS-0073 | Server runtime/command queue slice | critical | LISS-0056, LISS-0058 | review |
 | LISS-0058 | Authoritative world command pipeline | critical | LISS-0020, LISS-0022, LISS-0055 | proposed |
 | LISS-0059 | Chat implementation | medium | LISS-0045, LISS-0058 | proposed |
 | LISS-0060 | 3D movement implementation | high | LISS-0048, LISS-0058 | proposed |

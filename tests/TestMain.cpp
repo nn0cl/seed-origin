@@ -43,6 +43,11 @@ void creates_temporary_session_from_valid_login();
 void rejects_client_supplied_internal_id();
 }
 
+namespace server_runtime_tests {
+void rejects_commands_before_start();
+void drains_valid_commands_in_fifo_order();
+}
+
 int main() {
     action_input_tests::rejects_missing_players_for_target_action();
     action_input_tests::permits_field_action_without_players();
@@ -64,5 +69,7 @@ int main() {
     network_command_tests::rejects_invalid_session_and_oversized_payload();
     login_command_handler_tests::creates_temporary_session_from_valid_login();
     login_command_handler_tests::rejects_client_supplied_internal_id();
+    server_runtime_tests::rejects_commands_before_start();
+    server_runtime_tests::drains_valid_commands_in_fifo_order();
     return 0;
 }
