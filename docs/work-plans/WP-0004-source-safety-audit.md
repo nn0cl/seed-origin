@@ -23,8 +23,8 @@
 | LISS-0028 | Action domain result contract | high | LISS-0019, LISS-0020 | proposed |
 | LISS-0038 | Action input validation slice | high | LISS-0028 | review |
 | LISS-0030 | TDD/build/test foundation | high | LISS-0019 | proposed |
-| LISS-0031 | CodeQL review gate | critical | LISS-0019, LISS-0025〜LISS-0028 | in_progress |
-| LISS-0039 | CodeQL path injection fix | critical | LISS-0031 | in_progress |
+| LISS-0031 | CodeQL review gate | critical | LISS-0019, LISS-0025〜LISS-0028 | review |
+| LISS-0039 | CodeQL path injection fix | critical | LISS-0031 | review |
 | LISS-0032 | main branch migration | high | repository administration | proposed |
 | LISS-0029 | Connection transport boundary | medium | LISS-0024 | proposed |
 | LISS-0033 | legacy cleanup | low | related behavior decisions | proposed |
