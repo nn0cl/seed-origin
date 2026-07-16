@@ -9,6 +9,7 @@
 #include <iostream>
 #include "SeedBinary.h"
 #include <map>
+#include <limits>
 /** Constructor */
 SeedBinary::SeedBinary()
 {
@@ -25,9 +26,13 @@ SeedBinary::SeedBinary(const SeedBinary& cpy){
 }*/
 /** バイナリーデータを指定されたアドレスへセットする。*/
 int 
-SeedBinary::setBinary(char data[STANDARD_BINARY_SIZE],size_t size,int idx){
-    
-    Binary mData;
+SeedBinary::setBinary(const char data[STANDARD_BINARY_SIZE],size_t size,int idx){
+    if (data == nullptr || size > STANDARD_BINARY_SIZE || idx < 0 ||
+        idx == std::numeric_limits<int>::max()) {
+        return 0;
+    }
+
+    Binary mData{};
     for(int i=0;i<(int)size;++i){
         mData.data[i] = data[i];
     }
@@ -40,9 +45,12 @@ SeedBinary::setBinary(char data[STANDARD_BINARY_SIZE],size_t size,int idx){
 }
 /** 指定されたアドレスのバイナリーデータを取得する。 */
 int 
-SeedBinary::getBinary(char data[STANDARD_BINARY_SIZE],size_t& size,int& idx,bool &isValid){
+SeedBinary::getBinary(char data[STANDARD_BINARY_SIZE],size_t& size,int idx,bool &isValid) const{
+    if (data == nullptr || idx < 0) {
+        return 0;
+    }
  
-    std::map<int,Binary>::iterator iter = bData.find(idx);
+    std::map<int,Binary>::const_iterator iter = bData.find(idx);
     if(iter == bData.end()){
         return 0;
     }
@@ -54,11 +62,7 @@ SeedBinary::getBinary(char data[STANDARD_BINARY_SIZE],size_t& size,int& idx,bool
     return 1;
 }
 int 
-SeedBinary::getFileIndex(int& m_fIndex){
-    if(fIndex == 0){
-        return 0;
-    }
-    
+SeedBinary::getFileIndex(int& m_fIndex) const{
     m_fIndex = fIndex;
     return 1;
 }

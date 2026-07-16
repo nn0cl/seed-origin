@@ -6,7 +6,7 @@
 
 ## Execution Gate
 
-移行安全性が担保されるまで、実装、コンパイル、テスト実行は行わない。今回の成果物は監査記録、Issue、依存関係、受入条件だけとする。
+初期監査では、移行安全性が担保されるまで実装、コンパイル、テスト実行を行わない。ユーザー承認後は安全性Issueの実装を進めるが、コンパイル・テスト実行は引き続き行わず、テストコードを検証資料として整備する。
 
 ## Issue Graph
 
@@ -14,7 +14,8 @@
 | --- | --- | --- | --- | --- |
 | LISS-0019 | Player/Action/Buffer ownership and memory safety | critical | LISS-0017 | in_progress |
 | LISS-0034 | Player ownership and copy-assignment slice | critical | LISS-0019 approval | review |
-| LISS-0025 | SeedBinary/FileManager buffer and I/O safety | critical | LISS-0019 | proposed |
+| LISS-0025 | SeedBinary/FileManager buffer and I/O safety | critical | LISS-0019 | in_progress |
+| LISS-0035 | SeedBinary/FileManager boundary safety slice | critical | LISS-0025 | review |
 | LISS-0026 | Field state and queue contract | high | LISS-0019 | proposed |
 | LISS-0027 | Status/Position/Buff lifecycle | high | LISS-0019 | proposed |
 | LISS-0028 | Action domain result contract | high | LISS-0019, LISS-0020 | proposed |

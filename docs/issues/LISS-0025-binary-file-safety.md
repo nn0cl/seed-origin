@@ -4,14 +4,15 @@
 
 - Local issue ID: LISS-0025
 - GitHub issue: 未作成
-- Status: proposed
-- Phase: phase-0-design
+- Status: review
+- Phase: phase-1-red
 - Type: safety + bugfix
 - Priority: critical
 - Initial planning size: M
 - Current planning size: M
 - Owner/agent: Codex
 - Related branch: `main`
+- Active slice: LISS-0035
 
 ## Summary
 

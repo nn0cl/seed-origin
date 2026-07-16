@@ -19,7 +19,6 @@ int main(int argc,char** argv)
     io::FileManager fm;
     std::string fPath = argv[1];
     std::string dstPath = argv[2];
-    char mode[] = "rb";
     SeedBinary sb;
-    return fm.load(sb, fPath, mode) && fm.save(sb, dstPath) ? 0 : 1;
+    return fm.load(sb, fPath) && fm.save(sb, dstPath) ? 0 : 1;
 }

@@ -30,11 +30,11 @@ public:
     ~SeedBinary();
     //SeedBinary(const SeedBinary& cpy);
     /** バイナリーデータを指定されたインデックスへセットする。*/
-    int setBinary(char data[STANDARD_BINARY_SIZE],size_t size,int idx);
+    int setBinary(const char data[STANDARD_BINARY_SIZE],size_t size,int idx);
     /** 指定されたアドレスのバイナリーデータを取得する。 */
-    int getBinary(char data[STANDARD_BINARY_SIZE],size_t& size,int &idx,bool &isValid);
+    int getBinary(char data[STANDARD_BINARY_SIZE],size_t& size,int idx,bool &isValid) const;
     /** ファイルインデックスサイズを取得する */
-    int getFileIndex(int& fIndex);
+    int getFileIndex(int& fIndex) const;
 };
 
 #endif

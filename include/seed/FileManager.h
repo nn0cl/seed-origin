@@ -18,8 +18,8 @@ namespace io{
     public:
         FileManager();
         ~FileManager();
-        int load(SeedBinary& sb,std::string& fPath,char* rw);
-        int save(SeedBinary& sb,std::string& dstPath);
+        int load(SeedBinary& sb,const std::string& fPath);
+        int save(const SeedBinary& sb,const std::string& dstPath);
     };
 }
 
