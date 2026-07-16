@@ -38,6 +38,11 @@ void validates_login_without_client_internal_id();
 void rejects_invalid_session_and_oversized_payload();
 }
 
+namespace login_command_handler_tests {
+void creates_temporary_session_from_valid_login();
+void rejects_client_supplied_internal_id();
+}
+
 int main() {
     action_input_tests::rejects_missing_players_for_target_action();
     action_input_tests::permits_field_action_without_players();
@@ -57,5 +62,7 @@ int main() {
     session_registry_tests::never_reuses_disconnected_ids();
     network_command_tests::validates_login_without_client_internal_id();
     network_command_tests::rejects_invalid_session_and_oversized_payload();
+    login_command_handler_tests::creates_temporary_session_from_valid_login();
+    login_command_handler_tests::rejects_client_supplied_internal_id();
     return 0;
 }

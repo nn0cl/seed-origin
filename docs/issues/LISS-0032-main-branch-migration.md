@@ -4,7 +4,7 @@
 
 - Local issue ID: LISS-0032
 - GitHub issue: 未作成
-- Status: proposed
+- Status: review
 - Phase: phase-0-design
 - Type: process + repository
 - Priority: high
@@ -24,3 +24,7 @@
 - CodeQLの対象ブランチと運用規約が一致する。
 - mainへのpush権限、保護、Actions実行条件を確認する。
 - 既存履歴とIssue参照が失われない。
+
+## Resolution
+
+`main`はリモートに存在し、GitHubのdefault branchも`main`であることを確認済み。CodeQLと作業規約の対象もmainに統一されている。

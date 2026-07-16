@@ -21,6 +21,7 @@
 | LISS-0053 | Session registry implementation | high | LISS-0042 | review |
 | LISS-0054 | Connection listener lifecycle | high | LISS-0029 | review |
 | LISS-0070 | Network command validation | critical | LISS-0044 | review |
+| LISS-0072 | Login command handler | high | LISS-0057, LISS-0070 | review |
 | LISS-0043 | Identity persistence | high | LISS-0053 | proposed |
 | LISS-0044 | Network frame/command boundary | critical | LISS-0029, LISS-0042 | proposed |
 | LISS-0045 | Chat | medium | LISS-0044, LISS-0051 | proposed |
