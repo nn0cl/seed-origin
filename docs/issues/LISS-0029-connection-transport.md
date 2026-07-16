@@ -4,14 +4,15 @@
 
 - Local issue ID: LISS-0029
 - GitHub issue: 未作成
-- Status: proposed
-- Phase: phase-0-design
+- Status: review
+- Phase: phase-1-red
 - Type: feature + architecture
 - Priority: medium
 - Initial planning size: L
 - Current planning size: L
 - Owner/agent: Codex
 - Related branch: `main`
+- Active slice: LISS-0054
 
 ## Summary
 

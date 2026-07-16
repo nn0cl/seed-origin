@@ -10,6 +10,7 @@
 #define __seeds__Connection__
 
 #include <iostream>
+#include <stdint.h>
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -18,9 +19,14 @@
 #include <unistd.h>
 
 class Connection {
+private:
+    int listenerSocket;
 public:
-    void open();
-    void closeSocket();
+    Connection();
+    ~Connection();
+    bool open(uint16_t port);
+    bool closeSocket();
+    bool isOpen() const;
 };
 
 #endif /* defined(__seeds__Connection__) */

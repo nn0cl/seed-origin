@@ -31,6 +31,7 @@ enable_testing()
 
 add_executable(seed_tests
     tests/ActionInputTest.cpp
+    tests/ConnectionTest.cpp
     tests/FieldStateTest.cpp
     tests/PlayerOwnershipTest.cpp
     tests/SeedBinaryTest.cpp

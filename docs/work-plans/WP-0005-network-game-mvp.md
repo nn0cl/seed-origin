@@ -19,6 +19,7 @@
 | LISS-0041 | Network game MVP parent | high | safety gates | in_progress |
 | LISS-0042 | Anonymous session/internal ID | high | LISS-0019 | review |
 | LISS-0053 | Session registry implementation | high | LISS-0042 | review |
+| LISS-0054 | Connection listener lifecycle | high | LISS-0029 | review |
 | LISS-0043 | Identity persistence | high | LISS-0053 | proposed |
 | LISS-0044 | Network frame/command boundary | critical | LISS-0029, LISS-0042 | proposed |
 | LISS-0045 | Chat | medium | LISS-0044, LISS-0051 | proposed |

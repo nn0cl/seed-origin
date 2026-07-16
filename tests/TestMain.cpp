@@ -9,6 +9,10 @@ void removes_players_by_full_id();
 void accepts_empty_frame();
 }
 
+namespace connection_tests {
+void close_is_idempotent();
+}
+
 void playerOwnershipCopyAssignmentTest();
 void playerOwnershipContainerUpdateTest();
 
@@ -35,6 +39,7 @@ int main() {
     action_input_tests::rejects_unknown_action_type();
     field_state_tests::removes_players_by_full_id();
     field_state_tests::accepts_empty_frame();
+    connection_tests::close_is_idempotent();
     player_ownership_tests::playerOwnershipCopyAssignmentTest();
     player_ownership_tests::playerOwnershipContainerUpdateTest();
     seed_binary_tests::rejects_out_of_range_input();
