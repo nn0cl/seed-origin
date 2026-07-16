@@ -12,13 +12,21 @@ Action::Action(int actionType,Player* playerFrom,Player* playerTo,const Status s
     : actionType(actionType),
       playerFrom(playerFrom ? *playerFrom : Player()),
       playerTo(playerTo ? *playerTo : Player()),
-      status(status) {}
+      status(status),
+      valid(actionType == 0 ||
+            (actionType == 1 && playerFrom != nullptr && playerTo != nullptr) ||
+            ((actionType == 2 || actionType == 3) && playerFrom != nullptr)) {}
 
 Action::~Action() = default;
 
 int
 Action::getActionType(){
     return this->actionType;
+}
+
+bool
+Action::isValid() const{
+    return valid;
 }
 
 Player*

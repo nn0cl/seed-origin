@@ -73,6 +73,10 @@ Field::processFrame(){
     // Actionキューを処理取得
     std::list<Action>::iterator actionItt = this->actionQueue.begin();
     while(actionItt != this->actionQueue.end()) {
+        if (!actionItt->isValid()) {
+            ++actionItt;
+            continue;
+        }
         switch(actionItt->getActionType()){
             case 0:
                 //0:Field,1:Player,3:self

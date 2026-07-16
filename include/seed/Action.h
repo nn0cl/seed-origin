@@ -18,10 +18,12 @@ private:
     Player playerFrom;
     Player playerTo;
     Status status;
+    bool valid;
 public:
     Action(int actionType,Player* playerFrom,Player* playerTo,const Status status);
     ~Action();
     int getActionType();
+    bool isValid() const;
     Player* getPlayerFrom();
     Player* getPlayerTo();
     Status& getStatus();
