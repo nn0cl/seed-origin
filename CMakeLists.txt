@@ -17,6 +17,7 @@ set(SEED_CORE_SOURCES
     src/NetworkCommand.cpp
     src/ServerRuntime.cpp
     src/NetworkFrameCodec.cpp
+    src/FrameAccumulator.cpp
     src/LoginCommandHandler.cpp
     src/Player.cpp
     src/Position.cpp
@@ -43,6 +44,7 @@ add_executable(seed_tests
     tests/NetworkCommandTest.cpp
     tests/ServerRuntimeTest.cpp
     tests/NetworkFrameCodecTest.cpp
+    tests/FrameAccumulatorTest.cpp
     tests/LoginCommandHandlerTest.cpp
     tests/StatusSaturationTest.cpp
     tests/TestMain.cpp

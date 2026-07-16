@@ -53,6 +53,10 @@ void round_trips_a_valid_command();
 void rejects_incomplete_and_oversized_frames();
 }
 
+namespace frame_accumulator_tests {
+void joins_partial_frame_and_preserves_multiple_frames();
+}
+
 int main() {
     action_input_tests::rejects_missing_players_for_target_action();
     action_input_tests::permits_field_action_without_players();
@@ -78,5 +82,6 @@ int main() {
     server_runtime_tests::drains_valid_commands_in_fifo_order();
     network_frame_tests::round_trips_a_valid_command();
     network_frame_tests::rejects_incomplete_and_oversized_frames();
+    frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     return 0;
 }
