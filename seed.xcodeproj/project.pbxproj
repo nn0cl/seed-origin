@@ -16,6 +16,13 @@
 		75E808BD146E611600DE8367 /* Data.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75E808B9146E611600DE8367 /* Data.cpp */; };
 		75E808BE146E611600DE8367 /* DataTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75E808BA146E611600DE8367 /* DataTest.cpp */; };
 		75E808C1146E611F00DE8367 /* Manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75E808BF146E611F00DE8367 /* Manager.cpp */; };
+		A10000010000000000000001 /* Action.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10000020000000000000001 /* Action.cpp */; };
+		A10000030000000000000001 /* Buff.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10000040000000000000001 /* Buff.cpp */; };
+		A10000050000000000000001 /* Connection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10000060000000000000001 /* Connection.cpp */; };
+		A10000070000000000000001 /* Field.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A10000080000000000000001 /* Field.cpp */; };
+		A10000090000000000000001 /* Player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A100000A0000000000000001 /* Player.cpp */; };
+		A100000B0000000000000001 /* Position.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A100000C0000000000000001 /* Position.cpp */; };
+		A100000D0000000000000001 /* Status.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A100000E0000000000000001 /* Status.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -51,6 +58,13 @@
 		75E808BA146E611600DE8367 /* DataTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DataTest.cpp; sourceTree = "<group>"; };
 		75E808BF146E611F00DE8367 /* Manager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Manager.cpp; sourceTree = "<group>"; };
 		75E808C0146E611F00DE8367 /* NodeItemCode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NodeItemCode.h; sourceTree = "<group>"; };
+		A10000020000000000000001 /* Action.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Action.cpp; sourceTree = "<group>"; };
+		A10000040000000000000001 /* Buff.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Buff.cpp; sourceTree = "<group>"; };
+		A10000060000000000000001 /* Connection.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Connection.cpp; sourceTree = "<group>"; };
+		A10000080000000000000001 /* Field.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Field.cpp; sourceTree = "<group>"; };
+		A100000A0000000000000001 /* Player.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Player.cpp; sourceTree = "<group>"; };
+		A100000C0000000000000001 /* Position.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Position.cpp; sourceTree = "<group>"; };
+		A100000E0000000000000001 /* Status.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Status.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,6 +101,13 @@
 				75E808A2146E5FD300DE8367 /* src */,
 				75E80898146E5FB400DE8367 /* main.cpp */,
 				75E8089A146E5FB400DE8367 /* seed.1 */,
+				A10000020000000000000001 /* Action.cpp */,
+				A10000040000000000000001 /* Buff.cpp */,
+				A10000060000000000000001 /* Connection.cpp */,
+				A10000080000000000000001 /* Field.cpp */,
+				A100000A0000000000000001 /* Player.cpp */,
+				A100000C0000000000000001 /* Position.cpp */,
+				A100000E0000000000000001 /* Status.cpp */,
 			);
 			sourceTree = "<group>";
 		};
@@ -226,6 +247,13 @@
 				75E808BD146E611600DE8367 /* Data.cpp in Sources */,
 				75E808BE146E611600DE8367 /* DataTest.cpp in Sources */,
 				75E808C1146E611F00DE8367 /* Manager.cpp in Sources */,
+				A10000010000000000000001 /* Action.cpp in Sources */,
+				A10000030000000000000001 /* Buff.cpp in Sources */,
+				A10000050000000000000001 /* Connection.cpp in Sources */,
+				A10000070000000000000001 /* Field.cpp in Sources */,
+				A10000090000000000000001 /* Player.cpp in Sources */,
+				A100000B0000000000000001 /* Position.cpp in Sources */,
+				A100000D0000000000000001 /* Status.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
