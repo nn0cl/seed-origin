@@ -27,6 +27,7 @@
 | LISS-0053 | Session registry slice | high | LISS-0042 | review |
 | LISS-0031 | CodeQL review gate | critical | LISS-0019, LISS-0025〜LISS-0028 | review |
 | LISS-0039 | CodeQL path injection fix | critical | LISS-0031 | review |
+| LISS-0071 | LLM documentation publication sync | high | repository operations | review |
 | LISS-0032 | main branch migration | high | repository administration | proposed |
 | LISS-0029 | Connection transport boundary | medium | LISS-0024 | proposed |
 | LISS-0033 | legacy cleanup | low | related behavior decisions | proposed |
