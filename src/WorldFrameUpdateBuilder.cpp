@@ -32,21 +32,62 @@ bool WorldFrameUpdateBuilder::build(const FrameActions& frame,
         std::ostringstream payload;
         payload << "action=" << it->getAction().getActionType()
                 << ";actionSequence=" << it->getSequence();
-        const network::WorldUpdate update = {
-            network::CURRENT_PROTOCOL_VERSION,
-            network::UpdateKind::Event,
-            frame.worldTick,
-            updateSequence++,
-            eventId++,
-            payload.str()
-        };
-        if (!network::validateWorldUpdate(update, error)) {
-            updates.clear();
-            return false;
-        }
-        updates.push_back(update);
+        if (!appendEvent(frame.worldTick, payload.str(), updates, error)) return false;
     }
     error.clear();
+    return true;
+}
+
+bool WorldFrameUpdateBuilder::build(const WorldFrameInputs& frame,
+                                    std::vector<network::WorldUpdate>& updates,
+                                    std::string& error) {
+    updates.clear();
+    if (frame.inputs.size() > network::MAX_UPDATE_PAYLOAD) {
+        error = "world frame contains too many inputs";
+        return false;
+    }
+    updates.reserve(frame.inputs.size());
+    for (std::vector<WorldInput>::const_iterator it = frame.inputs.begin();
+         it != frame.inputs.end(); ++it) {
+        std::ostringstream payload;
+        if (it->kind() == WorldInputKind::Action) {
+            payload << "action=" << it->action().getActionType();
+        } else {
+            payload << "movement=session:" << it->movement().sessionId
+                    << ";dx=" << it->movement().dx
+                    << ";dy=" << it->movement().dy
+                    << ";dz=" << it->movement().dz;
+        }
+        payload << ";inputSequence=" << it->sequence();
+        if (!appendEvent(frame.worldTick, payload.str(), updates, error)) return false;
+    }
+    error.clear();
+    return true;
+}
+
+bool WorldFrameUpdateBuilder::appendEvent(uint64_t worldTick,
+                                          const std::string& payload,
+                                          std::vector<network::WorldUpdate>& updates,
+                                          std::string& error) {
+    if (updateSequence == std::numeric_limits<uint64_t>::max() ||
+        eventId == std::numeric_limits<uint64_t>::max()) {
+        error = "world update identity exhausted";
+        updates.clear();
+        return false;
+    }
+    const network::WorldUpdate update = {
+        network::CURRENT_PROTOCOL_VERSION,
+        network::UpdateKind::Event,
+        worldTick,
+        updateSequence++,
+        eventId++,
+        payload
+    };
+    if (!network::validateWorldUpdate(update, error)) {
+        updates.clear();
+        return false;
+    }
+    updates.push_back(update);
     return true;
 }
 

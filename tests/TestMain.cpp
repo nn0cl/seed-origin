@@ -141,6 +141,7 @@ void rejects_invalid_inputs_without_queue_mutation();
 
 namespace world_input_tick_tests {
 void advances_world_tick_and_cuts_unified_inputs();
+void emits_inputs_in_common_sequence_order();
 }
 
 namespace server_command_dispatcher_tests {
@@ -222,6 +223,7 @@ int main() {
     world_input_queue_tests::preserves_order_across_action_and_movement_inputs();
     world_input_queue_tests::rejects_invalid_inputs_without_queue_mutation();
     world_input_tick_tests::advances_world_tick_and_cuts_unified_inputs();
+    world_input_tick_tests::emits_inputs_in_common_sequence_order();
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "ServerTick.h"
+#include "WorldInputTick.h"
 #include "WorldUpdate.h"
 
 namespace server {
@@ -17,11 +18,18 @@ public:
     bool build(const FrameActions& frame,
                std::vector<network::WorldUpdate>& updates,
                std::string& error);
+    bool build(const WorldFrameInputs& frame,
+               std::vector<network::WorldUpdate>& updates,
+               std::string& error);
     uint64_t nextSequence() const;
 
 private:
     uint64_t updateSequence;
     uint64_t eventId;
+
+    bool appendEvent(uint64_t worldTick, const std::string& payload,
+                     std::vector<network::WorldUpdate>& updates,
+                     std::string& error);
 };
 
 }

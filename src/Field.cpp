@@ -7,6 +7,7 @@
 //
 
 #include "Field.h"
+#include "WorldInputQueue.h"
 
 Field::Field() {
     
@@ -129,6 +130,61 @@ Field::processFrame(){
         ++playerItt;
     }
 };
+
+bool Field::processInputs(const std::vector<server::WorldInput>& inputs) {
+    for (std::vector<server::WorldInput>::const_iterator it = inputs.begin();
+         it != inputs.end(); ++it) {
+        if (it->kind() == server::WorldInputKind::Movement &&
+            !hasPlayer(it->movement().sessionId)) {
+            return false;
+        }
+        if (it->kind() == server::WorldInputKind::Action &&
+            !it->action().isValid()) {
+            return false;
+        }
+    }
+    for (std::vector<server::WorldInput>::const_iterator it = inputs.begin();
+         it != inputs.end(); ++it) {
+        if (it->kind() == server::WorldInputKind::Movement) {
+            std::map<int64_t,Player>::iterator playerItt =
+                playerList.find(it->movement().sessionId);
+            Position next = playerItt->second.getPosition();
+            next.movePosition(it->movement().dx, it->movement().dy, it->movement().dz);
+            playerItt->second.setPosition(next);
+        } else {
+            applyAction(it->action());
+        }
+    }
+    return true;
+}
+
+void Field::applyAction(Action action) {
+    if (!action.isValid()) return;
+    switch (action.getActionType()) {
+        case 0:
+            gainStatus(action.getStatus());
+            break;
+        case 1: {
+            std::map<int64_t,Player>::iterator playerItt =
+                playerList.find(action.getPlayerTo()->getPlayerId());
+            if (playerItt != playerList.end()) {
+                playerItt->second.getStatus().gainHp(action.getStatus().getHp());
+                playerItt->second.getStatus().gainMp(action.getStatus().getMp());
+            }
+            break;
+        }
+        case 2:
+        case 3: {
+            std::map<int64_t,Player>::iterator playerItt =
+                playerList.find(action.getPlayerFrom()->getPlayerId());
+            if (playerItt != playerList.end()) {
+                playerItt->second.getStatus().gainHp(action.getStatus().getHp());
+                playerItt->second.getStatus().gainMp(action.getStatus().getMp());
+            }
+            break;
+        }
+    }
+}
 
 void
 Field::putPositionQueue(Position position){

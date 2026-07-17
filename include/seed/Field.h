@@ -12,10 +12,13 @@
 #include <list>
 #include <map>
 #include <stdint.h>
+#include <vector>
 
 #include "Position.h"
 #include "Player.h"
 #include "Action.h"
+
+namespace server { struct WorldInput; }
 
 class Field {
 private:
@@ -36,10 +39,14 @@ public:
     bool queueMovement(int64_t playerId, float dx, float dy, float dz);
     bool hasPlayer(int64_t playerId) const;
     void processFrame();
+    bool processInputs(const std::vector<server::WorldInput>& inputs);
     
     void putPositionQueue(Position position);
     void putActionQueue(Action action);
     void putPlayer(Player player);
+
+private:
+    void applyAction(Action action);
 };
 
 #endif
