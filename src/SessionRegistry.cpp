@@ -19,6 +19,17 @@ bool SessionRegistry::isValidClaimedId(const std::string& claimedId) {
     return true;
 }
 
+std::string SessionRegistry::canonicalClaimedId(const std::string& claimedId) {
+    std::string canonical;
+    canonical.reserve(claimedId.size());
+    for (std::string::const_iterator it = claimedId.begin();
+         it != claimedId.end(); ++it) {
+        canonical.push_back(static_cast<char>(tolower(
+            static_cast<unsigned char>(*it))));
+    }
+    return canonical;
+}
+
 SessionInfo SessionRegistry::login(const std::string& claimedId) {
     SessionInfo result = {0, 0, std::string(), false};
     if (nextInternalId == std::numeric_limits<int64_t>::max()) return result;
@@ -27,10 +38,11 @@ SessionInfo SessionRegistry::login(const std::string& claimedId) {
     activeSessions.insert(result.internalId);
     if (!isValidClaimedId(claimedId)) return result;
 
-    std::map<std::string, int64_t>::const_iterator found = aliases.find(claimedId);
+    const std::string canonicalId = canonicalClaimedId(claimedId);
+    std::map<std::string, int64_t>::const_iterator found = aliases.find(canonicalId);
     if (found == aliases.end()) {
         if (nextAliasId == std::numeric_limits<int64_t>::max()) return result;
-        aliases[claimedId] = nextAliasId;
+        aliases[canonicalId] = nextAliasId;
         result.aliasId = nextAliasId++;
     } else {
         result.aliasId = found->second;

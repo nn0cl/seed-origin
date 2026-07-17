@@ -25,6 +25,7 @@ public:
 
 private:
     static bool isValidClaimedId(const std::string& claimedId);
+    static std::string canonicalClaimedId(const std::string& claimedId);
 
     int64_t nextInternalId;
     int64_t nextAliasId;

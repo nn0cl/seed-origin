@@ -58,7 +58,7 @@
 | LISS-0120 | WorldUpdate delivery boundary | high | LISS-0117, LISS-0118, LISS-0119, LISS-0056 | review |
 | LISS-0121 | Client WorldUpdate receiver | high | LISS-0118, LISS-0119, LISS-0120 | review |
 | LISS-0122 | Reconnect Snapshot recovery | critical | LISS-0121, LISS-0089 | review |
-| LISS-0123 | Anonymous login and alias reconciliation | high | LISS-0042, LISS-0053, LISS-0066 | proposed |
+| LISS-0123 | Anonymous login and alias reconciliation | high | LISS-0042, LISS-0053, LISS-0066 | review |
 | LISS-0124 | Chat command and delivery | medium | LISS-0120, LISS-0123, LISS-0059 | proposed |
 | LISS-0125 | Authoritative 3D movement | high | LISS-0108, LISS-0120 | proposed |
 | LISS-0126 | Authoritative combat and spells | high | LISS-0113, LISS-0115, LISS-0120 | proposed |

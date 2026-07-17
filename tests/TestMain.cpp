@@ -65,6 +65,7 @@ void saturates_negative_values();
 
 namespace session_registry_tests {
 void assigns_unique_internal_ids_and_stable_aliases();
+void matches_claimed_ids_case_insensitively_without_authenticating();
 void treats_invalid_claims_as_anonymous();
 void never_reuses_disconnected_ids();
 }
@@ -226,6 +227,7 @@ int main() {
     status_saturation_tests::saturates_positive_values();
     status_saturation_tests::saturates_negative_values();
     session_registry_tests::assigns_unique_internal_ids_and_stable_aliases();
+    session_registry_tests::matches_claimed_ids_case_insensitively_without_authenticating();
     session_registry_tests::treats_invalid_claims_as_anonymous();
     session_registry_tests::never_reuses_disconnected_ids();
     network_command_tests::validates_login_without_client_internal_id();

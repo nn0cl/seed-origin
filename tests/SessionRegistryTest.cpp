@@ -13,6 +13,16 @@ void assigns_unique_internal_ids_and_stable_aliases() {
     assert(!first.authenticated && !second.authenticated);
 }
 
+void matches_claimed_ids_case_insensitively_without_authenticating() {
+    session::SessionRegistry registry;
+    const session::SessionInfo first = registry.login("Player-A");
+    const session::SessionInfo second = registry.login("player-a");
+    assert(first.aliasId == second.aliasId);
+    assert(first.claimedId == "Player-A");
+    assert(second.claimedId == "player-a");
+    assert(!first.authenticated && !second.authenticated);
+}
+
 void treats_invalid_claims_as_anonymous() {
     session::SessionRegistry registry;
     const session::SessionInfo info = registry.login("../admin");
