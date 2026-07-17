@@ -30,4 +30,5 @@ ServerRuntimeへActionQueue／ServerTickを所有させ、`ServerFrameResult`と
 
 ## 次のIssue
 
-FrameActionsをWorld更新器へ渡し、Actionの決定論的な適用結果をWorldUpdateへ変換する。
+LISS-0105でFrameActionsをWorld更新器へ渡し、Actionの決定論的な適用結果をWorldUpdateへ
+変換する（実装済み）。

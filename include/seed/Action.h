@@ -22,7 +22,7 @@ private:
 public:
     Action(int actionType,Player* playerFrom,Player* playerTo,const Status status);
     ~Action();
-    int getActionType();
+    int getActionType() const;
     bool isValid() const;
     Player* getPlayerFrom();
     Player* getPlayerTo();

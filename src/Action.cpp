@@ -20,7 +20,7 @@ Action::Action(int actionType,Player* playerFrom,Player* playerTo,const Status s
 Action::~Action() = default;
 
 int
-Action::getActionType(){
+Action::getActionType() const{
     return this->actionType;
 }
 

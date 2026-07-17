@@ -116,6 +116,11 @@ void rejects_invalid_binding_without_mutation();
 void clears_all_bound_sessions();
 }
 
+namespace world_frame_update_builder_tests {
+void converts_actions_to_ordered_events();
+void emits_no_update_for_empty_frame();
+}
+
 namespace server_command_dispatcher_tests {
 void accepts_login();
 void rejects_unimplemented_command();
@@ -183,6 +188,8 @@ int main() {
     session_lifecycle_tests::logs_out_bound_session_on_disconnect();
     session_lifecycle_tests::rejects_invalid_binding_without_mutation();
     session_lifecycle_tests::clears_all_bound_sessions();
+    world_frame_update_builder_tests::converts_actions_to_ordered_events();
+    world_frame_update_builder_tests::emits_no_update_for_empty_frame();
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();
