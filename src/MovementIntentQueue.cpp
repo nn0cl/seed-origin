@@ -7,9 +7,15 @@ namespace server {
 
 MovementIntentQueue::MovementIntentQueue() : nextSequence(1) {}
 
+bool isValidMovementDelta(float dx, float dy, float dz) {
+    if (!std::isfinite(dx) || !std::isfinite(dy) || !std::isfinite(dz)) return false;
+    return dx * dx + dy * dy + dz * dz <=
+           MAX_MOVE_DISTANCE_PER_FRAME * MAX_MOVE_DISTANCE_PER_FRAME;
+}
+
 bool MovementIntentQueue::enqueue(int64_t sessionId, float dx, float dy, float dz) {
-    if (sessionId <= 0 || !std::isfinite(dx) || !std::isfinite(dy) ||
-        !std::isfinite(dz) || pending.size() >= MAX_PENDING_INTENTS ||
+    if (sessionId <= 0 || !isValidMovementDelta(dx, dy, dz) ||
+        pending.size() >= MAX_PENDING_INTENTS ||
         nextSequence == std::numeric_limits<uint64_t>::max()) {
         return false;
     }

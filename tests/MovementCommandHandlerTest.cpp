@@ -26,4 +26,13 @@ void accepts_bounded_move_for_existing_player() {
     assert(result.accepted);
 }
 
+void rejects_move_that_exceeds_frame_distance() {
+    Field* field = Field::getInstance();
+    server::MovementCommandHandler handler(*field);
+    const network::NetworkCommand command = {
+        network::CURRENT_PROTOCOL_VERSION, network::CommandType::Move, 42, "80,80,0"};
+    const server::MovementResult result = handler.handle(command);
+    assert(!result.accepted);
+}
+
 } // namespace movement_command_handler_tests

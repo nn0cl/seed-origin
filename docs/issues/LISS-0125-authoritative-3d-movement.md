@@ -1,6 +1,6 @@
 # LISS-0125: 権威サーバー3D移動
 
-- Status: proposed
+- Status: review
 - Priority: high
 - Depends on: LISS-0108, LISS-0120
 
@@ -15,6 +15,10 @@
 - 同一フレームの入力はsequence順に適用する。
 - 結果をSnapshot/Eventへ反映する。
 - 移動中の切断・再接続で状態を破壊しない。
+
+## 実装資料
+
+1フレームの移動距離を100以下に制限し、各成分の有限性、累積後の座標範囲（±1,000,000）をWorld適用前に検証する。Command経路とWorldInputQueue経路の両方で同じ距離制限を使用する。テスト・ビルドは実行していない。
 
 ## English
 

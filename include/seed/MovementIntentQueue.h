@@ -8,6 +8,11 @@
 
 namespace server {
 
+static const float MAX_MOVE_DISTANCE_PER_FRAME = 100.0f;
+static const float MAX_WORLD_COORDINATE = 1000000.0f;
+
+bool isValidMovementDelta(float dx, float dy, float dz);
+
 struct MovementIntent {
     uint64_t sequence;
     int64_t sessionId;

@@ -45,7 +45,8 @@ MovementResult MovementCommandHandler::handle(const network::NetworkCommand& com
         result.error = "move payload must be finite dx,dy,dz";
         return result;
     }
-    if (!withinLimit(dx) || !withinLimit(dy) || !withinLimit(dz)) {
+    if (!withinLimit(dx) || !withinLimit(dy) || !withinLimit(dz) ||
+        !isValidMovementDelta(dx, dy, dz)) {
         result.error = "move delta exceeds limit";
         return result;
     }

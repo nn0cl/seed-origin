@@ -52,8 +52,7 @@ bool WorldInputQueue::enqueueAction(const Action& action) {
 }
 
 bool WorldInputQueue::enqueueMovement(int64_t sessionId, float dx, float dy, float dz) {
-    if (sessionId <= 0 || !std::isfinite(dx) || !std::isfinite(dy) ||
-        !std::isfinite(dz)) return false;
+    if (sessionId <= 0 || !isValidMovementDelta(dx, dy, dz)) return false;
     std::lock_guard<std::mutex> lock(mutex);
     if (pending.size() >= MAX_PENDING_INPUTS ||
         nextSequence == std::numeric_limits<uint64_t>::max()) return false;

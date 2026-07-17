@@ -166,6 +166,12 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs) {
             !hasPlayer(it->movement().sessionId)) {
             return false;
         }
+        if (it->kind() == server::WorldInputKind::Movement &&
+            !server::isValidMovementDelta(it->movement().dx,
+                                          it->movement().dy,
+                                          it->movement().dz)) {
+            return false;
+        }
         if (it->kind() == server::WorldInputKind::Action &&
             !it->action().isValid()) {
             return false;
@@ -177,6 +183,19 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs) {
         if (it->kind() == server::WorldInputKind::Spell) {
             std::string error;
             if (!validateSpell(it->spell(), error)) return false;
+        }
+        if (it->kind() == server::WorldInputKind::Movement) {
+            const Player* player = findPlayer(it->movement().sessionId);
+            const Position& position = player->getPosition();
+            const float x = position.getX() + it->movement().dx;
+            const float y = position.getY() + it->movement().dy;
+            const float z = position.getZ() + it->movement().dz;
+            if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z) ||
+                std::fabs(x) > server::MAX_WORLD_COORDINATE ||
+                std::fabs(y) > server::MAX_WORLD_COORDINATE ||
+                std::fabs(z) > server::MAX_WORLD_COORDINATE) {
+                return false;
+            }
         }
     }
     for (std::vector<server::WorldInput>::const_iterator it = inputs.begin();

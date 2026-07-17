@@ -200,6 +200,7 @@ void rejects_unimplemented_command();
 namespace movement_command_handler_tests {
 void rejects_malformed_or_unknown_move();
 void accepts_bounded_move_for_existing_player();
+void rejects_move_that_exceeds_frame_distance();
 }
 
 int main() {
@@ -301,5 +302,6 @@ int main() {
     server_command_dispatcher_tests::rejects_unimplemented_command();
     movement_command_handler_tests::rejects_malformed_or_unknown_move();
     movement_command_handler_tests::accepts_bounded_move_for_existing_player();
+    movement_command_handler_tests::rejects_move_that_exceeds_frame_distance();
     return 0;
 }
