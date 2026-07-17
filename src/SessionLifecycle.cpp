@@ -27,6 +27,18 @@ bool SessionLifecycle::disconnect(uint64_t connectionId,
     return loggedOut;
 }
 
+void SessionLifecycle::clear() {
+    bindings.clear();
+}
+
+void SessionLifecycle::clear(session::SessionRegistry& registry) {
+    for (std::map<uint64_t, int64_t>::const_iterator it = bindings.begin();
+         it != bindings.end(); ++it) {
+        registry.logout(it->second);
+    }
+    bindings.clear();
+}
+
 bool SessionLifecycle::hasSession(uint64_t connectionId) const {
     return bindings.find(connectionId) != bindings.end();
 }

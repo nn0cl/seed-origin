@@ -13,6 +13,10 @@ session::SessionInfo emptySession() {
 ServerCommandDispatcher::ServerCommandDispatcher(session::SessionRegistry& registry)
     : loginHandler(registry) {}
 
+session::SessionRegistry& ServerCommandDispatcher::sessionRegistry() {
+    return loginHandler.sessionRegistry();
+}
+
 CommandDispatchResult ServerCommandDispatcher::dispatch(
     const network::NetworkCommand& command) {
     CommandDispatchResult result = {false, command.type, emptySession(), std::string()};

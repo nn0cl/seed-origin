@@ -115,9 +115,10 @@ void rejects_client_accept_when_runtime_is_stopped() {
 
 void clears_owned_clients_on_stop() {
     server::ServerRuntime runtime;
+    session::SessionRegistry registry;
     assert(runtime.start(0));
     assert(runtime.connectedClientCount() == 0);
-    assert(runtime.removeClosedClients() == 0);
+    assert(runtime.removeClosedClients(registry) == 0);
     assert(runtime.stop());
     assert(runtime.connectedClientCount() == 0);
 }

@@ -16,6 +16,7 @@ class LoginCommandHandler {
 public:
     explicit LoginCommandHandler(session::SessionRegistry& registry);
     LoginResult handle(const network::NetworkCommand& command);
+    session::SessionRegistry& sessionRegistry();
 
 private:
     session::SessionRegistry& registry;

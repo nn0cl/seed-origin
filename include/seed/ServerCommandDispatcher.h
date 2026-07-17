@@ -20,6 +20,7 @@ public:
     explicit ServerCommandDispatcher(session::SessionRegistry& registry);
 
     CommandDispatchResult dispatch(const network::NetworkCommand& command);
+    session::SessionRegistry& sessionRegistry();
     std::vector<CommandDispatchResult> dispatchAll(
         const std::vector<network::NetworkCommand>& commands);
 

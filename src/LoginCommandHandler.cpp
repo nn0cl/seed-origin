@@ -5,6 +5,10 @@ namespace server {
 LoginCommandHandler::LoginCommandHandler(session::SessionRegistry& registry)
     : registry(registry) {}
 
+session::SessionRegistry& LoginCommandHandler::sessionRegistry() {
+    return registry;
+}
+
 LoginResult LoginCommandHandler::handle(const network::NetworkCommand& command) {
     LoginResult result = {false, std::string(), {0, 0, std::string(), false}};
     if (command.type != network::CommandType::Login) {

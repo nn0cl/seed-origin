@@ -22,6 +22,16 @@ bool ServerRuntime::start(uint16_t port) {
 bool ServerRuntime::stop() {
     pendingCommands.clear();
     clients.clear();
+    lifecycle.clear();
+    const bool closed = listener.closeSocket();
+    running = false;
+    return closed;
+}
+
+bool ServerRuntime::stop(session::SessionRegistry& registry) {
+    pendingCommands.clear();
+    clients.clear();
+    lifecycle.clear(registry);
     const bool closed = listener.closeSocket();
     running = false;
     return closed;
@@ -67,7 +77,7 @@ size_t ServerRuntime::connectedClientCount() const {
     return clients.size();
 }
 
-size_t ServerRuntime::removeClosedClients() {
+size_t ServerRuntime::removeClosedClients(session::SessionRegistry& registry) {
     size_t removed = 0;
     for (std::map<uint64_t, std::unique_ptr<ClientSession> >::iterator it = clients.begin();
          it != clients.end();) {
@@ -75,6 +85,7 @@ size_t ServerRuntime::removeClosedClients() {
             ++it;
             continue;
         }
+        lifecycle.disconnect(it->first, registry);
         it = clients.erase(it);
         ++removed;
     }
@@ -156,13 +167,29 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
     while (!pendingCommands.empty()) {
         const PendingCommand pending = pendingCommands.front();
         pendingCommands.pop_front();
-        const CommandDispatchResult result = dispatcher.dispatch(pending.command);
+        CommandDispatchResult result = {
+            false, pending.command.type, {0, 0, std::string(), false}, std::string()};
+        if (pending.command.type == network::CommandType::Login &&
+            lifecycle.hasSession(pending.connectionId)) {
+            result.error = "connection already has a session";
+        } else {
+            result = dispatcher.dispatch(pending.command);
+        }
         ++processed;
         if (pending.connectionId == 0 || pending.command.type != network::CommandType::Login) {
             continue;
         }
         ClientSession* session = clientSession(pending.connectionId);
         if (session == 0 || !session->isOpen()) continue;
+        if (result.accepted) {
+            std::string bindingError;
+            if (!lifecycle.bind(pending.connectionId, result.session, bindingError)) {
+                dispatcher.sessionRegistry().logout(result.session.internalId);
+                result.accepted = false;
+                result.session = {0, 0, std::string(), false};
+                result.error = bindingError;
+            }
+        }
         const network::LoginResponse response = {
             network::CURRENT_PROTOCOL_VERSION,
             result.accepted ? network::LoginResponseStatus::Accepted
@@ -177,6 +204,7 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
             if (error.empty()) error = responseError;
         }
     }
+    removeClosedClients(dispatcher.sessionRegistry());
     return processed;
 }
 

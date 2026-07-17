@@ -111,6 +111,7 @@ namespace session_lifecycle_tests {
 void rejects_duplicate_login_on_one_connection();
 void logs_out_bound_session_on_disconnect();
 void rejects_invalid_binding_without_mutation();
+void clears_all_bound_sessions();
 }
 
 namespace server_command_dispatcher_tests {
@@ -177,6 +178,7 @@ int main() {
     session_lifecycle_tests::rejects_duplicate_login_on_one_connection();
     session_lifecycle_tests::logs_out_bound_session_on_disconnect();
     session_lifecycle_tests::rejects_invalid_binding_without_mutation();
+    session_lifecycle_tests::clears_all_bound_sessions();
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();

@@ -13,6 +13,7 @@
 #include "ClientSession.h"
 #include "NetworkCommand.h"
 #include "ServerCommandDispatcher.h"
+#include "SessionLifecycle.h"
 
 namespace server {
 
@@ -29,7 +30,8 @@ public:
     AcceptStatus acceptPendingClient(uint64_t& connectionId, std::string& error);
     ClientSession* clientSession(uint64_t connectionId);
     size_t connectedClientCount() const;
-    size_t removeClosedClients();
+    size_t removeClosedClients(session::SessionRegistry& registry);
+    bool stop(session::SessionRegistry& registry);
     size_t processClientFrames(ServerCommandDispatcher& dispatcher, std::string& error);
     bool submit(const network::NetworkCommand& command);
     ReceiveStatus ingest(ClientSession& session, std::string& error);
@@ -52,6 +54,7 @@ private:
     bool running;
     uint64_t nextConnectionId;
     std::map<uint64_t, std::unique_ptr<ClientSession> > clients;
+    SessionLifecycle lifecycle;
     std::deque<PendingCommand> pendingCommands;
 };
 

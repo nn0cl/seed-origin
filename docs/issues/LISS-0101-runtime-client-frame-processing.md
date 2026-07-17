@@ -30,5 +30,5 @@ dispatchする。Login結果は対応するClientSessionのOutboundFrameQueueへ
 
 ## 次のIssue
 
-LISS-0099のSessionLifecycleをRuntimeのLogin dispatchへ接続し、重複Login時に新規仮
-セッションを残さないようにする。
+LISS-0102でSessionLifecycleをRuntimeのLogin dispatchへ接続し、重複Login時に新規仮
+セッションを残さないようにする（実装済み）。

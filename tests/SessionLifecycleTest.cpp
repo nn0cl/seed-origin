@@ -36,4 +36,19 @@ void rejects_invalid_binding_without_mutation() {
     assert(!lifecycle.hasSession(1));
 }
 
+void clears_all_bound_sessions() {
+    session::SessionRegistry registry;
+    const session::SessionInfo first = registry.login("player-a");
+    const session::SessionInfo second = registry.login("player-b");
+    server::SessionLifecycle lifecycle;
+    std::string error;
+    assert(lifecycle.bind(1, first, error));
+    assert(lifecycle.bind(2, second, error));
+    lifecycle.clear(registry);
+    assert(!registry.isActive(first.internalId));
+    assert(!registry.isActive(second.internalId));
+    assert(!lifecycle.hasSession(1));
+    assert(!lifecycle.hasSession(2));
+}
+
 } // namespace session_lifecycle_tests
