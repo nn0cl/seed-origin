@@ -69,10 +69,19 @@
   work.
 - Result: pending commit alongside this trace file.
 - Attempt boundary: single edit pass, no retries.
-- Notes: pushing to a remote branch/PR remains subject to this agent's own
-  standing safety constraint requiring explicit per-instance user
-  confirmation before any `git push`, independent of what the contract
-  files say — that constraint is not created or removed by this change.
+- Notes: pushing to a remote branch/PR, and merging an Issue's branch into
+  `main` on completion, remain subject to this agent's own standing safety
+  constraint requiring explicit per-instance user confirmation before
+  either action, independent of what the contract files say — that
+  constraint is not created or removed by this change.
+
+### Attempt 2 (follow-up same day)
+
+- Scope: add the explicit rule that an Issue's branch is merged into
+  `main` on completion (this was implied by the CI-gate language but not
+  stated as part of what "Issue complete" means), across `AGENTS.md`,
+  `CLAUDE.md`, and `branch-commit-pr-discipline.md`.
+- Result: committed alongside this trace update.
 
 ## Optional Reference Total
 

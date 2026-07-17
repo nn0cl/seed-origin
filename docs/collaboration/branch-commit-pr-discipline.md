@@ -47,6 +47,8 @@ Rules:
 
 ## Continuous Integration Gate
 
+- an Issue's branch is merged into `main` on completion; this is part of
+  what "Issue complete" means, not an optional follow-up step.
 - a branch must pass CI before it merges into `main` or the trunk branch; do
   not merge on a red or skipped pipeline.
 - repository hosting settings should protect `main` or the trunk branch from

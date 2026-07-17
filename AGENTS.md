@@ -142,12 +142,14 @@ creating the branch.
 
 - An issue is not complete until its approved changes are committed on its
   branch.
-- Push, PR creation, and CI/CodeQL review follow the normal branch flow in
-  `docs/collaboration/branch-commit-pr-discipline.md` — a branch must pass
-  CI before merging into `main`. There is no separate rule requiring an
-  immediate push-and-wait-for-CodeQL step outside that normal flow.
-- Any `git push` still requires explicit, per-instance user confirmation
-  before it happens, independent of this section.
+- An issue's branch is merged into `main` on completion, following the
+  normal branch flow in `docs/collaboration/branch-commit-pr-discipline.md`
+  — a branch must pass CI before merging into `main`. There is no separate
+  rule requiring an immediate push-and-wait-for-CodeQL step outside that
+  normal flow.
+- Any `git push` and any merge into `main` still require explicit,
+  per-instance user confirmation before they happen, independent of this
+  section.
 - The completion report must include the commit and current branch/PR
   state. If commit is blocked, keep the issue open and record the blocker
   instead of reporting completion.
