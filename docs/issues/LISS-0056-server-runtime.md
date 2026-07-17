@@ -8,4 +8,4 @@
 
 リスナー、接続受付、Commandキュー、固定時間World更新、スナップショット送信、停止・再起動を統合する。通信スレッドがWorld状態を直接変更しない。
 
-Active slice: LISS-0073, LISS-0090, LISS-0091, LISS-0093, LISS-0094。accept、ClientSession/frame境界、Command取り込み、Login dispatchを追加した。Login応答、World更新、snapshot送信は後続スライスで実装する。
+Active slice: LISS-0073, LISS-0090, LISS-0091, LISS-0093, LISS-0094。accept、ClientSession/frame境界、Command取り込み、Login dispatchを追加した。Login応答はLISS-0095で契約化し、World更新、snapshot送信は後続スライスで実装する。
