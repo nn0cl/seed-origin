@@ -208,6 +208,36 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
     return processed;
 }
 
+size_t ServerRuntime::processFrame(ServerCommandDispatcher& dispatcher,
+                                   std::string& error) {
+    if (!running) {
+        error = "server runtime is stopped";
+        return 0;
+    }
+
+    size_t accepted = 0;
+    for (; accepted < MAX_ACCEPTS_PER_FRAME; ++accepted) {
+        uint64_t connectionId = 0;
+        std::string acceptError;
+        const AcceptStatus status = acceptPendingClient(connectionId, acceptError);
+        if (status == AcceptStatus::NoPendingClient) break;
+        if (status == AcceptStatus::Failed) {
+            if (error.empty()) error = acceptError;
+            break;
+        }
+    }
+
+    const size_t processed = processClientFrames(dispatcher, error);
+    for (std::map<uint64_t, std::unique_ptr<ClientSession> >::iterator it = clients.begin();
+         it != clients.end(); ++it) {
+        std::string sendError;
+        const SendStatus status = it->second->flushOutbound(sendError);
+        if (status == SendStatus::Failed && error.empty()) error = sendError;
+    }
+    removeClosedClients(dispatcher.sessionRegistry());
+    return accepted + processed;
+}
+
 std::vector<network::NetworkCommand> ServerRuntime::drainCommands() {
     std::vector<network::NetworkCommand> drained;
     drained.reserve(pendingCommands.size());

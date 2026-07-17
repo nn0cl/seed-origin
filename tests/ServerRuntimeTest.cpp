@@ -131,4 +131,12 @@ void rejects_client_frame_processing_when_runtime_is_stopped() {
     assert(runtime.processClientFrames(dispatcher, error) == 0);
 }
 
+void rejects_frame_processing_when_runtime_is_stopped() {
+    server::ServerRuntime runtime;
+    session::SessionRegistry registry;
+    server::ServerCommandDispatcher dispatcher(registry);
+    std::string error;
+    assert(runtime.processFrame(dispatcher, error) == 0);
+}
+
 } // namespace server_runtime_tests

@@ -18,6 +18,7 @@
 namespace server {
 
 static const size_t MAX_PENDING_COMMANDS = 1024;
+static const size_t MAX_ACCEPTS_PER_FRAME = 64;
 
 class ServerRuntime {
 public:
@@ -33,6 +34,7 @@ public:
     size_t removeClosedClients(session::SessionRegistry& registry);
     bool stop(session::SessionRegistry& registry);
     size_t processClientFrames(ServerCommandDispatcher& dispatcher, std::string& error);
+    size_t processFrame(ServerCommandDispatcher& dispatcher, std::string& error);
     bool submit(const network::NetworkCommand& command);
     ReceiveStatus ingest(ClientSession& session, std::string& error);
     std::vector<network::NetworkCommand> drainCommands();
