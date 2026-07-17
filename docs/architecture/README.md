@@ -103,12 +103,18 @@ through the versioned network protocol rather than depend on World internals.
 - `adr/0013-project-main-branch-and-adjudicator-roles.md`
 - `adr/0014-adjudicator-and-developer-role-model.md`
 - `adr/0015-cpp20-language-standard-adoption.md`
+- `adr/0016-identity-alias-persistence-and-review.md`
 
 ## Remaining Technology Evaluation
 
 Technology choices still open for ADR decision:
 
-- identity persistence engine and schema.
+- identity persistence schema, migration tooling, and PostgreSQL driver
+  (engine selection itself is decided by ADR 0016).
+- admin authentication mechanism for the identity export page and collision
+  review queue (ADR 0016 decision 4/5 ambiguity).
+- wall-clock-to-WorldTick mapping needed for retention purge (ADR 0016
+  decision 2 ambiguity).
 - client platform, renderer, and UI framework.
 - snapshot/event wire encoding extension.
 - deployment and observability stack.

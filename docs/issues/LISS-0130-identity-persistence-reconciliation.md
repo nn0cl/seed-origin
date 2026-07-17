@@ -34,8 +34,22 @@
 
 ## Remaining decisions
 
-- 実永続化エンジン、保存形式、暗号化、バックアップ、保持期間、エクスポート認可、
-  人間による衝突解決UIは未決定であり、別ADR/Issueで決定する。
+- 実永続化エンジン、保存期間、エクスポート方式、衝突解決UI、暗号化方針は
+  `docs/architecture/adr/0016-identity-alias-persistence-and-review.md`で決定した:
+  PostgreSQL、保存期間は設定可能（既定2年、`lastUsedTick`起点）、
+  管理者ログイン必須のエクスポート専用ページ、キュー型衝突解決UI、
+  申告IDはニックネームのみで連絡先情報を含めず、暗号化はPostgreSQL側の
+  at-rest暗号化とアクセス制御・監査ログを主軸とする。
+- ADR 0016が持ち越したambiguity: (1) `lastUsedTick`（WorldTick）から
+  実時間の保存期間を算出する対応関係が未設計、(2) エクスポート/衝突解決
+  キューを守る管理者認証機構が未存在、(3) PostgreSQLドライバ選定と
+  依存adoption checklistの脆弱性確認等が未実施。これらはPostgreSQLアダプタ・
+  管理者ページの実装Issueで解決する。
+- `CLAUDE.md`の「Current Non-Decisions」の「Identity persistence
+  format/backend」表記は、エンジン決定（PostgreSQL）を反映するよう更新が
+  必要だが、これはagent operating contractの変更であり
+  `docs/collaboration/prompt-instruction-change-control.md`の手続き
+  （traceファイル・Adjudicator明示レビュー）を経て別途行う。
 - 平文ログ・公開Snapshot・Command応答へcanonical申告IDを出力しない契約は維持する。
 
 ## Verification
