@@ -50,7 +50,10 @@ ADR 0016で決定したPostgreSQLを実バックエンドとする`IdentityAlias
 
 `src/ServerMain.cpp`（LISS-0056の合成ルート、`seed_server`実行ファイル）が
 `SEED_IDENTITY_DB_URL`の有無で`PostgresIdentityAliasStore`／
-`InMemoryIdentityAliasStore`を選択する。詳細はLISS-0056側に記録した。
+`InMemoryIdentityAliasStore`を選択する。手動接続テストで実際に
+PostgreSQLの`identity_aliases`テーブルへLogin経由の書き込み・大小文字を
+またぐ名寄せ再利用が行われることを確認した。詳細はLISS-0056側の
+「手動接続テスト」に記録した。
 
 ## Remaining decisions
 
@@ -70,9 +73,11 @@ ADR 0016で決定したPostgreSQLを実バックエンドとする`IdentityAlias
 - `libpqxx`未検出環境（`PKG_CONFIG_PATH`を設定しない別ビルドディレクトリ）でも
   既存の`seed_core`・`seed_cli`・`seed_tests`のみが問題なくビルドされることを
   確認した。
-- Adjudicator方針によりテスト実行（`ctest`・`seed_postgres_tests`の起動）は
-  保留した。Docker Composeコンテナは検証後に停止・削除済み（データボリュームは
-  保持）。
+- Adjudicator方針によりCTest（`ctest`・`seed_postgres_tests`の起動）は保留した。
+- `seed_server`を実際にPostgresバックエンドで起動し、Login経由の書き込み・
+  大小文字をまたぐ名寄せ再利用を`psql`で確認した（LISS-0056「手動接続テスト」
+  に詳細を記録）。Docker Composeコンテナは検証後に停止・削除済み（データ
+  ボリュームは保持）。
 
 ## English
 

@@ -29,5 +29,37 @@ Active slice: LISS-0073, LISS-0090, LISS-0091, LISS-0093, LISS-0094, LISS-0100, 
 
 Field::getInstance()の既存シングルトン設計は今回変更していない。認証・
 レート制限のTLS/証明書設定、実運用のport/設定ソース選定は未着手のまま。
-警告有効C++20ビルドを実行して確認した。Adjudicator方針によりサーバー起動
-・テスト実行は未実施。
+警告有効C++20ビルドを実行して確認した。
+
+## 手動接続テスト（2026-07-18追加）
+
+Adjudicator指示によりCTest（`seed_tests`）実行は引き続き保留するが、
+Adjudicator承認のもと`seed_server`実行ファイル自体の起動と、既存の
+`NetworkFrameCodec`／`LoginResponseCodec`を再利用した使い捨て手動クライアント
+（リポジトリには追加せず、検証後に削除）で接続テストを行った。
+
+InMemoryバックエンド（`SEED_IDENTITY_DB_URL`未設定）:
+
+- `seed_server 40010`起動、`identity alias store: in-memory`ログを確認。
+- `manual-test-user`でLogin Command送信 → `LoginResponse status=Accepted
+  sessionId=1`を受信。
+- 大小文字違いの`Manual-Test-User`で再ログイン →
+  `LoginResponse status=Accepted sessionId=2`（internal sessionは新規、
+  aliasは名寄せ想定通り）。
+- `SIGINT`送信で`seed_server: shutting down`ログとプロセス正常終了を確認。
+
+PostgreSQLバックエンド（`SEED_IDENTITY_DB_URL`設定、`db/docker-compose.yml`で
+起動したコンテナに接続）:
+
+- `seed_server 40011`起動、`identity alias store: PostgreSQL
+  (SEED_IDENTITY_DB_URL)`ログを確認。
+- `pg-manual-user`でLogin Command送信 → `LoginResponse status=Accepted
+  sessionId=1`を受信。`docker exec ... psql`で`identity_aliases`テーブルに
+  `alias_id=1, canonical_claimed_id=pg-manual-user`が実際に書き込まれている
+  ことを確認。
+- 大小文字違いの`PG-Manual-User`で再ログイン → `sessionId=2`（internal
+  session新規発行）、`identity_aliases`の行数は1のまま（既存aliasを
+  再利用、Postgres経由でも名寄せが機能）。
+- `SIGINT`送信で`seed_server: shutting down`ログとプロセス正常終了を確認。
+- 検証後、Dockerコンテナは`docker compose down`で停止・削除済み（データ
+  ボリュームは保持）。
