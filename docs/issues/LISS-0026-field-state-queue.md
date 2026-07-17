@@ -34,6 +34,7 @@
 - キュー操作に排他契約がなく、同時操作の安全性がない。
 - 未登録プレイヤーの位置更新を黙って破棄する。
 - `fieldInstance` の宣言とローカルstatic実装が二重で、設計が不明確。
+- 現在の `ActionQueue.h` はPlayer/Actionのraw pointerを保持するだけで、フレーム境界・到着順・排他を実装していない。
 
 ## Acceptance Notes
 
@@ -42,3 +43,4 @@
 - 全アクション種別の副作用を仕様化する。
 - ID型を統一する。
 - `Field` をworldシミュレーションと混同しない責務境界を維持する。
+- ActionQueueの受付、フレーム確定、処理中の到着Actionの繰り越しをWorld runtime側で定義する。

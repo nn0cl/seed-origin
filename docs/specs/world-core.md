@@ -72,6 +72,16 @@ When 開始・停止を複数回要求する
 Thenワーカーが重複起動せず、停止要求後に処理が収束する
 And同じ入力列を固定ステップで処理できる
 
+## Scenario 11: 20 FPSフレーム境界でのActionQueue
+
+Given サーバーが20 FPS（1フレーム50ms）の固定ステップで動作している
+And複数ユーザーのActionが同一フレームの入力受付期間に到着する
+When サーバーが次のフレーム処理を開始する
+Thenフレーム境界までに到着したActionをすべてActionQueueへ確定する
+And確定したActionを到着順に一度ずつ処理する
+Andフレーム処理中に到着したActionは次のフレームへ繰り越す
+And同じ入力列を同じ到着順で再生した結果は一致する
+
 ## Test placement plan
 
 - Domain: `tests/world/domain/`
