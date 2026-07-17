@@ -65,6 +65,34 @@ target_link_libraries(seed_cli PRIVATE seed_core)
 
 enable_testing()
 
+# Optional PostgreSQL-backed IdentityAliasStore adapter (LISS-0143, ADR 0016).
+# seed_core and seed_tests never depend on libpqxx: the in-memory adapter
+# remains the default/test baseline whether or not libpqxx is installed.
+find_package(PkgConfig QUIET)
+if(PkgConfig_FOUND)
+    pkg_check_modules(LIBPQXX QUIET libpqxx)
+endif()
+
+if(LIBPQXX_FOUND)
+    message(STATUS "libpqxx found: building PostgresIdentityAliasStore adapter")
+
+    add_library(seed_postgres src/PostgresIdentityAliasStore.cpp)
+    target_include_directories(seed_postgres PUBLIC include/seed)
+    target_link_libraries(seed_postgres PUBLIC seed_core)
+    target_include_directories(seed_postgres PUBLIC ${LIBPQXX_INCLUDE_DIRS})
+    target_link_directories(seed_postgres PUBLIC ${LIBPQXX_LIBRARY_DIRS})
+    target_link_libraries(seed_postgres PUBLIC ${LIBPQXX_LIBRARIES})
+    target_compile_options(seed_postgres PUBLIC ${LIBPQXX_CFLAGS_OTHER})
+
+    add_executable(seed_postgres_tests
+        tests/PostgresIdentityAliasStoreTest.cpp
+    )
+    target_link_libraries(seed_postgres_tests PRIVATE seed_postgres)
+    add_test(NAME seed_postgres_tests COMMAND seed_postgres_tests)
+else()
+    message(STATUS "libpqxx not found: PostgresIdentityAliasStore adapter is skipped")
+endif()
+
 add_executable(seed_tests
     tests/ActionInputTest.cpp
     tests/ActionQueueTest.cpp

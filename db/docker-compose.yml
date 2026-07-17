@@ -1,0 +1,15 @@
+services:
+  identity-postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: seed_identity
+      POSTGRES_USER: seed_identity
+      POSTGRES_PASSWORD: seed_identity_dev_only
+    ports:
+      - "5432:5432"
+    volumes:
+      - identity-postgres-data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  identity-postgres-data:
