@@ -96,6 +96,12 @@ void round_trips_rejected_response();
 void rejects_invalid_response_identity();
 }
 
+namespace outbound_frame_queue_tests {
+void preserves_fifo_order();
+void rejects_invalid_frame_without_mutation();
+void rejects_frame_after_capacity_without_mutation();
+}
+
 namespace server_command_dispatcher_tests {
 void accepts_login();
 void rejects_unimplemented_command();
@@ -149,6 +155,9 @@ int main() {
     login_response_codec_tests::round_trips_accepted_response();
     login_response_codec_tests::round_trips_rejected_response();
     login_response_codec_tests::rejects_invalid_response_identity();
+    outbound_frame_queue_tests::preserves_fifo_order();
+    outbound_frame_queue_tests::rejects_invalid_frame_without_mutation();
+    outbound_frame_queue_tests::rejects_frame_after_capacity_without_mutation();
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();
