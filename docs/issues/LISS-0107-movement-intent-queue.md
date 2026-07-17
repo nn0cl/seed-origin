@@ -28,5 +28,5 @@
 
 ## 次のIssue
 
-MovementIntentをActionQueue／WorldFrameApplierへ接続し、同一server frame内の移動順序と
-Field適用失敗時の扱いを確定する。
+LISS-0108でMovementIntentをWorldFrameApplierへ接続し、同一server frame内の移動順序と
+Field適用失敗時の扱いを確定する（実装済み）。

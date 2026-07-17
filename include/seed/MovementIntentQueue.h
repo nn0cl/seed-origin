@@ -23,6 +23,7 @@ public:
     MovementIntentQueue();
     bool enqueue(int64_t sessionId, float dx, float dy, float dz);
     std::vector<MovementIntent> takeFrame();
+    bool restoreFrame(const std::vector<MovementIntent>& frame);
     size_t pendingCount() const;
 
 private:

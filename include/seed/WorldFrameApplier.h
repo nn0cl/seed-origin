@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "Field.h"
+#include "MovementIntentQueue.h"
 #include "WorldFrameUpdateBuilder.h"
 
 namespace server {
@@ -12,6 +13,7 @@ namespace server {
 class WorldFrameApplier {
 public:
     explicit WorldFrameApplier(Field& field);
+    WorldFrameApplier(Field& field, MovementIntentQueue& movementQueue);
 
     bool apply(const FrameActions& frame,
                std::vector<network::WorldUpdate>& updates,
@@ -19,6 +21,7 @@ public:
 
 private:
     Field& field;
+    MovementIntentQueue* movementQueue;
     WorldFrameUpdateBuilder updateBuilder;
 };
 

@@ -36,4 +36,36 @@ void rejects_invalid_action_before_field_mutation() {
     assert(updates.empty());
 }
 
+void applies_movement_intents_after_target_validation() {
+    Field* field = Field::getInstance();
+    const Status status;
+    const int64_t playerId = 9001;
+    const Position position(playerId, 0.0f, 0.0f, 0.0f);
+    assert(field->setPlayer(Player(playerId, status, position)));
+    server::MovementIntentQueue queue;
+    assert(queue.enqueue(playerId, 1.0f, 2.0f, 3.0f));
+    server::WorldFrameApplier applier(*field, queue);
+    ActionQueue actions;
+    ServerTick tick(actions);
+    const FrameActions frame = tick.advanceFrame();
+    std::vector<network::WorldUpdate> updates;
+    std::string error;
+    assert(applier.apply(frame, updates, error));
+    assert(queue.pendingCount() == 0);
+}
+
+void restores_movement_intents_when_target_is_missing() {
+    Field* field = Field::getInstance();
+    server::MovementIntentQueue queue;
+    assert(queue.enqueue(9002, 1.0f, 2.0f, 3.0f));
+    server::WorldFrameApplier applier(*field, queue);
+    ActionQueue actions;
+    ServerTick tick(actions);
+    const FrameActions frame = tick.advanceFrame();
+    std::vector<network::WorldUpdate> updates;
+    std::string error;
+    assert(!applier.apply(frame, updates, error));
+    assert(queue.pendingCount() == 1);
+}
+
 } // namespace world_frame_applier_tests

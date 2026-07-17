@@ -27,6 +27,15 @@ std::vector<MovementIntent> MovementIntentQueue::takeFrame() {
     return frame;
 }
 
+bool MovementIntentQueue::restoreFrame(const std::vector<MovementIntent>& frame) {
+    if (frame.size() > MAX_PENDING_INTENTS - pending.size()) return false;
+    for (std::vector<MovementIntent>::const_reverse_iterator it = frame.rbegin();
+         it != frame.rend(); ++it) {
+        pending.push_front(*it);
+    }
+    return true;
+}
+
 size_t MovementIntentQueue::pendingCount() const {
     return pending.size();
 }
