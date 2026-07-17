@@ -40,4 +40,14 @@ void rejects_damage_to_a_dead_npc_without_mutation() {
     assert(field->findNpc(19502)->getStatus().getHp() == 0);
 }
 
+void applies_queued_npc_movement_on_world_frame() {
+    Field* field = Field::getInstance();
+    assert(field->setNpc(Npc(19503, "goblin", Status(80, 0),
+                             Position(19503, 0, 0, 0))));
+    assert(field->queueNpcMovement(19503, 2.0f, 1.0f, 0.0f));
+    field->processFrame();
+    assert(field->findNpc(19503)->getPosition().getX() == 2.0f);
+    assert(field->findNpc(19503)->getPosition().getY() == 1.0f);
+}
+
 } // namespace npc_combat_target_tests

@@ -177,6 +177,7 @@ void rejects_same_frame_spell_repetition_without_resource_mutation();
 namespace npc_combat_target_tests {
 void applies_combat_damage_to_a_live_npc_target();
 void rejects_damage_to_a_dead_npc_without_mutation();
+void applies_queued_npc_movement_on_world_frame();
 }
 
 namespace environment_ether_tests {
@@ -308,6 +309,7 @@ int main() {
     combat_resource_tests::rejects_same_frame_spell_repetition_without_resource_mutation();
     npc_combat_target_tests::applies_combat_damage_to_a_live_npc_target();
     npc_combat_target_tests::rejects_damage_to_a_dead_npc_without_mutation();
+    npc_combat_target_tests::applies_queued_npc_movement_on_world_frame();
     environment_ether_tests::increases_conductivity_with_ether_magnitude();
     environment_ether_tests::resolves_spell_and_decays_environment();
     environment_ether_tests::rejects_unknown_element();

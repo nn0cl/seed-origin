@@ -70,6 +70,7 @@ public:
     static bool setNpc(Npc npc);
     static bool unsetNpc(Npc npc);
     bool queueMovement(int64_t playerId, float dx, float dy, float dz);
+    bool queueNpcMovement(int64_t npcId, float dx, float dy, float dz);
     bool hasPlayer(int64_t playerId) const;
     const Player* findPlayer(int64_t playerId) const;
     Player* findPlayer(int64_t playerId);

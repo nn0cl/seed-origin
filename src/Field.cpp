@@ -106,6 +106,24 @@ Field::queueMovement(int64_t playerId, float dx, float dy, float dz){
 }
 
 bool
+Field::queueNpcMovement(int64_t npcId, float dx, float dy, float dz){
+    Npc* npc = findNpc(npcId);
+    if (npc == nullptr || !npc->isAlive() ||
+        !server::isValidMovementDelta(dx, dy, dz)) return false;
+    Position next = npc->getPosition();
+    next.movePosition(dx, dy, dz);
+    const float x = next.getX();
+    const float y = next.getY();
+    const float z = next.getZ();
+    if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z) ||
+        std::fabs(x) > server::MAX_WORLD_COORDINATE ||
+        std::fabs(y) > server::MAX_WORLD_COORDINATE ||
+        std::fabs(z) > server::MAX_WORLD_COORDINATE) return false;
+    positionQueue.push_back(next);
+    return true;
+}
+
+bool
 Field::hasPlayer(int64_t playerId) const {
     return playerList.find(playerId) != playerList.end();
 }
@@ -167,6 +185,12 @@ Field::processFrame(){
         std::map<int64_t,Player>::iterator playerItt = playerList.find(positionItt->getPlayerId());
         if (playerItt != playerList.end()) {
             playerItt->second.setPosition(*positionItt);
+        } else {
+            std::map<int64_t,Npc>::iterator npcItt =
+                npcList.find(positionItt->getPlayerId());
+            if (npcItt != npcList.end() && npcItt->second.isAlive()) {
+                npcItt->second.setPosition(*positionItt);
+            }
         }
         ++positionItt;
     }
