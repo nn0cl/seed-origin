@@ -73,8 +73,7 @@ Field::setPosition(Position position){
 bool
 Field::setPlayer(Player player){
     Field* instance = Field::getInstance();
-    instance->putPlayer(player);
-    return true;
+    return instance->putPlayer(player);
 };
 
 bool
@@ -84,6 +83,16 @@ Field::unsetPlayer(Player player){
     instance->nextAttackTick.erase(playerId);
     instance->nextSpellTick.erase(playerId);
     return instance->playerList.erase(playerId) > 0;
+}
+
+bool Field::setNpc(Npc npc){
+    Field* instance = Field::getInstance();
+    return instance->putNpc(npc);
+}
+
+bool Field::unsetNpc(Npc npc){
+    Field* instance = Field::getInstance();
+    return instance->npcList.erase(npc.getNpcId()) > 0;
 }
 
 bool
@@ -123,6 +132,16 @@ Player*
 Field::findPlayer(int64_t playerId) {
     std::map<int64_t,Player>::iterator found = playerList.find(playerId);
     return found == playerList.end() ? nullptr : &found->second;
+}
+
+const Npc* Field::findNpc(int64_t npcId) const {
+    std::map<int64_t, Npc>::const_iterator found = npcList.find(npcId);
+    return found == npcList.end() ? nullptr : &found->second;
+}
+
+Npc* Field::findNpc(int64_t npcId) {
+    std::map<int64_t, Npc>::iterator found = npcList.find(npcId);
+    return found == npcList.end() ? nullptr : &found->second;
 }
 
 void
@@ -265,6 +284,7 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
         }
     }
     const std::map<int64_t, Player> playersBefore = playerList;
+    const std::map<int64_t, Npc> npcsBefore = npcList;
     const world::EnvironmentEther etherBefore = fieldEther;
     const std::map<int64_t, uint64_t> attackTicksBefore = nextAttackTick;
     const std::map<int64_t, uint64_t> spellTicksBefore = nextSpellTick;
@@ -285,6 +305,7 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
             std::string error;
             if (!applyCombat(it->combat(), error)) {
                 playerList = playersBefore;
+                npcList = npcsBefore;
                 fieldEther = etherBefore;
                 nextAttackTick = attackTicksBefore;
                 nextSpellTick = spellTicksBefore;
@@ -321,6 +342,7 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
             std::string error;
             if (!applySpell(it->spell(), error)) {
                 playerList = playersBefore;
+                npcList = npcsBefore;
                 fieldEther = etherBefore;
                 nextAttackTick = attackTicksBefore;
                 nextSpellTick = spellTicksBefore;
@@ -331,6 +353,7 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
             long mpCost = 0;
             if (!spellMpCost(it->spell().power, mpCost)) {
                 playerList = playersBefore;
+                npcList = npcsBefore;
                 fieldEther = etherBefore;
                 nextAttackTick = attackTicksBefore;
                 nextSpellTick = spellTicksBefore;
@@ -373,14 +396,15 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
 
 bool Field::validateCombat(const server::CombatIntent& intent, std::string& error) const {
     const Player* attacker = findPlayer(intent.attackerId);
-    const Player* target = findPlayer(intent.targetId);
-    if (attacker == nullptr || target == nullptr) {
+    const Position* targetPosition = findTargetPosition(intent.targetId);
+    if (attacker == nullptr || targetPosition == nullptr ||
+        !targetIsAlive(intent.targetId)) {
         error = "combat actor or target is not present";
         return false;
     }
-    const float dx = attacker->getPosition().getX() - target->getPosition().getX();
-    const float dy = attacker->getPosition().getY() - target->getPosition().getY();
-    const float dz = attacker->getPosition().getZ() - target->getPosition().getZ();
+    const float dx = attacker->getPosition().getX() - targetPosition->getX();
+    const float dy = attacker->getPosition().getY() - targetPosition->getY();
+    const float dz = attacker->getPosition().getZ() - targetPosition->getZ();
     if (dx * dx + dy * dy + dz * dz > 10000.0f) {
         error = "combat target is out of range";
         return false;
@@ -416,20 +440,24 @@ bool Field::validateSpell(const server::SpellIntent& intent, std::string& error)
 
 bool Field::applyCombat(const server::CombatIntent& intent, std::string& error) {
     if (!validateCombat(intent, error)) return false;
-    Player* target = findPlayer(intent.targetId);
     const long damage = static_cast<long>(intent.power);
-    target->getStatus().gainHp(-damage);
+    if (!applyDamageToTarget(intent.targetId, damage)) {
+        error = "combat target is not alive";
+        return false;
+    }
     error.clear();
     return true;
 }
 
 bool Field::applySpell(const server::SpellIntent& intent, std::string& error) {
     if (!validateSpell(intent, error)) return false;
-    Player* target = findPlayer(intent.targetId);
     float effectivePower = 0.0f;
     if (!fieldEther.resolveSpell(intent.element, intent.power, effectivePower, error)) return false;
     const long damage = static_cast<long>(effectivePower);
-    target->getStatus().gainHp(-damage);
+    if (!applyDamageToTarget(intent.targetId, damage)) {
+        error = "spell target is not alive";
+        return false;
+    }
     error.clear();
     return true;
 }
@@ -472,7 +500,45 @@ Field::putActionQueue(Action action){
     this->actionQueue.push_back(action);
 };
 
-void
+bool
 Field::putPlayer(Player player){
+    if (player.getPlayerId() <= 0 || findNpc(player.getPlayerId()) != nullptr) {
+        return false;
+    }
     this->playerList[player.getPlayerId()] = player;
+    return true;
+}
+
+bool Field::putNpc(Npc npc){
+    if (npc.getNpcId() <= 0 || hasPlayer(npc.getNpcId()) ||
+        findNpc(npc.getNpcId()) != nullptr) {
+        return false;
+    }
+    npcList.emplace(npc.getNpcId(), std::move(npc));
+    return true;
+}
+
+const Position* Field::findTargetPosition(int64_t targetId) const {
+    const Player* player = findPlayer(targetId);
+    if (player != nullptr) return &player->getPosition();
+    const Npc* npc = findNpc(targetId);
+    return npc == nullptr ? nullptr : &npc->getPosition();
+}
+
+bool Field::targetIsAlive(int64_t targetId) const {
+    const Player* player = findPlayer(targetId);
+    if (player != nullptr) return player->getStatus().getHp() > 0;
+    const Npc* npc = findNpc(targetId);
+    return npc != nullptr && npc->isAlive();
+}
+
+bool Field::applyDamageToTarget(int64_t targetId, long damage) {
+    Player* player = findPlayer(targetId);
+    if (player != nullptr) {
+        if (player->getStatus().getHp() <= 0 || damage <= 0) return false;
+        player->getStatus().gainHp(-damage);
+        return true;
+    }
+    Npc* npc = findNpc(targetId);
+    return npc != nullptr && npc->applyDamage(damage);
 }

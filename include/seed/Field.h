@@ -19,6 +19,7 @@
 #include "Player.h"
 #include "Action.h"
 #include "EnvironmentEther.h"
+#include "Npc.h"
 
 namespace server {
 class WorldInput;
@@ -49,6 +50,7 @@ struct CombatResolution {
 class Field {
 private:
     std::map<int64_t,Player> playerList;
+    std::map<int64_t,Npc> npcList;
     std::list<Position> positionQueue;
     std::list<Action> actionQueue;
     Status fieldStatus;
@@ -64,10 +66,14 @@ public:
     static bool setPosition(Position position);
     static bool setPlayer(Player player);
     static bool unsetPlayer(Player player);
+    static bool setNpc(Npc npc);
+    static bool unsetNpc(Npc npc);
     bool queueMovement(int64_t playerId, float dx, float dy, float dz);
     bool hasPlayer(int64_t playerId) const;
     const Player* findPlayer(int64_t playerId) const;
     Player* findPlayer(int64_t playerId);
+    const Npc* findNpc(int64_t npcId) const;
+    Npc* findNpc(int64_t npcId);
     world::EnvironmentEther& environmentEther();
     const world::EnvironmentEther& environmentEther() const;
     float environmentHazard() const;
@@ -81,7 +87,8 @@ public:
     
     void putPositionQueue(Position position);
     void putActionQueue(Action action);
-    void putPlayer(Player player);
+    bool putPlayer(Player player);
+    bool putNpc(Npc npc);
 
 private:
     void applyAction(Action action);
@@ -89,6 +96,9 @@ private:
     bool validateSpell(const server::SpellIntent& intent, std::string& error) const;
     bool applyCombat(const server::CombatIntent& intent, std::string& error);
     bool applySpell(const server::SpellIntent& intent, std::string& error);
+    const Position* findTargetPosition(int64_t targetId) const;
+    bool targetIsAlive(int64_t targetId) const;
+    bool applyDamageToTarget(int64_t targetId, long damage);
     std::map<int64_t, uint64_t> nextAttackTick;
     std::map<int64_t, uint64_t> nextSpellTick;
 };
