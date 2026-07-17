@@ -1,0 +1,42 @@
+Seed-Origin Custom Redistribution License
+=========================================
+
+Copyright (c) 2011-2026 nn0cl / sumstates.net / dstechnology.co.jp
+All rights reserved.
+
+This license applies to the Seed-Origin repository and its source code unless
+a file or third-party component states a different license.
+
+1. Verbatim redistribution
+
+Anyone may copy and redistribute the unmodified source code and unmodified
+binary form of this repository, provided that this license, the copyright
+notices, and the original repository attribution remain with the
+redistribution. No fee or prior permission is required for this verbatim
+redistribution.
+
+2. No derivative works
+
+Creating, publishing, distributing, sublicensing, or commercially exploiting
+modified, adapted, translated, merged, or otherwise derivative versions of
+the source code or binary form is prohibited without prior written permission
+from the copyright owner.
+
+Forks, patches, ports, renamed copies with code changes, and binaries produced
+from modified source are derivative versions for this purpose.
+
+3. No implied permission
+
+This license does not grant trademark rights, patent rights, rights to private
+data, or permission to use the names, domains, or branding of the copyright
+owner except as required to preserve attribution for a permitted verbatim
+redistribution.
+
+4. Warranty disclaimer
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+COPYRIGHT OWNER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+IN THE SOFTWARE.
