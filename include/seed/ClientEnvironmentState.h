@@ -2,6 +2,9 @@
 #define SEED_CLIENT_ENVIRONMENT_STATE_H
 
 #include <cstdint>
+#include <vector>
+
+#include "NpcSnapshot.h"
 
 namespace client {
 
@@ -13,6 +16,7 @@ struct EnvironmentState {
     float hazard;
     uint64_t worldTick;
     uint64_t sequence;
+    std::vector<NpcSnapshot> npcs;
 };
 
 class ClientEnvironmentState {

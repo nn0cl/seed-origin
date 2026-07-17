@@ -20,6 +20,7 @@
 #include "Action.h"
 #include "EnvironmentEther.h"
 #include "Npc.h"
+#include "NpcSnapshot.h"
 
 namespace server {
 class WorldInput;
@@ -74,6 +75,7 @@ public:
     Player* findPlayer(int64_t playerId);
     const Npc* findNpc(int64_t npcId) const;
     Npc* findNpc(int64_t npcId);
+    std::vector<NpcSnapshot> publicNpcSnapshots() const;
     world::EnvironmentEther& environmentEther();
     const world::EnvironmentEther& environmentEther() const;
     float environmentHazard() const;

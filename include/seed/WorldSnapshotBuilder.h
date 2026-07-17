@@ -3,9 +3,11 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 #include "EnvironmentEther.h"
 #include "WorldUpdate.h"
+#include "NpcSnapshot.h"
 
 namespace server {
 
@@ -16,6 +18,9 @@ public:
     bool build(uint64_t worldTick, const world::EnvironmentEther& ether,
                float hazard, network::WorldUpdate& snapshot,
                std::string& error);
+    bool build(uint64_t worldTick, const world::EnvironmentEther& ether,
+               float hazard, const std::vector<NpcSnapshot>& npcs,
+               network::WorldUpdate& snapshot, std::string& error);
     uint64_t nextSequence() const;
 
 private:

@@ -27,4 +27,18 @@ void rejects_incomplete_or_invalid_environment_snapshot() {
     assert(state.value().fire == 0.0f);
 }
 
+void applies_public_npc_snapshot_state() {
+    network::WorldUpdate update = {
+        1, network::UpdateKind::Snapshot, 2, 1, 0,
+        "ether.fire=0;ether.water=0;ether.earth=0;ether.air=0;ether.hazard=0;"
+        "npc.count=1;npc.0.id=19510;npc.0.type=goblin;npc.0.x=1;"
+        "npc.0.y=2;npc.0.z=3;npc.0.hp=40;npc.0.alive=1"};
+    client::ClientEnvironmentState state;
+    client::ClientWorldSnapshotApplier applier;
+    std::string error;
+    assert(applier.applySnapshot(update, state, error));
+    assert(state.value().npcs.size() == 1);
+    assert(state.value().npcs[0].id == 19510);
+}
+
 } // namespace client_snapshot_tests

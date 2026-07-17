@@ -144,6 +144,20 @@ Npc* Field::findNpc(int64_t npcId) {
     return found == npcList.end() ? nullptr : &found->second;
 }
 
+std::vector<NpcSnapshot> Field::publicNpcSnapshots() const {
+    std::vector<NpcSnapshot> snapshots;
+    for (std::map<int64_t, Npc>::const_iterator it = npcList.begin();
+         it != npcList.end(); ++it) {
+        const Npc& npc = it->second;
+        if (!npc.isAlive()) continue;
+        snapshots.push_back({npc.getNpcId(), npc.getNpcType(),
+                             npc.getPosition().getX(), npc.getPosition().getY(),
+                             npc.getPosition().getZ(), npc.getStatus().getHp(),
+                             true});
+    }
+    return snapshots;
+}
+
 void
 Field::processFrame(){
 

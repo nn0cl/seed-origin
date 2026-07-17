@@ -189,11 +189,13 @@ void applies_opposing_attribute_reaction_and_reports_instability();
 namespace world_snapshot_builder_tests {
 void builds_environment_snapshot();
 void rejects_negative_hazard();
+void publishes_only_public_live_npc_state();
 }
 
 namespace client_snapshot_tests {
 void applies_environment_snapshot_and_resets_sequence();
 void rejects_incomplete_or_invalid_environment_snapshot();
+void applies_public_npc_snapshot_state();
 }
 
 namespace client_hazard_effect_tests {
@@ -312,8 +314,10 @@ int main() {
     environment_ether_tests::applies_opposing_attribute_reaction_and_reports_instability();
     world_snapshot_builder_tests::builds_environment_snapshot();
     world_snapshot_builder_tests::rejects_negative_hazard();
+    world_snapshot_builder_tests::publishes_only_public_live_npc_state();
     client_snapshot_tests::applies_environment_snapshot_and_resets_sequence();
     client_snapshot_tests::rejects_incomplete_or_invalid_environment_snapshot();
+    client_snapshot_tests::applies_public_npc_snapshot_state();
     client_hazard_effect_tests::preserves_order_and_drains_by_display_limit();
     client_hazard_effect_tests::rejects_duplicates_gaps_and_non_hazard_events();
     client_world_receiver_tests::applies_split_snapshot_and_hazard_event();
