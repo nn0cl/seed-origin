@@ -84,6 +84,7 @@ void rejects_client_accept_when_runtime_is_stopped();
 void clears_owned_clients_on_stop();
 void rejects_client_frame_processing_when_runtime_is_stopped();
 void rejects_frame_processing_when_runtime_is_stopped();
+void advances_action_frame_after_network_processing();
 }
 
 namespace network_frame_tests {
@@ -168,6 +169,7 @@ int main() {
     server_runtime_tests::clears_owned_clients_on_stop();
     server_runtime_tests::rejects_client_frame_processing_when_runtime_is_stopped();
     server_runtime_tests::rejects_frame_processing_when_runtime_is_stopped();
+    server_runtime_tests::advances_action_frame_after_network_processing();
     network_frame_tests::round_trips_a_valid_command();
     network_frame_tests::rejects_incomplete_and_oversized_frames();
     login_response_codec_tests::round_trips_accepted_response();

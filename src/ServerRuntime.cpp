@@ -7,7 +7,9 @@
 
 namespace server {
 
-ServerRuntime::ServerRuntime() : running(false), nextConnectionId(1), clients() {}
+ServerRuntime::ServerRuntime()
+    : running(false), nextConnectionId(1), clients(), lifecycle(), actionQueue(),
+      serverTick(actionQueue) {}
 
 ServerRuntime::~ServerRuntime() {
     stop();
@@ -98,6 +100,10 @@ bool ServerRuntime::submit(const network::NetworkCommand& command) {
     if (!network::validateCommand(command, error)) return false;
     pendingCommands.push_back({0, command});
     return true;
+}
+
+bool ServerRuntime::submitAction(const Action& action) {
+    return running && serverTick.submit(action);
 }
 
 ReceiveStatus ServerRuntime::ingest(ClientSession& session, std::string& error) {
@@ -208,11 +214,13 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
     return processed;
 }
 
-size_t ServerRuntime::processFrame(ServerCommandDispatcher& dispatcher,
-                                   std::string& error) {
+ServerFrameResult ServerRuntime::processFrame(ServerCommandDispatcher& dispatcher,
+                                              std::string& error) {
+    ServerFrameResult stopped = {serverTick.currentWorldTick(), 0,
+                                 std::vector<QueuedAction>()};
     if (!running) {
         error = "server runtime is stopped";
-        return 0;
+        return stopped;
     }
 
     size_t accepted = 0;
@@ -235,7 +243,10 @@ size_t ServerRuntime::processFrame(ServerCommandDispatcher& dispatcher,
         if (status == SendStatus::Failed && error.empty()) error = sendError;
     }
     removeClosedClients(dispatcher.sessionRegistry());
-    return accepted + processed;
+    const FrameActions worldFrame = serverTick.advanceFrame();
+    ServerFrameResult result = {worldFrame.worldTick, accepted + processed,
+                                worldFrame.actions};
+    return result;
 }
 
 std::vector<network::NetworkCommand> ServerRuntime::drainCommands() {

@@ -48,6 +48,7 @@
 | LISS-0101 | Runtime client frame processing | critical | LISS-0094, LISS-0096, LISS-0098, LISS-0100 | review |
 | LISS-0102 | Runtime session lifecycle integration | critical | LISS-0099, LISS-0100, LISS-0101 | review |
 | LISS-0103 | Server frame processing order | critical | LISS-0098, LISS-0100, LISS-0101, LISS-0102 | review |
+| LISS-0104 | Runtime ActionQueue frame bridge | critical | LISS-0079, LISS-0081, LISS-0086, LISS-0103 | review |
 | LISS-0082 | Client Snapshot application/interpolation | high | LISS-0063, LISS-0080 | proposed |
 | LISS-0083 | Client EffectQueue | high | LISS-0065, LISS-0080 | proposed |
 | LISS-0084 | Sync gaps/backpressure/effect backlog | high | LISS-0080, LISS-0083 | in_progress |

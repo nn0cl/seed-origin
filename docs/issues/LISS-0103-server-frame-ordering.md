@@ -37,5 +37,5 @@
 
 ## 次のIssue
 
-固定20FPSの論理tickとこのserver frame APIを接続し、ActionQueueの到着順処理とWorld更新へ
-渡す境界を定義する。
+LISS-0104で固定20FPSの論理tickとこのserver frame APIを接続し、ActionQueueの到着順処理と
+World更新へ渡す境界を定義する（実装済み）。

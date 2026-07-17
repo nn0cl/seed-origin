@@ -136,7 +136,25 @@ void rejects_frame_processing_when_runtime_is_stopped() {
     session::SessionRegistry registry;
     server::ServerCommandDispatcher dispatcher(registry);
     std::string error;
-    assert(runtime.processFrame(dispatcher, error) == 0);
+    const server::ServerFrameResult result = runtime.processFrame(dispatcher, error);
+    assert(result.networkOperations == 0);
+    assert(result.worldTick == 0);
+}
+
+void advances_action_frame_after_network_processing() {
+    server::ServerRuntime runtime;
+    session::SessionRegistry registry;
+    server::ServerCommandDispatcher dispatcher(registry);
+    assert(runtime.start(0));
+    const Status status;
+    Player player;
+    const Action action(2, &player, nullptr, status);
+    assert(runtime.submitAction(action));
+    std::string error;
+    const server::ServerFrameResult result = runtime.processFrame(dispatcher, error);
+    assert(result.worldTick == 1);
+    assert(result.actions.size() == 1);
+    assert(runtime.stop());
 }
 
 } // namespace server_runtime_tests
