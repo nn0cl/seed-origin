@@ -72,6 +72,11 @@ AcceptStatus Connection::acceptClient(int& clientSocket) {
                                   reinterpret_cast<struct sockaddr*>(&address),
                                   &addressLength);
     if (accepted >= 0) {
+        const int flags = fcntl(accepted, F_GETFL, 0);
+        if (flags < 0 || fcntl(accepted, F_SETFL, flags | O_NONBLOCK) != 0) {
+            ::close(accepted);
+            return AcceptStatus::Failed;
+        }
         clientSocket = accepted;
         return AcceptStatus::Accepted;
     }

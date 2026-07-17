@@ -39,6 +39,10 @@ void close_is_idempotent();
 void reports_no_pending_client_without_blocking();
 }
 
+namespace client_session_tests {
+void receives_complete_commands_and_closes_peer_cleanly();
+}
+
 void playerOwnershipCopyAssignmentTest();
 void playerOwnershipContainerUpdateTest();
 
@@ -112,6 +116,7 @@ int main() {
     field_state_tests::accepts_empty_frame();
     connection_tests::close_is_idempotent();
     connection_tests::reports_no_pending_client_without_blocking();
+    client_session_tests::receives_complete_commands_and_closes_peer_cleanly();
     player_ownership_tests::playerOwnershipCopyAssignmentTest();
     player_ownership_tests::playerOwnershipContainerUpdateTest();
     seed_binary_tests::rejects_out_of_range_input();
