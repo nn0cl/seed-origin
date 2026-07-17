@@ -14,46 +14,46 @@ body:
     id: summary
     attributes:
       label: Summary / 概要
-      description: What happened? Include the affected behavior and impact.
-      placeholder: Describe the observed defect and its impact.
+      description: "What happened and what was affected? / 何が起き、何に影響したかを記載してください。"
+      placeholder: "Describe the observed defect and its impact. / 発生した不具合と影響を記載してください。"
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
       label: Expected behavior / 期待動作
-      description: State the accepted or intended behavior.
-      placeholder: Given ..., when ..., then ...
+      description: "State the accepted or intended behavior. / 受入済みまたは意図した動作を記載してください。"
+      placeholder: "Given ..., when ..., then ... / 前提..., 操作..., 結果..."
     validations:
       required: true
   - type: textarea
     id: reproduction
     attributes:
       label: Reproduction / 再現手順
-      description: Give the smallest reproducible steps or input.
+      description: "Give the smallest reproducible steps or input. / 最小の再現手順または入力を記載してください。"
       placeholder: |
-        1. Start with ...
-        2. Submit ...
-        3. Observe ...
+        1. Start with ... / ...を開始
+        2. Submit ... / ...を入力
+        3. Observe ... / ...を確認
     validations:
       required: true
   - type: input
     id: commit
     attributes:
       label: Commit, version, or environment / コミット・バージョン・環境
-      placeholder: "e.g. 1234abc, macOS version, Xcode/CMake version"
+      placeholder: "e.g. 1234abc, macOS version, Xcode/CMake version / 例: コミット、OS、Xcode/CMake"
     validations:
       required: true
   - type: textarea
     id: evidence
     attributes:
       label: Evidence / 根拠
-      description: Add logs, screenshots, test output, or a minimal input. Remove secrets and personal data.
+      description: "Add logs, screenshots, test output, or minimal input. Remove secrets and personal data. / ログ、画面、テスト結果、最小入力を記載し、秘密情報と個人情報は削除してください。"
   - type: input
     id: accepted_source
     attributes:
       label: Accepted behavior source / 仕様・受入条件
-      description: Link a local issue, spec, ADR, or test that defines the expected behavior.
+      description: "Link a local issue, spec, ADR, or test defining expected behavior. / 期待動作を定義するIssue、仕様、ADR、テストを指定してください。"
       placeholder: "LISS-0000, docs/specs/..., or ADR-0000"
     validations:
       required: true
@@ -80,9 +80,9 @@ body:
     attributes:
       label: Triage checklist / トリアージ確認
       options:
-        - label: I searched for an existing issue.
+        - label: "I searched for an existing issue. / 既存Issueを検索しました。"
           required: true
-        - label: I removed secrets, private data, and undisclosed vulnerability details.
+        - label: "I removed secrets, private data, and undisclosed vulnerability details. / 秘密情報、個人情報、未公開脆弱性情報を削除しました。"
           required: true
-        - label: I understand that a discovered bug may require a separate local Issue before implementation.
+        - label: "I understand that a discovered bug may require a separate local Issue before implementation. / 実装前に別のローカルIssueが必要になる場合を理解しました。"
           required: true

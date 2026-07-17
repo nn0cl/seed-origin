@@ -9,6 +9,13 @@
 
 開発への参加方法は[CONTRIBUTING.md](CONTRIBUTING.md)、行動規範は[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)、脆弱性の報告は[SECURITY.md](SECURITY.md)を参照してください。
 
+## Language policy
+
+日本語版を正式版とし、各文書末尾の英語版は翻訳です。日本語版と英語版に矛盾がある場合は、日本語版を優先します。
+
+Japanese is authoritative. English sections are translations. If the Japanese
+and English versions conflict, the Japanese version prevails.
+
 ## プロジェクトテンプレート
 
 本プロジェクトは [nn0cl/llm-project-template](https://github.com/nn0cl/llm-project-template)

@@ -8,15 +8,15 @@ body:
     id: goal
     attributes:
       label: Goal / 目的
-      description: What user or system outcome should change?
-      placeholder: The system should ... so that ...
+      description: "What user or system outcome should change? / ユーザーまたはシステムの何を変えるのか記載してください。"
+      placeholder: "The system should ... so that ... / システムは...することで...できるようにする。"
     validations:
       required: true
   - type: textarea
     id: acceptance
     attributes:
       label: Acceptance criteria / 受入条件
-      description: Use observable Given/When/Then criteria. Do not describe only implementation steps.
+      description: "Use observable Given/When/Then criteria, not only implementation steps. / 実装手順だけでなく、観測可能なGiven/When/Thenで記載してください。"
       placeholder: |
         Given ...
         When ...
@@ -27,14 +27,14 @@ body:
     id: scope
     attributes:
       label: Scope and non-goals / 範囲と対象外
-      description: State what is included and explicitly excluded from this slice.
+      description: "State what is included and excluded from this slice. / このスライスの対象と対象外を明記してください。"
     validations:
       required: true
   - type: textarea
     id: dependencies
     attributes:
       label: Dependencies / 依存関係
-      description: List parent, depends-on, blocks, and related local or GitHub issues.
+      description: "List parent, depends-on, blocks, and related local or GitHub issues. / 親、依存、阻害、関連するローカルまたはGitHub Issueを記載してください。"
       placeholder: |
         Parent:
         Depends on:
@@ -44,24 +44,24 @@ body:
     id: decisions
     attributes:
       label: Adjudicator decision points / 審判者の判断点
-      description: List architecture, product, privacy, schema, provider, license, or phase decisions that require approval.
+      description: "List architecture, product, privacy, schema, provider, license, or phase decisions requiring approval. / 承認が必要な設計、製品、プライバシー、スキーマ、Provider、ライセンス、フェーズの判断を記載してください。"
     validations:
       required: true
   - type: textarea
     id: external_resources
     attributes:
       label: External resources and ports / 外部リソースとPort
-      description: Identify filesystem, TCP, persistence, renderer, provider, or secret boundaries. Do not add a concrete dependency without an ADR/adoption note.
+      description: "Identify filesystem, TCP, persistence, renderer, provider, or secret boundaries. Do not add a dependency without an ADR/adoption note. / 外部境界を特定し、ADR・採用記録なしに具体的依存を追加しないでください。"
   - type: dropdown
     id: phase
     attributes:
       label: Intended phase / 想定フェーズ
       options:
-        - Phase 0 - Design Intake
-        - Phase 1 - Red tests/specification
-        - Phase 2 - Green implementation
-        - Phase 3 - Refactor
-        - Documentation or ADR only
+        - "Phase 0 - Design Intake / 設計受付"
+        - "Phase 1 - Red tests/specification / 仕様・失敗テスト"
+        - "Phase 2 - Green implementation / 最小実装"
+        - "Phase 3 - Refactor / リファクタリング"
+        - "Documentation or ADR only / 文書・ADRのみ"
     validations:
       required: true
   - type: dropdown
@@ -81,7 +81,7 @@ body:
     id: context
     attributes:
       label: Context ledger / コンテキスト台帳
-      description: Record included context, intentionally omitted context, assumptions, and open decisions.
+      description: "Record included context, omitted context, assumptions, and open decisions. / 含めた文脈、意図的に除外した文脈、前提、未決事項を記録してください。"
       placeholder: |
         Included:
         Omitted:
@@ -93,7 +93,7 @@ body:
     id: verification
     attributes:
       label: Verification plan / 検証計画
-      description: State tests, static analysis, CodeQL, manual checks, and any intentionally unrun verification.
+      description: "State tests, static analysis, CodeQL, manual checks, and intentionally unrun verification. / テスト、静的解析、CodeQL、手動確認、未実行の検証を記載してください。"
     validations:
       required: true
   - type: checkboxes
@@ -101,9 +101,9 @@ body:
     attributes:
       label: Planning checklist / 計画確認
       options:
-        - label: I searched for an existing issue or ADR.
+        - label: "I searched for an existing issue or ADR. / 既存IssueまたはADRを検索しました。"
           required: true
-        - label: I will create or update the local LISS issue and work plan before implementation.
+        - label: "I will create or update the local LISS issue and work plan before implementation. / 実装前にLISS Issueと作業計画を作成・更新します。"
           required: true
-        - label: I understand that architecture or phase decisions require Adjudicator review.
+        - label: "I understand that architecture or phase decisions require Adjudicator review. / 設計またはフェーズの判断にはAdjudicatorレビューが必要だと理解しました。"
           required: true

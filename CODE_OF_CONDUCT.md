@@ -30,3 +30,51 @@
 ## 適用
 
 Adjudicatorまたは所有者は、違反の内容に応じて警告、投稿の修正依頼、Issueやレビューの制限、参加停止などの対応を行えます。行動規範の適用対象は人間・AIの双方ですが、意思決定権と責任の所在はAdjudicatorにあります。
+
+---
+
+# English version
+
+The Japanese version is authoritative. This section is a translation; if the
+two versions conflict, the Japanese version prevails.
+
+## Principles
+
+This repository applies the same development rules to humans and AI agents.
+Roles and decision authority are distinguished by role, not by the type of
+participant. A human may participate as an Adjudicator or as a Developer. An
+AI agent participates as a Developer-equivalent. The Adjudicator owns phase
+transitions, ADR acceptance, ambiguity decisions, and final responsibility.
+
+No participant may skip operating rules, review, or safety checks because of
+their identity, authority, speed, or method of producing work. Human Developers
+and AI agents may not approve their own work without the required review.
+
+## Expected conduct
+
+- Treat every participant with respect.
+- Record facts and evidence in Issues, reviews, commits, and work traces.
+- Disclose uncertainty, constraints, and unperformed verification.
+- Prioritize security, memory safety, and data protection.
+- Check specifications, operating rules, and the license before changing code.
+- Resolve disagreements using technical evidence and acceptance criteria.
+
+## Prohibited conduct
+
+- Discrimination, harassment, threats, insults, or personal attacks.
+- Posting vulnerabilities or secrets in public Issues or reviews.
+- Intentionally bypassing review, CodeQL, acceptance criteria, or operating rules.
+- Falsifying work records, verification results, or approval status.
+- Creating or distributing modifications or derivative works without license permission.
+
+## Reporting
+
+Report conduct violations privately to the repository owner. Report security
+vulnerabilities using [SECURITY.md](SECURITY.md).
+
+## Enforcement
+
+The Adjudicator or owner may warn participants, request corrections, restrict
+Issues or reviews, or suspend participation. The rules apply to both humans and
+AI agents, while decision authority and final responsibility remain with the
+Adjudicator.

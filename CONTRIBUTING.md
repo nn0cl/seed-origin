@@ -50,3 +50,60 @@
 ## 行動規範と脆弱性
 
 行動規範は[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)、脆弱性の報告は[SECURITY.md](SECURITY.md)を参照してください。
+
+---
+
+# English version
+
+The Japanese version is authoritative. This section is a translation; if the
+two versions conflict, the Japanese version prevails.
+
+## Roles
+
+- **Adjudicator**: A human decision-maker who approves phase transitions,
+  Phase 1 tests, ADRs, ambiguous requirements, and external service or license
+  choices.
+- **Developer**: A human or AI agent who performs design intake, context
+  selection, implementation, verification, and evidence recording. Developers
+  do not approve their own work.
+- **Deterministic tools**: Tests, static analysis, CodeQL, and formatters that
+  provide repeatable verification signals without making product decisions.
+
+Human Developers and AI Developers follow the same operating rules, safety
+requirements, acceptance criteria, and review gates. Being human does not grant
+Adjudicator authority.
+
+## Before starting work
+
+Read [AGENTS.md](AGENTS.md), the project structure, implementation readiness,
+local issue planning, definition of done, and [LICENSE](LICENSE).
+
+## Issue and implementation workflow
+
+1. Record the goal, specification, acceptance criteria, and dependencies in an Issue.
+2. Add a work plan or slice Issue when needed.
+3. Implement the smallest unit that satisfies the acceptance criteria.
+4. Add test artifacts; follow the operating rule for whether tests may run.
+5. Synchronize documentation, Issues, and work plans with the implementation.
+6. Commit the completed Issue and push `main`.
+7. Inspect CodeQL after the push. Findings become the highest-priority Issue.
+
+## Safety
+
+- Do not pass unvalidated external input to the World or file processing.
+- Make ownership explicit and avoid owning raw pointers.
+- Validate boundaries, sizes, integer conversions, socket closure, and partial reads.
+- Do not let client input overwrite server-authoritative state.
+- Never commit secrets, personal data, or undisclosed vulnerability details.
+
+## Contribution permission
+
+Contributors must have the rights required for the code, documentation, or
+assets they submit. By submitting a contribution, a contributor grants the
+repository owner an irrevocable, worldwide, royalty-free permission to
+incorporate, modify, reproduce, and distribute that contribution as part of
+the project. This does not change the [custom license](LICENSE) or grant third
+parties permission to create derivative works.
+
+See [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for conduct rules and
+[SECURITY.md](SECURITY.md) for vulnerability reporting.

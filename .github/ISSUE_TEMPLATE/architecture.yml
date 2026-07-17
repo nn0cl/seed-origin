@@ -8,18 +8,20 @@ body:
     attributes:
       value: |
         Architecture Issues should lead to a local LISS issue and, when accepted, an ADR. Keep research and rationale separate from normative decisions.
+
+        設計IssueはローカルLISS Issueへ接続し、採択時はADRへ昇格させます。research・根拠と規範的な決定を分離してください。
   - type: textarea
     id: decision_needed
     attributes:
       label: Decision needed / 判断事項
-      description: State the decision as one concrete question or choice.
+      description: "State one concrete question or choice. / 具体的な質問または選択肢を1つ記載してください。"
     validations:
       required: true
   - type: textarea
     id: context
     attributes:
       label: Context and constraints / 背景と制約
-      description: Include the relevant specification, current behavior, constraints, and intentionally omitted context.
+      description: "Include the relevant specification, current behavior, constraints, and omitted context. / 関連仕様、現状、制約、意図的に除外した文脈を記載してください。"
     validations:
       required: true
   - type: textarea
@@ -27,34 +29,34 @@ body:
     attributes:
       label: Options and trade-offs / 選択肢とトレードオフ
       placeholder: |
-        Option A:
-        Benefits:
-        Costs:
+        Option A / 選択肢A:
+        Benefits / 利点:
+        Costs / コスト:
 
-        Option B:
-        Benefits:
-        Costs:
+        Option B / 選択肢B:
+        Benefits / 利点:
+        Costs / コスト:
     validations:
       required: true
   - type: textarea
     id: proposed_decision
     attributes:
       label: Proposed decision / 提案
-      description: If proposing a decision, state its boundaries and what it does not decide.
+      description: "State the decision boundaries and what it does not decide. / 判断の境界と、判断しない事項を記載してください。"
     validations:
       required: true
   - type: textarea
     id: consequences
     attributes:
       label: Consequences and follow-up / 結果と後続作業
-      description: List positive, negative, migration, security, privacy, testing, and documentation consequences.
+      description: "List positive, negative, migration, security, privacy, testing, and documentation consequences. / 利点、欠点、移行、セキュリティ、プライバシー、テスト、文書への影響を記載してください。"
     validations:
       required: true
   - type: textarea
     id: references
     attributes:
       label: References / 参照
-      description: Link local Issues, work plans, specs, ADRs, and verified external sources.
+      description: "Link local Issues, work plans, specs, ADRs, and verified external sources. / ローカルIssue、計画、仕様、ADR、検証済み外部資料をリンクしてください。"
     validations:
       required: true
   - type: checkboxes
@@ -62,7 +64,7 @@ body:
     attributes:
       label: Review gate / レビューゲート
       options:
-        - label: I understand that this is not accepted until the Adjudicator records a decision in an ADR or the Issue.
+        - label: "I understand that this is not accepted until the Adjudicator records a decision in an ADR or the Issue. / AdjudicatorがADRまたはIssueに判断を記録するまで採択されないことを理解しました。"
           required: true
-        - label: I separated normative decision text from non-normative research or rationale.
+        - label: "I separated normative decision text from non-normative research or rationale. / 規範的な決定文と非規範のresearch・根拠を分離しました。"
           required: true

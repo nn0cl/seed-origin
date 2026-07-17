@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Security vulnerability report
+  - name: "Security vulnerability report / 脆弱性報告"
     url: https://github.com/nn0cl/seed-origin/security/advisories/new
-    about: Do not disclose vulnerabilities in a public issue. Use a private security advisory or the address in SECURITY.md.
-  - name: Local issue planning guide
+    about: "Do not disclose vulnerabilities publicly. / 脆弱性は公開せず、非公開Security AdvisoryまたはSECURITY.mdの連絡先を使用してください。"
+  - name: "Local issue planning guide / ローカルIssue計画規約"
     url: https://github.com/nn0cl/seed-origin/blob/main/docs/collaboration/local-issue-planning.md
-    about: Read the repository-native LISS planning and dependency rules before opening a feature or architecture issue.
+    about: "Read the LISS planning and dependency rules first. / 機能・設計Issueを作成する前にLISS計画と依存関係の規約を確認してください。"
