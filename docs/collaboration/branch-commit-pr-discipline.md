@@ -136,7 +136,8 @@ When starting a new feature:
 4. confirm that the working branch is `main`.
 5. add Phase 1 tests only.
 6. wait for Adjudicator review.
-7. continue with Phase 2 on the same feature branch or a clearly linked branch.
+7. continue with the approved Phase 2 work on `main`; preserve the local Issue
+   and phase references in the commit and work-plan records.
 
 Recommended command shape:
 

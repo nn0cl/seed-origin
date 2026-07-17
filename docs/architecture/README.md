@@ -1,17 +1,18 @@
 # Architecture Overview
 
-The project uses Clean Architecture with `<FILL IN: local-first / cloud /
-hybrid>` runtime assumptions.
+The project uses Clean Architecture with a local-first C++ core and a future
+POSIX TCP game server. The current runtime has no external service dependency.
 
-The selected stack is `<FILL IN: e.g. Tauri + Rust + React, or Node + Next.js,
-or Django + HTMX>`. State which part of the stack owns the application core
-and which owns UI presentation.
+The current stack is C++11, CMake/CTest, and Xcode project integration. The
+application core and server contracts live in `include/seed/` and `src/`; a
+client UI and renderer remain undecided under LISS-0064.
 
 ## Layers
 
 ### Domain
 
-Pure `<FILL IN: your core domain concepts>` behavior.
+Pure Player, Position, Status, Action, Field, WorldUpdate, and server-tick
+behavior.
 
 Must not depend on:
 
@@ -23,10 +24,12 @@ Must not depend on:
 
 Coordinates domain behavior through ports.
 
-Examples (replace with your project's actual use cases):
+Current use-case/application boundaries include:
 
-- `<Example use case A>`.
-- `<Example use case B>`.
+- session login and internal-ID allocation.
+- validated network Command dispatch.
+- authoritative movement and future combat/magic application.
+- fixed 20Hz ActionQueue processing.
 
 ### Ports
 
@@ -57,17 +60,19 @@ It must not own:
 
 ## Runtime Direction
 
-`<FILL IN: where does this run — local device, server, browser, hybrid — and
-which parts are optional/replaceable providers (e.g. cloud AI, external
-APIs)?>`
+The current CLI and core run locally. The planned server runs as a C++ POSIX
+TCP process. The planned client renderer/UI is replaceable and must communicate
+through the versioned network protocol rather than depend on World internals.
 
 ## Selected Technology
 
-- `<Runtime/shell>`.
-- `<Application language>`.
-- `<UI framework>`.
-- `<Package manager>`.
-- `<Distribution goal, if relevant>`.
+- C++11 runtime and POSIX socket adapter.
+- CMake/CTest and the existing Xcode project as build/test tooling.
+- Client renderer/UI: undecided until LISS-0064.
+- Dependency management: repository/system tooling only; no runtime package
+  manager is currently selected.
+- Distribution: custom license permits unmodified redistribution and prohibits
+  derivative works; see `LICENSE` and LISS-0092.
 
 ## Detailed Rules
 
@@ -79,7 +84,8 @@ APIs)?>`
 - `io-reasoning-contracts.md`: AI input/output/reasoning contracts.
 - `external-resource-adoption-contract.md`: optional contract for adopting
   AI-generated or human-sourced external content/data resources.
-- `<Add one line per stack-specific architecture document you create.>`
+- C++ core/server: `seed-implementation.md`.
+- Network protocol: `../specs/network-protocol-v1.md`.
 
 ## Accepted Decisions
 
@@ -94,12 +100,13 @@ APIs)?>`
 - `adr/0009-bug-planning-and-ai-usage-records.md`
 - `adr/0010-ai-failure-recovery-and-runner-cli-contract.md`
 - `adr/0011-external-resource-adoption-contract.md`
+- `adr/0013-project-main-branch-and-adjudicator-roles.md`
 
 ## Remaining Technology Evaluation
 
-List technology choices still open for ADR decision, e.g.:
+Technology choices still open for ADR decision:
 
-- `<Persistence choice>`.
-- `<Vector DB / search choice>`.
-- `<Embedding model choice>`.
-- `<External provider choice>`.
+- identity persistence engine and schema.
+- client platform, renderer, and UI framework.
+- snapshot/event wire encoding extension.
+- deployment and observability stack.

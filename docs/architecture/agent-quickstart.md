@@ -128,9 +128,11 @@ plan before continuing.
 - Adapters implement ports.
 - Delivery handlers (UI components, HTTP/RPC handlers, CLI entry points) are
   thin and call use cases only.
-- `<Add your project's primary datastore and any settings-gated secondary
-  store rules here, e.g. "Postgres is the primary application database" or
-  "Analytics writes are gated by a feature flag".>`
+- The current server uses an in-memory SessionRegistry; no persistent datastore
+  is part of the accepted baseline. Future identity persistence must be
+  introduced through a declared storage port and its own ADR.
+- Client settings and secrets are not yet part of the runtime baseline and must
+  not be introduced as hidden global state.
 
 ## Required Area Documents
 
@@ -139,16 +141,16 @@ plan before continuing.
 - Dependency policy: `docs/architecture/dependency-policy.md`
 - AI input/output/reasoning: `docs/architecture/io-reasoning-contracts.md`
 - AI-human collaboration: `docs/collaboration/ai-human-scheme.md`
-- `<Add one line per stack-specific architecture document you create, e.g.
-  "Backend core: docs/architecture/backend-architecture.md.">`
+- C++ core and server: `docs/architecture/seed-implementation.md`
+- Network protocol: `docs/specs/network-protocol-v1.md`
+- World integration: `docs/architecture/world-integration-spec.md`
 
 ## Stop Conditions
 
 Stop and ask for Adjudicator decision or ADR when the task requires choosing:
 
-- `<Persistence engine or schema details beyond the accepted baseline>`.
-- `<Vector DB / embedding model or dimensions>`.
-- `<External vault/layout convention>`.
-- `<Provider API or SDK>`.
-- `<Any other technology choice listed as a "Current Non-Decision" in
-  CLAUDE.md>`.
+- Persistence engine or schema details beyond the in-memory baseline.
+- Client renderer, UI framework, or platform technology before LISS-0064.
+- External vault, secret layout, provider API, or SDK.
+- Protocol schema changes that affect compatibility.
+- Any other technology choice listed as a current non-decision in `CLAUDE.md`.

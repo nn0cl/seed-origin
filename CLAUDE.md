@@ -147,8 +147,9 @@ Before writing implementation, read the relevant architecture document:
   `docs/collaboration/runner-cli-contract.md`.
 - External resource adoption contract:
   `docs/architecture/external-resource-adoption-contract.md`.
-- `<Add one line per stack-specific architecture document you create, e.g.
-  "Rust core or adapters: docs/architecture/rust-clean-architecture.md.">`
+- C++ core and server: `docs/architecture/seed-implementation.md`.
+- Network protocol: `docs/specs/network-protocol-v1.md`.
+- World integration: `docs/architecture/world-integration-spec.md`.
 
 Use `docs/templates/design-intake.md` for design-only work,
 `docs/templates/adjudicator-review.md` when requesting approval, and

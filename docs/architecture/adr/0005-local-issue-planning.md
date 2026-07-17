@@ -15,6 +15,10 @@ intake.
 
 ## Decision
 
+This is the reusable local-planning baseline. For `seed-origin`, ADR 0013 is a
+project-specific override for branch selection and requires issue artifacts and
+phase gates while allowing approved issue work directly on `main`.
+
 Support issues in both GitHub and local Markdown files.
 
 Local issues live under:
@@ -36,9 +40,9 @@ and Adjudicator decision points.
 Before feature work starts, agents should identify issue dependencies and create
 or update a work plan. Work should proceed from the next unblocked issue.
 
-Every local issue or GitHub Issue must be worked on a dedicated branch. Agents
-must not commit issue work directly to `main` or the trunk branch, regardless
-of change size.
+The generic template baseline recommends a dedicated branch for each local or
+GitHub Issue. `seed-origin` follows the explicit exception in ADR 0013 and uses
+`main` for issue work.
 
 ## Consequences
 
@@ -59,9 +63,8 @@ Negative:
 
 Code review should reject:
 
-- feature branches without a related issue or explicit Adjudicator waiver.
+- issue work without a related issue or explicit Adjudicator scope.
 - work started on issues with unresolved dependencies.
 - local issue IDs reused for different work.
 - PRs that omit local issue or GitHub issue references when applicable.
-- issue work committed directly to `main` or the trunk branch instead of a
-  dedicated branch.
+- issue work that bypasses the `main`-branch procedure defined by ADR 0013.
