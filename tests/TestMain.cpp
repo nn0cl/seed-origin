@@ -159,6 +159,11 @@ void queues_attack_and_spell_intents();
 void rejects_malformed_or_oversized_power();
 }
 
+namespace chat_command_handler_tests {
+void queues_authenticated_chat_and_preserves_sequence();
+void rejects_control_text_and_missing_audience();
+}
+
 namespace environment_ether_tests {
 void increases_conductivity_with_ether_magnitude();
 void resolves_spell_and_decays_environment();
@@ -276,6 +281,8 @@ int main() {
     world_input_tick_tests::emits_inputs_in_common_sequence_order();
     combat_command_handler_tests::queues_attack_and_spell_intents();
     combat_command_handler_tests::rejects_malformed_or_oversized_power();
+    chat_command_handler_tests::queues_authenticated_chat_and_preserves_sequence();
+    chat_command_handler_tests::rejects_control_text_and_missing_audience();
     environment_ether_tests::increases_conductivity_with_ether_magnitude();
     environment_ether_tests::resolves_spell_and_decays_environment();
     environment_ether_tests::rejects_unknown_element();

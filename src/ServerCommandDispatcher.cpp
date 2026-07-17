@@ -1,4 +1,5 @@
 #include "ServerCommandDispatcher.h"
+#include "ChatCommandHandler.h"
 
 namespace server {
 
@@ -11,7 +12,15 @@ session::SessionInfo emptySession() {
 }
 
 ServerCommandDispatcher::ServerCommandDispatcher(session::SessionRegistry& registry)
-    : loginHandler(registry) {}
+    : loginHandler(registry), inputQueue(0) {}
+
+ServerCommandDispatcher::ServerCommandDispatcher(session::SessionRegistry& registry,
+                                                 WorldInputQueue& queue)
+    : loginHandler(registry), inputQueue(&queue) {}
+
+void ServerCommandDispatcher::bindWorldInputQueue(WorldInputQueue& queue) {
+    inputQueue = &queue;
+}
 
 session::SessionRegistry& ServerCommandDispatcher::sessionRegistry() {
     return loginHandler.sessionRegistry();
@@ -26,6 +35,20 @@ CommandDispatchResult ServerCommandDispatcher::dispatch(
         result.accepted = login.accepted;
         result.session = login.session;
         result.error = login.error;
+        return result;
+    }
+
+    if (command.type == network::CommandType::Chat) {
+        if (inputQueue == 0) {
+            result.error = "chat world input queue is not bound";
+            return result;
+        }
+        if (!loginHandler.sessionRegistry().isActive(command.sessionId)) {
+            result.error = "chat requires an active anonymous session";
+            return result;
+        }
+        ChatCommandHandler handler(*inputQueue);
+        result.accepted = handler.handle(command, result.error);
         return result;
     }
 

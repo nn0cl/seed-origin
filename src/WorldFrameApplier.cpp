@@ -84,11 +84,18 @@ bool WorldFrameApplier::apply(const WorldFrameInputs& frame,
                 error = "world input combat intent is invalid";
                 return false;
             }
-        } else if (it->spell().casterId <= 0 || it->spell().targetId <= 0 ||
+        } else if (it->kind() == WorldInputKind::Spell &&
+                   (it->spell().casterId <= 0 || it->spell().targetId <= 0 ||
                    it->spell().element.empty() || it->spell().element.size() > 32 ||
-                   !std::isfinite(it->spell().power) || it->spell().power <= 0.0f) {
+                   !std::isfinite(it->spell().power) || it->spell().power <= 0.0f)) {
             updates.clear();
             error = "world input spell intent is invalid";
+            return false;
+        } else if (it->kind() == WorldInputKind::Chat &&
+                   (it->chat().senderId <= 0 || it->chat().audience.empty() ||
+                    it->chat().message.empty())) {
+            updates.clear();
+            error = "world input chat intent is invalid";
             return false;
         }
     }

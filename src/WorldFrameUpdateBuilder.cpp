@@ -62,11 +62,15 @@ bool WorldFrameUpdateBuilder::build(const WorldFrameInputs& frame,
             payload << "combat=attacker:" << it->combat().attackerId
                     << ";target:" << it->combat().targetId
                     << ";power:" << it->combat().power;
-        } else {
+        } else if (it->kind() == WorldInputKind::Spell) {
             payload << "spell=caster:" << it->spell().casterId
                     << ";target:" << it->spell().targetId
                     << ";element:" << it->spell().element
                     << ";power:" << it->spell().power;
+        } else {
+            payload << "chat=sender:" << it->chat().senderId
+                    << ";audience:" << it->chat().audience
+                    << ";message:" << it->chat().message;
         }
         payload << ";inputSequence=" << it->sequence();
         if (!appendEvent(frame.worldTick, payload.str(), updates, error)) return false;

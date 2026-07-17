@@ -158,6 +158,7 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
         return 0;
     }
 
+    dispatcher.bindWorldInputQueue(inputQueue);
     for (std::map<uint64_t, std::unique_ptr<ClientSession> >::iterator it = clients.begin();
          it != clients.end(); ++it) {
         std::vector<network::NetworkCommand> commands;

@@ -1,6 +1,6 @@
 # LISS-0124: チャットCommandと配信
 
-- Status: proposed
+- Status: review
 - Priority: medium
 - Depends on: LISS-0120, LISS-0123, LISS-0059
 
@@ -15,6 +15,10 @@
 - ワールド／近傍／個別など宛先を明示する。
 - WorldUpdate Eventとして順序付き配信する。
 - flood、なりすまし、ログ漏洩を防ぐ。
+
+## 実装資料
+
+`ChatCommandHandler`と`WorldInputQueue::enqueueChat`を追加した。認証済みの一時匿名セッションだけが入力でき、`audience|message`形式、サイズ、制御文字、queue上限を検証する。WorldUpdate Eventへの変換は到着順を維持する。テスト・ビルドは実行していない。
 
 ## English
 

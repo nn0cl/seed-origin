@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "LoginCommandHandler.h"
+#include "WorldInputQueue.h"
 
 namespace server {
 
@@ -18,6 +19,9 @@ struct CommandDispatchResult {
 class ServerCommandDispatcher {
 public:
     explicit ServerCommandDispatcher(session::SessionRegistry& registry);
+    ServerCommandDispatcher(session::SessionRegistry& registry,
+                            WorldInputQueue& inputQueue);
+    void bindWorldInputQueue(WorldInputQueue& inputQueue);
 
     CommandDispatchResult dispatch(const network::NetworkCommand& command);
     session::SessionRegistry& sessionRegistry();
@@ -26,6 +30,7 @@ public:
 
 private:
     LoginCommandHandler loginHandler;
+    WorldInputQueue* inputQueue;
 };
 
 }

@@ -37,6 +37,7 @@ set(SEED_CORE_SOURCES
     src/WorldInputQueue.cpp
     src/WorldInputTick.cpp
     src/CombatCommandHandler.cpp
+    src/ChatCommandHandler.cpp
     src/EnvironmentEther.cpp
     src/WorldSnapshotBuilder.cpp
     src/ClientEnvironmentState.cpp
@@ -86,6 +87,7 @@ add_executable(seed_tests
     tests/WorldInputQueueTest.cpp
     tests/WorldInputTickTest.cpp
     tests/CombatCommandHandlerTest.cpp
+    tests/ChatCommandHandlerTest.cpp
     tests/EnvironmentEtherTest.cpp
     tests/WorldSnapshotBuilderTest.cpp
     tests/ClientWorldSnapshotApplierTest.cpp
