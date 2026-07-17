@@ -9,6 +9,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(SEED_CORE_SOURCES
     src/Action.cpp
     src/ActionQueue.cpp
+    src/ServerTick.cpp
     src/Buff.cpp
     src/Connection.cpp
     src/Data.cpp
@@ -40,6 +41,7 @@ enable_testing()
 add_executable(seed_tests
     tests/ActionInputTest.cpp
     tests/ActionQueueTest.cpp
+    tests/ServerTickTest.cpp
     tests/ConnectionTest.cpp
     tests/FieldStateTest.cpp
     tests/PlayerOwnershipTest.cpp

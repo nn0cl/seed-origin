@@ -20,4 +20,4 @@
 - queueの所有権が明確でraw pointerを保持しない。
 - 固定入力列の再実行結果が一致する。
 
-値を保持するActionQueue、受付sequence、mutexによる受付境界、`takeFrame`によるフレーム切り替えを実装した。固定時計とWorld適用は後続スライスで扱う。テスト・ビルドは運用規約により実行していない。
+値を保持するActionQueue、受付sequence、mutexによる受付境界、`takeFrame`によるフレーム切り替えを実装した。LISS-0086で論理tickとの接続を実装した。固定時計とWorld適用は後続スライスで扱う。テスト・ビルドは運用規約により実行していない。
