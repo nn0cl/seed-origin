@@ -48,16 +48,21 @@ their MVP slice rather than replacing them.
    left to a later, separate client decision if this MVP validates the
    direction.
 
-## Open questions (must not guess)
+## Resolved questions (2026-07-18)
 
-- Whether the MVP client authenticates via the anonymous claimed-ID login
-  still present in `seed_server` today, or waits for LISS-0147 (session-key
-  login per ADR 0018) to land first. Building against the current login
-  now means re-wiring the client later; waiting blocks the MVP until
-  LISS-0147 is implemented. Needs an explicit choice.
-- Terrain source: a hand-built minimal Godot scene/heightmap for the demo,
-  or something reading from server-side `Field`/`EnvironmentEther` data —
-  not decided.
+- **Login**: the MVP client waits for LISS-0147 (session-key login, ADR
+  0018) rather than building against the current anonymous claimed-ID
+  login. The MVP's Phase 1 (Red) cannot start until LISS-0147 lands on
+  `main`.
+- **Terrain**: hand-built in Godot (a minimal scene/heightmap authored
+  directly in the client). Confirmed that `Field`/`EnvironmentEther`
+  (`include/seed/EnvironmentEther.h`) hold no geometric data at all — only
+  four scalar floats (Fire/Water/Earth/Air ether levels) used for spell
+  power and hazard calculations, no coordinates, heightmap, or mesh data.
+  The server has no terrain concept to read from.
+
+## Still open
+
 - Whether this MVP work happens directly against `LISS-0128`/`LISS-0129`
   (updating their status/content) or as new MVP-scoped sub-issues under
   them.

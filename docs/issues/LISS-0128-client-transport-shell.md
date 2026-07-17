@@ -2,7 +2,9 @@
 
 - Status: proposed
 - Priority: high
-- Depends on: LISS-0121, LISS-0122, LISS-0044
+- Depends on: LISS-0121, LISS-0122, LISS-0044, **LISS-0147**（2026-07-18追加、
+  MVPはセッションキー方式のログインを前提とするため、LISS-0147のmain着地が
+  前提条件）
 - Related ADR: `docs/architecture/adr/0020-game-client-mvp-godot.md`
   （MVP実装はGodot 4.7 + GDScriptで行う方針、2026-07-18時点で未承認）
 
