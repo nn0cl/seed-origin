@@ -85,4 +85,22 @@ void ingests_decoded_commands_from_client_session() {
     ::close(sockets[0]);
 }
 
+void dispatches_ingested_login_to_session_registry() {
+    server::SessionRegistry registry;
+    server::ServerCommandDispatcher dispatcher(registry);
+    server::ServerRuntime runtime;
+    assert(runtime.start(0));
+
+    const network::NetworkCommand command = {
+        network::CURRENT_PROTOCOL_VERSION, network::CommandType::Login, 0, "player-a"};
+    assert(runtime.submit(command));
+    const std::vector<server::CommandDispatchResult> results =
+        runtime.dispatchPendingCommands(dispatcher);
+    assert(results.size() == 1);
+    assert(results[0].accepted);
+    assert(results[0].session.internalId > 0);
+    assert(runtime.pendingCommandCount() == 0);
+    assert(runtime.stop());
+}
+
 } // namespace server_runtime_tests

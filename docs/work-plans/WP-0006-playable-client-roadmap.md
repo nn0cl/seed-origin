@@ -29,6 +29,7 @@
 | LISS-0090 | Non-blocking connection accept boundary | critical | LISS-0056, LISS-0054 | review |
 | LISS-0091 | ClientSession/frame boundary | critical | LISS-0056, LISS-0075 | review |
 | LISS-0093 | Session command ingress | critical | LISS-0056, LISS-0091 | review |
+| LISS-0094 | Runtime-to-login dispatch slice | critical | LISS-0072, LISS-0076, LISS-0077, LISS-0093 | review |
 | LISS-0082 | Client Snapshot application/interpolation | high | LISS-0063, LISS-0080 | proposed |
 | LISS-0083 | Client EffectQueue | high | LISS-0065, LISS-0080 | proposed |
 | LISS-0084 | Sync gaps/backpressure/effect backlog | high | LISS-0080, LISS-0083 | in_progress |
