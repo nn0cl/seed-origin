@@ -2,7 +2,11 @@
 
 ## Status
 
-Accepted
+Accepted, with its branching/push decision **superseded by
+`docs/architecture/adr/0022-restore-per-issue-branching.md`** (2026-07-18).
+Per-Issue branching is restored; `main` is no longer used directly for
+issue work. The Adjudicator/Developer role-boundary decision below remains
+in effect and is not reopened by ADR 0022.
 
 ## Context
 

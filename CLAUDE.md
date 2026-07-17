@@ -161,8 +161,10 @@ Adjudicator.
 
 Before reporting completion, check `docs/collaboration/definition-of-done.md`.
 Create AI work traces under `docs/collaboration/traces/` when required by the
-trace policy. This repository uses `main` for approved issue work; use
-feature-unit branches only when the Adjudicator explicitly requests them.
+trace policy. This repository uses a dedicated branch per Issue, per
+`docs/collaboration/branch-commit-pr-discipline.md` (ADR 0022; this reverses
+the earlier ADR 0013 main-only exception). Do not implement issue work
+directly on `main`.
 For feature work, identify local issue or GitHub issue dependencies before
 creating the branch.
 

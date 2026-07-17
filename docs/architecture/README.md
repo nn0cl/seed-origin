@@ -107,6 +107,9 @@ through the versioned network protocol rather than depend on World internals.
 - `adr/0017-admin-authentication-and-http-surface.md`
 - `adr/0018-registered-player-authentication.md` (supersedes ADR 0016 for
   player identity; ADR 0016 remains for historical record)
+- `adr/0022-restore-per-issue-branching.md` (supersedes ADR 0013's
+  branching/push decision only; ADR 0013's Adjudicator/Developer
+  role-boundary decision remains in effect)
 
 ## Remaining Technology Evaluation
 

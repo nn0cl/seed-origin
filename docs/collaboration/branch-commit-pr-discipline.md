@@ -4,10 +4,12 @@ This document defines Git workflow for AI-TDD collaboration.
 
 ## Repository Policy
 
-`seed-origin` uses `main` as the working branch. Issue work, documentation,
-tests, implementation, commits, and pushes are performed on `main` unless the
-Adjudicator explicitly approves a temporary exception. The remote repository
-must expose the same branch as the authoritative working branch.
+`seed-origin` uses a dedicated branch per Issue, Phase, or reviewable unit
+(ADR 0022, 2026-07-18; this reverses an earlier main-only exception recorded
+in the now-superseded portion of ADR 0013). Issue work, documentation,
+tests, implementation, and commits are performed on that branch, not
+directly on `main`. The remote repository must expose the same branch
+naming as the authoritative working branch for each in-flight Issue.
 
 ## Branches
 
@@ -27,9 +29,7 @@ chore/<short-maintenance-topic>
 Rules:
 
 - one branch should represent one feature, process change, or reviewable unit.
-- for this repository, approved issue work may be committed directly to `main`.
-- feature branches are not used unless an explicit Adjudicator waiver records
-  the reason and scope.
+- do not implement issue work directly on `main`.
 - do not mix unrelated documentation, tests, implementation, and refactor work.
 - do not start Phase 2 implementation on a branch whose Phase 1 tests have not
   been reviewed.

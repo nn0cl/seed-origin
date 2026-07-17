@@ -131,23 +131,23 @@ minimal.
 
 Before reporting completion, check `docs/collaboration/definition-of-done.md`.
 Create AI work traces under `docs/collaboration/traces/` when the trace policy
-requires it. This repository uses `main` as the working branch for issue work;
-do not create feature-unit branches unless the Adjudicator explicitly waives
-this rule.
+requires it. This repository uses a dedicated branch per Issue, Phase, or
+reviewable unit, per `docs/collaboration/branch-commit-pr-discipline.md`
+(ADR 0022; this reverses the earlier ADR 0013 main-only exception). Do not
+implement issue work directly on `main`.
 For feature work, identify local issue or GitHub issue dependencies before
-starting work on `main`.
+creating the branch.
 
 ## Issue Completion Delivery
 
-- An issue is not complete until its approved changes are committed on
-  `main`.
-- After the commit succeeds and the working tree contains no issue-scoped
-  uncommitted changes, push `main` to its configured remote.
-- After pushing `main`, wait for and inspect the GitHub CodeQL code-scanning
-  result before starting the next issue.
-- If CodeQL reports a finding, record it as a local or GitHub Issue, prioritize
-  it above the next planned issue, and resolve it before proceeding.
-- Only when the CodeQL review has no findings may the next issue begin.
-- The completion report must include the commit, push, and CodeQL review
-  result. If commit, push, or CodeQL review is blocked, keep the issue open and
-  record the blocker instead of reporting completion.
+- An issue is not complete until its approved changes are committed on its
+  branch.
+- Push, PR creation, and CI/CodeQL review follow the normal branch flow in
+  `docs/collaboration/branch-commit-pr-discipline.md` — a branch must pass
+  CI before merging into `main`. There is no separate rule requiring an
+  immediate push-and-wait-for-CodeQL step outside that normal flow.
+- Any `git push` still requires explicit, per-instance user confirmation
+  before it happens, independent of this section.
+- The completion report must include the commit and current branch/PR
+  state. If commit is blocked, keep the issue open and record the blocker
+  instead of reporting completion.
