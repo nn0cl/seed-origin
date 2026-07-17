@@ -10,13 +10,21 @@
 #include <httplib.h>
 
 #include "AdminAuthStore.h"
+#include "AdminLoginLockout.h"
 #include "AdminSessionStore.h"
 #include "IdentityAliasStore.h"
 #include "PostgresIdentityAliasStore.h"
 
 namespace {
 
-constexpr uint64_t kSessionTtlSeconds = 2 * 60 * 60; // placeholder TTL, see ADR 0017.
+// ADR 0017 decision (2026-07-18): fixed 1-hour TTL, no idle timeout.
+constexpr uint64_t kSessionTtlSeconds = 60 * 60;
+
+// ADR 0017 decision (2026-07-18): lock after 3 consecutive failed logins for
+// a username. Lockout duration itself was not specified by the Adjudicator;
+// 15 minutes is an assumed default pending confirmation (see LISS-0144).
+constexpr std::size_t kMaxLoginAttempts = 3;
+constexpr uint64_t kLockoutSeconds = 15 * 60;
 
 // Minimal escaping for the small, fixed-shape JSON this admin API emits.
 // Values here are canonical claimed IDs (already restricted to
@@ -111,20 +119,31 @@ int main(int argc, char** argv) {
     }
 
     admin::AdminSessionStore sessions;
+    admin::AdminLoginLockout lockout(kMaxLoginAttempts, kLockoutSeconds);
     httplib::Server server;
 
     server.Post("/login", [&](const httplib::Request& req, httplib::Response& res) {
         const std::string username = req.get_param_value("username");
         const std::string password = req.get_param_value("password");
+        const uint64_t now = static_cast<uint64_t>(std::time(nullptr));
+
+        if (username.empty() || lockout.isLocked(username, now)) {
+            res.status = 423;
+            res.set_content("{\"error\":\"account locked, try again later\"}",
+                            "application/json");
+            return;
+        }
+
         int64_t adminUserId = 0;
-        if (username.empty() || password.empty() ||
-            !authStore->verifyCredentials(username, password, adminUserId)) {
+        if (password.empty() || !authStore->verifyCredentials(username, password, adminUserId)) {
+            lockout.recordFailure(username, now);
             res.status = 401;
             res.set_content("{\"error\":\"invalid credentials\"}", "application/json");
             return;
         }
-        const std::string token = sessions.createSession(
-            adminUserId, static_cast<uint64_t>(std::time(nullptr)), kSessionTtlSeconds);
+
+        lockout.recordSuccess(username);
+        const std::string token = sessions.createSession(adminUserId, now, kSessionTtlSeconds);
         std::ostringstream body;
         body << "{\"token\":\"" << jsonEscape(token) << "\"}";
         res.set_content(body.str(), "application/json");

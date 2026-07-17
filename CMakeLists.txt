@@ -55,6 +55,7 @@ set(SEED_CORE_SOURCES
     src/SessionRegistry.cpp
     src/IdentityAliasStore.cpp
     src/AdminSessionStore.cpp
+    src/AdminLoginLockout.cpp
     src/Status.cpp
 )
 

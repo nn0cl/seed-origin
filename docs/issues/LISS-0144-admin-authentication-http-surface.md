@@ -38,13 +38,21 @@ ADR 0017で決定した認証方式（`admin_users`テーブル + pgcrypto bcryp
 - `CMakeLists.txt`: `find_package(httplib CONFIG QUIET)`を追加し、
   `LIBPQXX_FOUND AND httplib_FOUND`のときのみ`seed_admin`をビルドする。
 
-## Remaining decisions（ADR 0017から持ち越し）
+## Remaining decisions（2026-07-18更新）
 
-- `/login`へのレート制限（総当たり対策）は未実装。
-- トークンTTL・アイドル失効・複数インスタンス間のセッション共有方針は未決定
-  （プレースホルダの固定TTLのみ）。
-- TLS終端は未設定（ローカル/ループバック限定運用を前提）。
-- ブラウザUIは別Non-Decision（クライアント技術選定）待ち。
+- 解決済み: `/login`のレート制限は`AdminLoginLockout`で実装した
+  （username単位、3回連続失敗でロック）。ロック解除までの待機時間
+  （15分）はAdjudicatorから明示指定がなかったための仮値であり、
+  必要であれば別途確定させる。
+- 解決済み: セッションTTLは1時間固定（アイドルタイムアウトなし）に決定・
+  反映した。複数インスタンス間のセッション共有は単一プロセス運用が前提の
+  ため現時点では対象外。
+- 解決済み: TLS終端はローカル運用のみでよいと確定（`127.0.0.1` bindの
+  ままで変更不要）。
+- ブラウザUIは`docs/issues/LISS-0145-admin-ui-react-spa.md`として
+  Issue化し、React SPA + SSEの方針は決定したが、npmツールチェーン選定・
+  配置場所・SSEペイロード契約・Bearer認証とSSEの統合方式は
+  設計未着手（Phase 0 design intake）。
 - `seed_admin`にSIGTERM/SIGINTの明示的なgraceful shutdownハンドラがない
   （`seed_server`と異なり、cpp-httplibの`listen()`はOSのデフォルト終了に
   委ねている）。
@@ -67,6 +75,9 @@ ADR 0017で決定した認証方式（`admin_users`テーブル + pgcrypto bcryp
   - 確定後の`review-queue` → 空配列、`export` → `reviewStatus=confirmed`・
     `confidence=0.9`に更新済みであることを確認。
   - `POST /logout` → `204`、失効後の同トークンでの`export` → `401`。
+- `AdminLoginLockout`追加後、同一usernameで3回連続誤ったパスワードを
+  送信 → 4回目は正しいパスワードでも`423`（アカウントロック）を返すことを
+  `curl`で確認した。
 - Adjudicator方針によりCTest（`ctest`）は保留した。検証後、`seed_admin`
   プロセスとDocker Composeコンテナは停止・削除済み（データボリュームは
   保持）。

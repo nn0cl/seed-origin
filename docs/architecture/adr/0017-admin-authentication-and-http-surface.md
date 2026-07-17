@@ -82,10 +82,18 @@ subsequent request; there is no cookie, so there is no CSRF surface to
 defend — a browser cannot be tricked into attaching a custom `Authorization`
 header via a cross-site form or image tag the way it can with cookies.
 
-**Ambiguity carried forward**: token TTL, revocation-on-idle, and
-multi-instance session sharing (if the admin surface is ever
-horizontally scaled) are not decided here; the implementation slice uses a
-fixed TTL as a placeholder, not a policy decision.
+**Resolved 2026-07-18**: session TTL is a fixed **1 hour**, with no idle
+timeout — an admin session always expires exactly one hour after login
+regardless of activity. This favors simplicity for a single-operator
+internal tool over defending against an unattended-terminal risk.
+`/login` additionally has a brute-force guard (`AdminLoginLockout`): 3
+consecutive failed attempts for a username lock further attempts until a
+lockout window passes (15 minutes, an assumed default — the Adjudicator did
+not specify a duration; revisit if this is too short/long in practice).
+
+**Ambiguity carried forward**: multi-instance session sharing (if the admin
+surface is ever horizontally scaled) is not decided here — `AdminSessionStore`
+and `AdminLoginLockout` are both single-process in-memory state.
 
 ### 4. HTTP library is `cpp-httplib`
 
@@ -100,10 +108,16 @@ web framework).
 This ADR and its implementation slice (LISS-0144) deliver a `curl`-testable
 HTTP API (`seed_admin` executable): login, export, review-queue listing, and
 review submission. **A browser-based admin UI is explicitly out of scope**
-here — that requires its own front-end technology decision (still an open
-Non-Decision per `CLAUDE.md`) and is left to a future Issue. "Admin page" in
-ADR 0016 is satisfied at the API level for this slice; a UI can be layered
-on top later without changing this contract.
+here. "Admin page" in ADR 0016 is satisfied at the API level for this slice;
+a UI can be layered on top later without changing this contract.
+
+**Resolved 2026-07-18**: the Adjudicator decided the future UI will be a
+React SPA, with the admin API exposing Server-Sent Events (SSE) for live
+updates. This decision is recorded, but design and implementation are
+tracked separately as `docs/issues/LISS-0145-admin-ui-react-spa.md`
+(Phase 0 design intake only — build tooling, directory placement, SSE
+payload contract, and how SSE interacts with the Bearer-only auth model in
+Decision 3 are all still open there).
 
 ### 6. Admin account bootstrap is a manual DB operation, not an API endpoint
 
@@ -131,15 +145,17 @@ Negative / follow-up work required:
 
 - `cpp-httplib`'s specific pinned version has not had a full vulnerability
   advisory check in this session; required before any non-local deployment.
-- No rate limiting on `/login` yet — a brute-force guard (reusing the
-  `CommandRateLimiter` pattern from LISS-0131) is a follow-up, tracked as a
-  remaining decision below.
-- No HTTPS/TLS termination is configured; the admin surface is
-  local/loopback-only until a deployment ADR decides TLS termination
-  (reverse proxy vs. in-process).
-- Token revocation-on-idle, TTL policy, and multi-instance session sharing
-  remain open (see Decision 3 ambiguity).
-- A browser UI remains a separate, undecided Non-Decision (Decision 5).
+- `AdminLoginLockout`'s 15-minute lockout window is an assumed default (the
+  Adjudicator specified "3 failures locks" but not a duration); confirm or
+  adjust in practice.
+- No HTTPS/TLS termination is configured; the Adjudicator confirmed
+  local/loopback-only operation is acceptable for now (Decision 3
+  resolution), so this is deliberately deferred, not an oversight.
+- Multi-instance session sharing remains open (see Decision 3).
+- `seed_admin` has no graceful-shutdown signal handler (unlike `seed_server`);
+  it relies on the OS default SIGTERM behavior.
+- The React SPA + SSE UI (Decision 5 resolution) has its scope decided but
+  no design or implementation yet — see LISS-0145.
 
 ## Related documents
 
@@ -147,4 +163,5 @@ Negative / follow-up work required:
 - `docs/issues/LISS-0130-identity-persistence-reconciliation.md`
 - `docs/issues/LISS-0143-postgres-identity-alias-adapter.md`
 - `docs/issues/LISS-0144-admin-authentication-http-surface.md`
+- `docs/issues/LISS-0145-admin-ui-react-spa.md`
 - `include/seed/PostgresIdentityAliasStore.h`

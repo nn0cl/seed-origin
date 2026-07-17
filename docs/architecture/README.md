@@ -114,10 +114,9 @@ Technology choices still open for ADR decision:
   (engine selection itself is decided by ADR 0016).
 - wall-clock-to-WorldTick mapping needed for retention purge (ADR 0016
   decision 2 ambiguity).
-- `/login` brute-force rate limiting, session TTL/revocation policy, and TLS
-  termination for the admin HTTP surface (ADR 0017 follow-up).
-- browser-based admin UI framework (ADR 0017 decision 5 explicitly defers
-  this; admin authentication mechanism itself is decided).
+- React admin SPA build tooling, directory placement, and SSE payload/auth
+  contract (ADR 0017 decision 5 resolution scope; tracked as LISS-0145,
+  design intake only).
 - client platform, renderer, and UI framework.
 - snapshot/event wire encoding extension.
 - deployment and observability stack.
