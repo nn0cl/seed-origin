@@ -19,6 +19,11 @@ void accepts_snapshot_and_event_envelopes();
 void rejects_invalid_update_identity();
 }
 
+namespace world_update_sequence_tests {
+void accepts_ordered_updates_and_initial_snapshot();
+void detects_duplicates_and_gaps_without_advancing();
+}
+
 namespace field_state_tests {
 void removes_players_by_full_id();
 void accepts_empty_frame();
@@ -93,6 +98,8 @@ int main() {
     server_tick_tests::advances_fixed_logical_frames_and_cuts_queue();
     world_update_tests::accepts_snapshot_and_event_envelopes();
     world_update_tests::rejects_invalid_update_identity();
+    world_update_sequence_tests::accepts_ordered_updates_and_initial_snapshot();
+    world_update_sequence_tests::detects_duplicates_and_gaps_without_advancing();
     field_state_tests::removes_players_by_full_id();
     field_state_tests::accepts_empty_frame();
     connection_tests::close_is_idempotent();

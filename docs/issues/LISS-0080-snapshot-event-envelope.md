@@ -20,4 +20,4 @@
 - 重複排除、欠落検出、Snapshot再同期要求を定義する。
 - v1 wire formatへ追加するフィールドと互換性方針を記録する。
 
-Active slice: LISS-0087（WorldUpdate Envelopeの型と検証）。
+Active slice: LISS-0087（WorldUpdate Envelopeの型と検証）, LISS-0088（sequence管理）。

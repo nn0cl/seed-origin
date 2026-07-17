@@ -33,6 +33,7 @@
 | LISS-0081 | Server tick and ActionQueue implementation | critical | LISS-0079, LISS-0058 | review |
 | LISS-0086 | Logical server tick/ActionQueue bridge | critical | LISS-0081, LISS-0080 | review |
 | LISS-0087 | WorldUpdate envelope validation slice | critical | LISS-0080, LISS-0086 | review |
+| LISS-0088 | WorldUpdate sequence tracker | critical | LISS-0080, LISS-0087 | review |
 | LISS-0082 | Client Snapshot application/interpolation | high | LISS-0063, LISS-0080 | proposed |
 | LISS-0083 | Client EffectQueue | high | LISS-0065, LISS-0080 | proposed |
 | LISS-0084 | Sync gaps/backpressure/effect backlog | high | LISS-0080, LISS-0083 | proposed |
