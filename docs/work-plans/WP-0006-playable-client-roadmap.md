@@ -28,6 +28,7 @@
 | LISS-0089 | Snapshot resync decision controller | critical | LISS-0084, LISS-0088 | review |
 | LISS-0090 | Non-blocking connection accept boundary | critical | LISS-0056, LISS-0054 | review |
 | LISS-0091 | ClientSession/frame boundary | critical | LISS-0056, LISS-0075 | review |
+| LISS-0093 | Session command ingress | critical | LISS-0056, LISS-0091 | review |
 | LISS-0082 | Client Snapshot application/interpolation | high | LISS-0063, LISS-0080 | proposed |
 | LISS-0083 | Client EffectQueue | high | LISS-0065, LISS-0080 | proposed |
 | LISS-0084 | Sync gaps/backpressure/effect backlog | high | LISS-0080, LISS-0083 | in_progress |

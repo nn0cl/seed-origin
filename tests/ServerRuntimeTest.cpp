@@ -1,7 +1,10 @@
 #include <cassert>
+#include <sys/socket.h>
+#include <unistd.h>
 
 #include "ServerRuntime.h"
 #include "ServerCommandDispatcher.h"
+#include "NetworkFrameCodec.h"
 
 namespace server_runtime_tests {
 
@@ -60,6 +63,26 @@ void dispatches_pending_commands_in_fifo_order() {
     assert(!results[1].accepted);
     assert(runtime.pendingCommandCount() == 0);
     assert(runtime.stop());
+}
+
+void ingests_decoded_commands_from_client_session() {
+    int sockets[2] = {-1, -1};
+    assert(::socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) == 0);
+    server::ClientSession session(sockets[1]);
+    server::ServerRuntime runtime;
+    assert(runtime.start(0));
+
+    const network::NetworkCommand command = {
+        network::CURRENT_PROTOCOL_VERSION, network::CommandType::Login, 0, "player"};
+    std::vector<uint8_t> frame;
+    std::string error;
+    assert(network::encodeFrame(command, frame, error));
+    assert(::send(sockets[0], frame.data(), frame.size(), 0) ==
+           static_cast<ssize_t>(frame.size()));
+    assert(runtime.ingest(session, error) == server::ReceiveStatus::Commands);
+    assert(runtime.pendingCommandCount() == 1);
+    assert(runtime.stop());
+    ::close(sockets[0]);
 }
 
 } // namespace server_runtime_tests

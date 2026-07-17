@@ -77,6 +77,7 @@ namespace server_runtime_tests {
 void rejects_commands_before_start();
 void drains_valid_commands_in_fifo_order();
 void dispatches_pending_commands_in_fifo_order();
+void ingests_decoded_commands_from_client_session();
 }
 
 namespace network_frame_tests {
@@ -134,6 +135,7 @@ int main() {
     server_runtime_tests::rejects_commands_before_start();
     server_runtime_tests::drains_valid_commands_in_fifo_order();
     server_runtime_tests::dispatches_pending_commands_in_fifo_order();
+    server_runtime_tests::ingests_decoded_commands_from_client_session();
     network_frame_tests::round_trips_a_valid_command();
     network_frame_tests::rejects_incomplete_and_oversized_frames();
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();

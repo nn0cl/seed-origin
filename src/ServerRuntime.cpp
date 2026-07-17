@@ -34,6 +34,33 @@ bool ServerRuntime::submit(const network::NetworkCommand& command) {
     return true;
 }
 
+ReceiveStatus ServerRuntime::ingest(ClientSession& session, std::string& error) {
+    if (!running) {
+        error = "server runtime is stopped";
+        return ReceiveStatus::Failed;
+    }
+
+    std::vector<network::NetworkCommand> commands;
+    const ReceiveStatus status = session.receive(commands, error);
+    if (status != ReceiveStatus::Commands) return status;
+    if (commands.size() > MAX_PENDING_COMMANDS - pendingCommands.size()) {
+        error = "server command queue is full";
+        return ReceiveStatus::Failed;
+    }
+
+    for (std::vector<network::NetworkCommand>::const_iterator it = commands.begin();
+         it != commands.end(); ++it) {
+        std::string validationError;
+        if (!network::validateCommand(*it, validationError)) {
+            error = validationError;
+            return ReceiveStatus::Failed;
+        }
+    }
+    pendingCommands.insert(pendingCommands.end(), commands.begin(), commands.end());
+    error.clear();
+    return ReceiveStatus::Commands;
+}
+
 std::vector<network::NetworkCommand> ServerRuntime::drainCommands() {
     std::vector<network::NetworkCommand> drained;
     drained.reserve(pendingCommands.size());

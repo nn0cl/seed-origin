@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "Connection.h"
+#include "ClientSession.h"
 #include "NetworkCommand.h"
 #include "ServerCommandDispatcher.h"
 
@@ -23,6 +24,7 @@ public:
     bool stop();
     bool isRunning() const;
     bool submit(const network::NetworkCommand& command);
+    ReceiveStatus ingest(ClientSession& session, std::string& error);
     std::vector<network::NetworkCommand> drainCommands();
     std::vector<CommandDispatchResult> dispatchPendingCommands(
         ServerCommandDispatcher& dispatcher);
