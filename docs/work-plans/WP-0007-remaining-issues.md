@@ -6,23 +6,25 @@
 
 ## 現在地
 
-2026-07-17時点で、通信境界、匿名セッション、20FPS WorldInput、WorldUpdate同期、環境エーテルv1、チャット入力、権威3D移動、攻撃・魔法Command接続、攻撃・魔法結果Event基礎まで実装済み。未完了のIssueはStatusが`proposed`または`in_progress`であり、`review`は実装資料・受入条件の確認待ちである。
+2026-07-17時点で、通信境界、匿名セッション、20FPS WorldInput、WorldUpdate同期、環境エーテルv1、チャット入力、権威3D移動、攻撃・魔法Command接続、攻撃・魔法結果Event、MP・クールダウン、frameロールバックまで実装済み。過去のスライスには`review`が残るが、これは実装完了・Adjudicator確認待ちを表す。実装順と依存関係は本WorkPlanのcanonical表だけを正とする。
 
 ## Canonical実行順
 
 | 順序 | Canonical Issue | 内容 | 状態 |
 | --- | --- | --- | --- |
 | 0 | LISS-0019 | world安全性ゲートと所有権契約 | in_progress |
-| 1 | LISS-0134 | FFXI型8属性移行の採用判断 | proposed |
-| 2 | LISS-0137 | 攻撃・魔法の結果Eventと原子性 | review |
-| 3 | LISS-0138 | MP・クールダウン・二重実行防止 | review |
-| 4 | LISS-0139 | NPCをCombatTargetへ統合 | proposed |
-| 5 | LISS-0131 | 不正入力・レート制限 | proposed |
-| 6 | LISS-0130 | ID名寄せの永続化と削除方針 | proposed |
-| 7 | LISS-0128 | クライアント通信シェル | proposed |
-| 8 | LISS-0129 | クライアントプレイシェル | proposed |
-| 9 | LISS-0132 | 再接続・backpressure・観測性 | proposed |
-| 10 | LISS-0133 | プレイアブルクライアント受入 | proposed |
+| 1 | LISS-0137 | 攻撃・魔法の結果Eventと原子性 | review（実装済み） |
+| 2 | LISS-0138 | MP・クールダウン・二重実行防止 | review（実装済み） |
+| 3 | LISS-0139-A | 共通CombatTargetとNPC対象適用 | in_progress |
+| 4 | LISS-0139-B | NPC公開Snapshot | proposed |
+| 5 | LISS-0139-C | NPC配置・死亡・再配置 | proposed |
+| 6 | LISS-0139-D | NPC AIの決定論的入力 | proposed |
+| 7 | LISS-0131 | 不正入力・レート制限 | proposed |
+| 8 | LISS-0130 | ID名寄せの永続化と削除方針 | proposed |
+| 9 | LISS-0128 | クライアント通信シェル | proposed |
+| 10 | LISS-0129 | クライアントプレイシェル | proposed |
+| 11 | LISS-0132 | 再接続・backpressure・観測性 | proposed |
+| 12 | LISS-0133 | プレイアブルクライアント受入 | proposed |
 
 ## 追加Issue
 
@@ -40,6 +42,18 @@
 - PlayerとNPCを共通の対象契約へ統合する。
 - NPC配置、公開状態、HP、耐性、死亡状態をWorld frameへ接続する。
 - NPC AI、再配置、攻撃判断は別スライスとして分離する。
+- 実装順は0139-A（対象適用）、0139-B（公開Snapshot）、0139-C（配置・死亡・再配置）、0139-D（AI）とする。
+
+### 棚卸し結果
+
+- LISS-0041〜0069は親Issue／初期ロードマップとして保持し、実装完了判定は
+  0070以降と0137以降のcanonical sliceで行う。
+- LISS-0070〜0126の`review`は、過去の実装資料とCodeQL確認の証跡を保持する
+  historical sliceであり、新しい実装を重複して開始しない。
+- LISS-0134は4属性からFFXI型8属性へ移行する採用判断であり、0139-Aの対象
+  解決とは独立させる。属性wire schemaを変更するまで実装Issueへ昇格しない。
+- LISS-0131、0130、0128、0129、0132、0133は、NPC対象境界を固定した後の
+  canonical残作業として保持する。
 
 ## 重複Issueの扱い
 
