@@ -103,4 +103,22 @@ void dispatches_ingested_login_to_session_registry() {
     assert(runtime.stop());
 }
 
+void rejects_client_accept_when_runtime_is_stopped() {
+    server::ServerRuntime runtime;
+    uint64_t connectionId = 0;
+    std::string error;
+    assert(runtime.acceptPendingClient(connectionId, error) == server::AcceptStatus::Failed);
+    assert(connectionId == 0);
+    assert(runtime.connectedClientCount() == 0);
+}
+
+void clears_owned_clients_on_stop() {
+    server::ServerRuntime runtime;
+    assert(runtime.start(0));
+    assert(runtime.connectedClientCount() == 0);
+    assert(runtime.removeClosedClients() == 0);
+    assert(runtime.stop());
+    assert(runtime.connectedClientCount() == 0);
+}
+
 } // namespace server_runtime_tests

@@ -1,9 +1,12 @@
 #include "ServerRuntime.h"
 #include "ServerCommandDispatcher.h"
 
+#include <limits>
+#include <utility>
+
 namespace server {
 
-ServerRuntime::ServerRuntime() : running(false) {}
+ServerRuntime::ServerRuntime() : running(false), nextConnectionId(1), clients() {}
 
 ServerRuntime::~ServerRuntime() {
     stop();
@@ -17,6 +20,7 @@ bool ServerRuntime::start(uint16_t port) {
 
 bool ServerRuntime::stop() {
     pendingCommands.clear();
+    clients.clear();
     const bool closed = listener.closeSocket();
     running = false;
     return closed;
@@ -24,6 +28,56 @@ bool ServerRuntime::stop() {
 
 bool ServerRuntime::isRunning() const {
     return running;
+}
+
+AcceptStatus ServerRuntime::acceptPendingClient(uint64_t& connectionId,
+                                                std::string& error) {
+    connectionId = 0;
+    if (!running) {
+        error = "server runtime is stopped";
+        return AcceptStatus::Failed;
+    }
+    int clientSocket = -1;
+    const AcceptStatus status = listener.acceptClient(clientSocket);
+    if (status != AcceptStatus::Accepted) return status;
+    if (nextConnectionId == std::numeric_limits<uint64_t>::max()) {
+        ::close(clientSocket);
+        error = "connection id allocation failed";
+        return AcceptStatus::Failed;
+    }
+    std::unique_ptr<ClientSession> session(new ClientSession(clientSocket));
+    if (!session->isOpen()) {
+        error = "accepted client session could not be initialized";
+        return AcceptStatus::Failed;
+    }
+    connectionId = nextConnectionId++;
+    clients[connectionId] = std::move(session);
+    error.clear();
+    return AcceptStatus::Accepted;
+}
+
+ClientSession* ServerRuntime::clientSession(uint64_t connectionId) {
+    const std::map<uint64_t, std::unique_ptr<ClientSession> >::iterator found =
+        clients.find(connectionId);
+    return found == clients.end() ? 0 : found->second.get();
+}
+
+size_t ServerRuntime::connectedClientCount() const {
+    return clients.size();
+}
+
+size_t ServerRuntime::removeClosedClients() {
+    size_t removed = 0;
+    for (std::map<uint64_t, std::unique_ptr<ClientSession> >::iterator it = clients.begin();
+         it != clients.end();) {
+        if (it->second->isOpen()) {
+            ++it;
+            continue;
+        }
+        it = clients.erase(it);
+        ++removed;
+    }
+    return removed;
 }
 
 bool ServerRuntime::submit(const network::NetworkCommand& command) {

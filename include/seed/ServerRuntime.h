@@ -4,6 +4,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <deque>
+#include <map>
+#include <memory>
+#include <string>
 #include <vector>
 
 #include "Connection.h"
@@ -23,6 +26,10 @@ public:
     bool start(uint16_t port);
     bool stop();
     bool isRunning() const;
+    AcceptStatus acceptPendingClient(uint64_t& connectionId, std::string& error);
+    ClientSession* clientSession(uint64_t connectionId);
+    size_t connectedClientCount() const;
+    size_t removeClosedClients();
     bool submit(const network::NetworkCommand& command);
     ReceiveStatus ingest(ClientSession& session, std::string& error);
     std::vector<network::NetworkCommand> drainCommands();
@@ -33,6 +40,8 @@ public:
 private:
     Connection listener;
     bool running;
+    uint64_t nextConnectionId;
+    std::map<uint64_t, std::unique_ptr<ClientSession> > clients;
     std::deque<network::NetworkCommand> pendingCommands;
 };
 

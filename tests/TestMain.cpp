@@ -80,6 +80,8 @@ void drains_valid_commands_in_fifo_order();
 void dispatches_pending_commands_in_fifo_order();
 void ingests_decoded_commands_from_client_session();
 void dispatches_ingested_login_to_session_registry();
+void rejects_client_accept_when_runtime_is_stopped();
+void clears_owned_clients_on_stop();
 }
 
 namespace network_frame_tests {
@@ -159,6 +161,8 @@ int main() {
     server_runtime_tests::dispatches_pending_commands_in_fifo_order();
     server_runtime_tests::ingests_decoded_commands_from_client_session();
     server_runtime_tests::dispatches_ingested_login_to_session_registry();
+    server_runtime_tests::rejects_client_accept_when_runtime_is_stopped();
+    server_runtime_tests::clears_owned_clients_on_stop();
     network_frame_tests::round_trips_a_valid_command();
     network_frame_tests::rejects_incomplete_and_oversized_frames();
     login_response_codec_tests::round_trips_accepted_response();
