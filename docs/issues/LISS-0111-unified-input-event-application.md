@@ -29,5 +29,5 @@ WorldFrameUpdateBuilderのWorldFrameInputs対応、Fieldの統合入力処理、
 
 ## 次のIssue
 
-攻撃・魔法Commandを安全なCombat／Spell Intentへ変換し、対象・距離・威力・環境エーテル
-計算をWorld frameへ接続する。
+LISS-0112で攻撃・魔法Commandを安全なCombat／Spell Intentへ変換した。次に対象・距離・
+威力・環境エーテル計算をWorld frameへ接続する（入力境界は実装済み）。

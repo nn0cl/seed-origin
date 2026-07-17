@@ -35,6 +35,7 @@ set(SEED_CORE_SOURCES
     src/MovementIntentQueue.cpp
     src/WorldInputQueue.cpp
     src/WorldInputTick.cpp
+    src/CombatCommandHandler.cpp
     src/MovementCommandHandler.cpp
     src/Player.cpp
     src/Position.cpp
@@ -75,6 +76,7 @@ add_executable(seed_tests
     tests/MovementIntentQueueTest.cpp
     tests/WorldInputQueueTest.cpp
     tests/WorldInputTickTest.cpp
+    tests/CombatCommandHandlerTest.cpp
     tests/FrameAccumulatorTest.cpp
     tests/LoginCommandHandlerTest.cpp
     tests/ServerCommandDispatcherTest.cpp

@@ -151,7 +151,7 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs) {
             Position next = playerItt->second.getPosition();
             next.movePosition(it->movement().dx, it->movement().dy, it->movement().dz);
             playerItt->second.setPosition(next);
-        } else {
+        } else if (it->kind() == server::WorldInputKind::Action) {
             applyAction(it->action());
         }
     }

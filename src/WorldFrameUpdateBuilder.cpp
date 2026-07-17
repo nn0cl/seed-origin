@@ -52,11 +52,20 @@ bool WorldFrameUpdateBuilder::build(const WorldFrameInputs& frame,
         std::ostringstream payload;
         if (it->kind() == WorldInputKind::Action) {
             payload << "action=" << it->action().getActionType();
-        } else {
+        } else if (it->kind() == WorldInputKind::Movement) {
             payload << "movement=session:" << it->movement().sessionId
                     << ";dx=" << it->movement().dx
                     << ";dy=" << it->movement().dy
                     << ";dz=" << it->movement().dz;
+        } else if (it->kind() == WorldInputKind::Combat) {
+            payload << "combat=attacker:" << it->combat().attackerId
+                    << ";target:" << it->combat().targetId
+                    << ";power:" << it->combat().power;
+        } else {
+            payload << "spell=caster:" << it->spell().casterId
+                    << ";target:" << it->spell().targetId
+                    << ";element:" << it->spell().element
+                    << ";power:" << it->spell().power;
         }
         payload << ";inputSequence=" << it->sequence();
         if (!appendEvent(frame.worldTick, payload.str(), updates, error)) return false;

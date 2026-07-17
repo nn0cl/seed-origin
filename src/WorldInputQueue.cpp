@@ -1,5 +1,6 @@
 #include "WorldInputQueue.h"
 
+#include <cctype>
 #include <cmath>
 #include <limits>
 
@@ -11,12 +12,24 @@ WorldInput::WorldInput(uint64_t sequence, const Action& action)
 
 WorldInput::WorldInput(uint64_t sequence, const MovementIntent& movement)
     : inputSequence(sequence), inputKind(WorldInputKind::Movement), inputAction(0, nullptr, nullptr, Status()),
-      inputMovement(movement) {}
+      inputMovement(movement), inputCombat({0, 0, 0.0f}), inputSpell({0, 0, std::string(), 0.0f}) {}
+
+WorldInput::WorldInput(uint64_t sequence, const CombatIntent& combat)
+    : inputSequence(sequence), inputKind(WorldInputKind::Combat), inputAction(0, nullptr, nullptr, Status()),
+      inputMovement({0, 0, 0.0f, 0.0f, 0.0f}), inputCombat(combat),
+      inputSpell({0, 0, std::string(), 0.0f}) {}
+
+WorldInput::WorldInput(uint64_t sequence, const SpellIntent& spell)
+    : inputSequence(sequence), inputKind(WorldInputKind::Spell), inputAction(0, nullptr, nullptr, Status()),
+      inputMovement({0, 0, 0.0f, 0.0f, 0.0f}), inputCombat({0, 0, 0.0f}),
+      inputSpell(spell) {}
 
 uint64_t WorldInput::sequence() const { return inputSequence; }
 WorldInputKind WorldInput::kind() const { return inputKind; }
 const Action& WorldInput::action() const { return inputAction; }
 const MovementIntent& WorldInput::movement() const { return inputMovement; }
+const CombatIntent& WorldInput::combat() const { return inputCombat; }
+const SpellIntent& WorldInput::spell() const { return inputSpell; }
 
 WorldInputQueue::WorldInputQueue() : nextSequence(1) {}
 
@@ -36,6 +49,33 @@ bool WorldInputQueue::enqueueMovement(int64_t sessionId, float dx, float dy, flo
     if (pending.size() >= MAX_PENDING_INPUTS ||
         nextSequence == std::numeric_limits<uint64_t>::max()) return false;
     pending.push_back(WorldInput(nextSequence++, {0, sessionId, dx, dy, dz}));
+    return true;
+}
+
+bool WorldInputQueue::enqueueCombat(int64_t attackerId, int64_t targetId, float power) {
+    if (attackerId <= 0 || targetId <= 0 || !std::isfinite(power) || power <= 0.0f) {
+        return false;
+    }
+    std::lock_guard<std::mutex> lock(mutex);
+    if (pending.size() >= MAX_PENDING_INPUTS ||
+        nextSequence == std::numeric_limits<uint64_t>::max()) return false;
+    pending.push_back(WorldInput(nextSequence++, {attackerId, targetId, power}));
+    return true;
+}
+
+bool WorldInputQueue::enqueueSpell(int64_t casterId, int64_t targetId,
+                                   const std::string& element, float power) {
+    if (casterId <= 0 || targetId <= 0 || element.empty() || element.size() > 32 ||
+        !std::isfinite(power) || power <= 0.0f) return false;
+    for (std::string::const_iterator it = element.begin(); it != element.end(); ++it) {
+        if (!std::isalnum(static_cast<unsigned char>(*it)) && *it != '_' && *it != '-') {
+            return false;
+        }
+    }
+    std::lock_guard<std::mutex> lock(mutex);
+    if (pending.size() >= MAX_PENDING_INPUTS ||
+        nextSequence == std::numeric_limits<uint64_t>::max()) return false;
+    pending.push_back(WorldInput(nextSequence++, {casterId, targetId, element, power}));
     return true;
 }
 

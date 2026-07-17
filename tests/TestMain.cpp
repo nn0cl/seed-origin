@@ -144,6 +144,11 @@ void advances_world_tick_and_cuts_unified_inputs();
 void emits_inputs_in_common_sequence_order();
 }
 
+namespace combat_command_handler_tests {
+void queues_attack_and_spell_intents();
+void rejects_malformed_or_oversized_power();
+}
+
 namespace server_command_dispatcher_tests {
 void accepts_login();
 void rejects_unimplemented_command();
@@ -224,6 +229,8 @@ int main() {
     world_input_queue_tests::rejects_invalid_inputs_without_queue_mutation();
     world_input_tick_tests::advances_world_tick_and_cuts_unified_inputs();
     world_input_tick_tests::emits_inputs_in_common_sequence_order();
+    combat_command_handler_tests::queues_attack_and_spell_intents();
+    combat_command_handler_tests::rejects_malformed_or_oversized_power();
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();

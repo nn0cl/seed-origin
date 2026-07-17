@@ -1,5 +1,7 @@
 #include "WorldFrameApplier.h"
 
+#include <cmath>
+
 namespace server {
 
 WorldFrameApplier::WorldFrameApplier(Field& field)
@@ -69,12 +71,25 @@ bool WorldFrameApplier::apply(const WorldFrameInputs& frame,
                 error = "world input contains an invalid action";
                 return false;
             }
-        } else {
+        } else if (it->kind() == WorldInputKind::Movement) {
             if (!field.hasPlayer(it->movement().sessionId)) {
                 updates.clear();
                 error = "world input movement session is not present in the field";
                 return false;
             }
+        } else if (it->kind() == WorldInputKind::Combat) {
+            if (it->combat().attackerId <= 0 || it->combat().targetId <= 0 ||
+                !std::isfinite(it->combat().power) || it->combat().power <= 0.0f) {
+                updates.clear();
+                error = "world input combat intent is invalid";
+                return false;
+            }
+        } else if (it->spell().casterId <= 0 || it->spell().targetId <= 0 ||
+                   it->spell().element.empty() || it->spell().element.size() > 32 ||
+                   !std::isfinite(it->spell().power) || it->spell().power <= 0.0f) {
+            updates.clear();
+            error = "world input spell intent is invalid";
+            return false;
         }
     }
     if (!updateBuilder.build(frame, updates, error)) return false;
