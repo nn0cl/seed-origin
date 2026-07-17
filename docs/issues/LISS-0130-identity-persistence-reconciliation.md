@@ -1,6 +1,9 @@
 # LISS-0130: ID永続化と名寄せ
 
-- Status: in_progress
+- Status: in_progress（⚠️ 2026-07-18: ADR 0018によりsuperseded予定。
+  LISS-0147着地後にLISS-0150で正式廃止するまでは、このIssueの続きの
+  実装（保存期間purge等）に新規着手しないこと。詳細は本ファイル末尾の
+  「Remaining decisions」参照）
 - Phase: phase-2-green
 - Priority: high
 - Depends on: LISS-0123, LISS-0053

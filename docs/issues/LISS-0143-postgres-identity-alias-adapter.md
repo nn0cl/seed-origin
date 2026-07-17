@@ -1,10 +1,12 @@
 # LISS-0143: PostgreSQL IdentityAliasStoreアダプタ
 
-- Status: in_progress
+- Status: in_progress（⚠️ 2026-07-18: ADR 0018によりsuperseded予定。
+  LISS-0150での正式廃止まで新規実装に着手しないこと）
 - Phase: phase-2-green
 - Priority: high
 - Depends on: LISS-0130
 - Related ADR: `docs/architecture/adr/0016-identity-alias-persistence-and-review.md`
+  （ADR 0018により実質置換、正式廃止はLISS-0150）
 
 ## 目的
 

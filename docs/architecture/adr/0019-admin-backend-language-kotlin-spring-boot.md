@@ -3,12 +3,11 @@
 ## Status
 
 Proposed — awaiting final Adjudicator sign-off before implementation
-begins. Most open questions have been answered (2026-07-18); one inference
-below (password-hashing boundary for `seed_admin` itself) needs explicit
-confirmation. ADR 0017 was previously implemented before review, which was
-a process violation (`AGENTS.md` Prime Directive: "No implementation
-without a reviewed acceptance specification"); this ADR corrects that by
-stopping for review before any code is written.
+begins. All open questions are now answered (2026-07-18). ADR 0017 was
+previously implemented before review, which was a process violation
+(`AGENTS.md` Prime Directive: "No implementation without a reviewed
+acceptance specification"); this ADR corrects that by stopping for review
+before any code is written.
 
 ## Context
 
@@ -70,26 +69,23 @@ language-independent and are **not** being reopened by this ADR:
 - ~~Fate of existing C++ code~~ — kept until Kotlin replacement is verified,
   then discarded.
 
-## Open question requiring explicit confirmation
+## Resolved: admin credential-check boundary
 
-The Adjudicator specified that **raw passwords/hashes travel only between
-`seed_auth` and the game client**, with only one-time tokens crossing to
-`seed_server` — this is clearly scoped to the *player* authentication flow
-(ADR 0018 / LISS-0146-0147). It is not yet explicit whether the same
-boundary statement also settles `seed_admin`'s own credential check.
-
-Inferred default (not yet confirmed): since MyBatis is explicit-SQL (not an
-ORM that hides queries), `seed_admin`'s Kotlin implementation calls
+**Confirmed 2026-07-18**: unlike player authentication (ADR 0018), the
+admin login has no separate world-server hop to keep credential-free —
+`seed_admin`'s login is a direct database-to-frontend exchange (Kotlin
+backend to React frontend), so the one-time-token boundary that matters for
+players does not apply here. `seed_admin`'s Kotlin implementation calls
 PostgreSQL's `pgcrypto` `crypt()` directly from a MyBatis mapper query,
 exactly as the C++ version did — **no JVM password-hashing library is
 introduced**, and the bootstrap admin account's existing `pgcrypto` hash in
-`admin_users` remains valid without migration. This needs an explicit yes/no
-before Phase 1 (Red) starts, since guessing wrong here would lock out the
-bootstrap admin account.
+`admin_users` remains valid without migration.
 
-Also still open: dependency-adoption checklist
-(`docs/architecture/dependency-policy.md`) for Spring Boot, MyBatis,
-Gradle, and their transitive dependencies has not been performed.
+## Still open (not blocking Phase 1 design, but unresolved)
+
+- Dependency-adoption checklist (`docs/architecture/dependency-policy.md`)
+  for Spring Boot, MyBatis, Gradle, and their transitive dependencies has
+  not been performed.
 
 ## Consequences (anticipated, pending approval)
 

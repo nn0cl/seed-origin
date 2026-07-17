@@ -169,9 +169,9 @@ creating the branch.
 ## Selected Stack
 
 C++11-compatible core and server sources, Xcode project, and CMake/CTest
-foundation. The client technology, wire serialization, persistence backend,
-and deployment runtime remain ADR decisions tracked by LISS-0055, LISS-0064,
-LISS-0066, and LISS-0068.
+foundation. The client technology, wire serialization, and deployment
+runtime remain ADR decisions tracked by LISS-0055, LISS-0064, and
+LISS-0068. Identity/session persistence backend is decided (see below).
 
 ## Current Non-Decisions
 
@@ -180,7 +180,16 @@ rather than assumed by an agent. Example shape:
 
 - Client renderer and UI framework.
 - Wire serialization format and compatibility policy.
-- Identity persistence format/backend.
 - Server deployment and monitoring platform.
+
+## Decided (moved out of Non-Decisions)
+
+- Identity/session persistence engine: PostgreSQL (ADR 0016). Player
+  identity model: registered accounts with Postgres-backed sessions,
+  superseding the earlier anonymous-alias approach (ADR 0018; formal
+  deprecation of the superseded pieces tracked by LISS-0150). Admin
+  backend implementation language is proposed as Kotlin/Spring Boot (ADR
+  0019, not yet Accepted as of 2026-07-18 — treat as still open until that
+  ADR's Status changes).
 
 Treat these as ADR topics, not assumptions.

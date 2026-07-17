@@ -1,10 +1,14 @@
 # LISS-0144: 管理者認証・エクスポート・衝突解決HTTP API
 
-- Status: in_progress
+- Status: in_progress（⚠️ 2026-07-18: 実装言語がC++からKotlin/Spring Bootへ
+  移行する方針がADR 0019として提案中。ADR 0019承認まで、このC++実装への
+  新規機能追加は行わないこと。データ・セキュリティポリシー（テーブル形状・
+  pgcrypto・TTL・ロックアウト回数）はKotlin版へそのまま引き継がれる）
 - Phase: phase-2-green
 - Priority: high
 - Depends on: LISS-0130, LISS-0143
-- Related ADR: `docs/architecture/adr/0017-admin-authentication-and-http-surface.md`
+- Related ADR: `docs/architecture/adr/0017-admin-authentication-and-http-surface.md`,
+  `docs/architecture/adr/0019-admin-backend-language-kotlin-spring-boot.md`
 
 ## 目的
 
