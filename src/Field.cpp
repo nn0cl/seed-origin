@@ -264,6 +264,11 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
             }
         }
     }
+    const std::map<int64_t, Player> playersBefore = playerList;
+    const world::EnvironmentEther etherBefore = fieldEther;
+    const std::map<int64_t, uint64_t> attackTicksBefore = nextAttackTick;
+    const std::map<int64_t, uint64_t> spellTicksBefore = nextSpellTick;
+    const float hazardBefore = lastEtherHazard;
     for (std::vector<server::WorldInput>::const_iterator it = inputs.begin();
          it != inputs.end(); ++it) {
         if (it->kind() == server::WorldInputKind::Movement) {
@@ -278,7 +283,15 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
             const Player* targetBefore = findPlayer(it->combat().targetId);
             const long hpBefore = targetBefore->getStatus().getHp();
             std::string error;
-            if (!applyCombat(it->combat(), error)) return false;
+            if (!applyCombat(it->combat(), error)) {
+                playerList = playersBefore;
+                fieldEther = etherBefore;
+                nextAttackTick = attackTicksBefore;
+                nextSpellTick = spellTicksBefore;
+                lastEtherHazard = hazardBefore;
+                resolutions.clear();
+                return false;
+            }
             const Player* targetAfter = findPlayer(it->combat().targetId);
             server::CombatResolution resolution;
             resolution.inputSequence = it->sequence();
@@ -306,9 +319,25 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
             const float effectivePower =
                 it->spell().power * fieldEther.conductivity(spellAttribute);
             std::string error;
-            if (!applySpell(it->spell(), error)) return false;
+            if (!applySpell(it->spell(), error)) {
+                playerList = playersBefore;
+                fieldEther = etherBefore;
+                nextAttackTick = attackTicksBefore;
+                nextSpellTick = spellTicksBefore;
+                lastEtherHazard = hazardBefore;
+                resolutions.clear();
+                return false;
+            }
             long mpCost = 0;
-            if (!spellMpCost(it->spell().power, mpCost)) return false;
+            if (!spellMpCost(it->spell().power, mpCost)) {
+                playerList = playersBefore;
+                fieldEther = etherBefore;
+                nextAttackTick = attackTicksBefore;
+                nextSpellTick = spellTicksBefore;
+                lastEtherHazard = hazardBefore;
+                resolutions.clear();
+                return false;
+            }
             Player* caster = findPlayer(it->spell().casterId);
             caster->getStatus().gainMp(-mpCost);
             const Player* targetAfter = findPlayer(it->spell().targetId);
