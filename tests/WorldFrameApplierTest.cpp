@@ -106,4 +106,22 @@ void rejects_out_of_range_combat_without_damage() {
     assert(target->getStatus().getHp() == 100);
 }
 
+void applies_spell_with_environment_conductivity_and_decay() {
+    Field* field = Field::getInstance();
+    const Position casterPosition(9201, 0.0f, 0.0f, 0.0f);
+    const Position targetPosition(9202, 2.0f, 0.0f, 0.0f);
+    assert(field->setPlayer(Player(9201, Status(100, 10), casterPosition)));
+    assert(field->setPlayer(Player(9202, Status(100, 10), targetPosition)));
+    server::WorldInputQueue queue;
+    assert(queue.enqueueSpell(9201, 9202, "fire", 50.0f));
+    server::WorldInputTick tick(queue);
+    const server::WorldFrameInputs frame = tick.advanceFrame();
+    server::WorldFrameApplier applier(*field);
+    std::vector<network::WorldUpdate> updates;
+    std::string error;
+    assert(applier.apply(frame, updates, error));
+    assert(field->environmentEther().value(world::EtherAttribute::Fire) > 4.0f);
+    assert(field->environmentEther().value(world::EtherAttribute::Fire) < 5.0f);
+}
+
 } // namespace world_frame_applier_tests

@@ -128,6 +128,7 @@ void applies_movement_intents_after_target_validation();
 void restores_movement_intents_when_target_is_missing();
 void applies_combat_damage_after_range_validation();
 void rejects_out_of_range_combat_without_damage();
+void applies_spell_with_environment_conductivity_and_decay();
 }
 
 namespace movement_intent_queue_tests {
@@ -149,6 +150,12 @@ void emits_inputs_in_common_sequence_order();
 namespace combat_command_handler_tests {
 void queues_attack_and_spell_intents();
 void rejects_malformed_or_oversized_power();
+}
+
+namespace environment_ether_tests {
+void increases_conductivity_with_ether_magnitude();
+void resolves_spell_and_decays_environment();
+void rejects_unknown_element();
 }
 
 namespace server_command_dispatcher_tests {
@@ -226,6 +233,7 @@ int main() {
     world_frame_applier_tests::restores_movement_intents_when_target_is_missing();
     world_frame_applier_tests::applies_combat_damage_after_range_validation();
     world_frame_applier_tests::rejects_out_of_range_combat_without_damage();
+    world_frame_applier_tests::applies_spell_with_environment_conductivity_and_decay();
     movement_intent_queue_tests::queues_valid_movement_without_field_mutation();
     movement_intent_queue_tests::rejects_invalid_session_without_queue_mutation();
     movement_intent_queue_tests::restores_a_cut_frame_in_original_order();
@@ -235,6 +243,9 @@ int main() {
     world_input_tick_tests::emits_inputs_in_common_sequence_order();
     combat_command_handler_tests::queues_attack_and_spell_intents();
     combat_command_handler_tests::rejects_malformed_or_oversized_power();
+    environment_ether_tests::increases_conductivity_with_ether_magnitude();
+    environment_ether_tests::resolves_spell_and_decays_environment();
+    environment_ether_tests::rejects_unknown_element();
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();

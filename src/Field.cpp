@@ -82,6 +82,14 @@ Field::findPlayer(int64_t playerId) const {
     return found == playerList.end() ? nullptr : &found->second;
 }
 
+world::EnvironmentEther& Field::environmentEther() {
+    return fieldEther;
+}
+
+const world::EnvironmentEther& Field::environmentEther() const {
+    return fieldEther;
+}
+
 Player*
 Field::findPlayer(int64_t playerId) {
     std::map<int64_t,Player>::iterator found = playerList.find(playerId);
@@ -185,6 +193,7 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs) {
             if (!applySpell(it->spell(), error)) return false;
         }
     }
+    fieldEther.decay();
     return true;
 }
 
@@ -215,6 +224,10 @@ bool Field::validateSpell(const server::SpellIntent& intent, std::string& error)
         error = "spell element is invalid";
         return false;
     }
+    if (!fieldEther.isKnownElement(intent.element)) {
+        error = "spell element is unknown";
+        return false;
+    }
     for (std::string::const_iterator it = intent.element.begin();
          it != intent.element.end(); ++it) {
         if (!std::isalnum(static_cast<unsigned char>(*it)) && *it != '_' && *it != '-') {
@@ -239,7 +252,9 @@ bool Field::applyCombat(const server::CombatIntent& intent, std::string& error) 
 bool Field::applySpell(const server::SpellIntent& intent, std::string& error) {
     if (!validateSpell(intent, error)) return false;
     Player* target = findPlayer(intent.targetId);
-    const long damage = static_cast<long>(intent.power);
+    float effectivePower = 0.0f;
+    if (!fieldEther.resolveSpell(intent.element, intent.power, effectivePower, error)) return false;
+    const long damage = static_cast<long>(effectivePower);
     target->getStatus().gainHp(-damage);
     error.clear();
     return true;

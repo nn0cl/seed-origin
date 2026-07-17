@@ -17,6 +17,7 @@
 #include "Position.h"
 #include "Player.h"
 #include "Action.h"
+#include "EnvironmentEther.h"
 
 namespace server { struct WorldInput; }
 
@@ -26,6 +27,7 @@ private:
     std::list<Position> positionQueue;
     std::list<Action> actionQueue;
     Status fieldStatus;
+    world::EnvironmentEther fieldEther;
 protected:
     Field();
 public:
@@ -40,6 +42,8 @@ public:
     bool hasPlayer(int64_t playerId) const;
     const Player* findPlayer(int64_t playerId) const;
     Player* findPlayer(int64_t playerId);
+    world::EnvironmentEther& environmentEther();
+    const world::EnvironmentEther& environmentEther() const;
     void processFrame();
     bool processInputs(const std::vector<server::WorldInput>& inputs);
     
