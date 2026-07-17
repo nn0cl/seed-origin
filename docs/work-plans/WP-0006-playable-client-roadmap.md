@@ -44,6 +44,7 @@
 | LISS-0106 | Deterministic world frame application | critical | LISS-0105, LISS-0020, LISS-0022 | review |
 | LISS-0107 | Movement command frame input queue | high | LISS-0078, LISS-0104 | review |
 | LISS-0108 | Movement intent world application | high | LISS-0106, LISS-0107 | review |
+| LISS-0109 | Unified Action and Movement input queue | critical | LISS-0079, LISS-0107, LISS-0108 | review |
 | LISS-0082 | Client Snapshot application/interpolation | high | LISS-0063, LISS-0080 | proposed |
 | LISS-0083 | Client EffectQueue | high | LISS-0065, LISS-0080 | proposed |
 | LISS-0084 | Sync gaps/backpressure/effect backlog | high | LISS-0080, LISS-0083 | in_progress |

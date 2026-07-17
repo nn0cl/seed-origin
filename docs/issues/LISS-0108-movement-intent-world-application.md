@@ -28,5 +28,5 @@ WorldFrameApplierへMovementIntentQueue接続を追加し、対象検証・Field
 
 ## 次のIssue
 
-移動IntentとActionQueueを単一のframe入力列へ統合し、異なる入力種別の到着順と適用順を
-決定論的に固定する。
+LISS-0109で移動IntentとActionQueueを単一のframe入力列へ統合し、異なる入力種別の到着順と
+適用順を決定論的に固定する（実装済み）。
