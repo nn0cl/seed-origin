@@ -7,3 +7,5 @@
 - Depends on: LISS-0057, LISS-0063, LISS-0064
 
 仮ログイン画面、接続状態、3D空間表示、移動入力、チャット、NPC、攻撃・魔法操作、結果・エラー表示、切断・再接続を実装する。
+
+The client render loop is independent from the server's 20 Hz loop. Snapshot application, interpolation, and effect playback are separate stages; effect playback cannot block state correction.

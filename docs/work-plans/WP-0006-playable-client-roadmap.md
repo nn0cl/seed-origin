@@ -20,6 +20,12 @@
 | LISS-0077 | Runtime-to-dispatch bridge | critical | LISS-0058, LISS-0076 | review |
 | LISS-0078 | Movement command validation and Field application | critical | LISS-0060, LISS-0058 | review |
 | LISS-0079 | 20 FPS ActionQueue frame contract | critical | LISS-0023, LISS-0022 | proposed |
+| LISS-0080 | Snapshot/Event envelope contract | critical | LISS-0049, LISS-0055 | proposed |
+| LISS-0081 | Server tick and ActionQueue implementation | critical | LISS-0079, LISS-0058 | proposed |
+| LISS-0082 | Client Snapshot application/interpolation | high | LISS-0063, LISS-0080 | proposed |
+| LISS-0083 | Client EffectQueue | high | LISS-0065, LISS-0080 | proposed |
+| LISS-0084 | Sync gaps/backpressure/effect backlog | high | LISS-0080, LISS-0083 | proposed |
+| LISS-0085 | 20Hz server/client timing E2E | critical | LISS-0081〜0084, LISS-0069 | proposed |
 | LISS-0058 | Authoritative world command pipeline | critical | LISS-0020, LISS-0022, LISS-0055 | proposed |
 | LISS-0059 | Chat implementation | medium | LISS-0045, LISS-0058 | proposed |
 | LISS-0060 | 3D movement implementation | high | LISS-0048, LISS-0058 | proposed |
@@ -40,7 +46,8 @@ Protocol versions, command names, snapshot fields, client capabilities, persiste
 ## Gate order
 
 1. LISS-0055〜0058 establish a runnable server boundary.
-2. LISS-0060〜0063 make the world playable without a client.
-3. LISS-0064〜0065 add a client against the versioned protocol.
-4. LISS-0066〜0068 make operation and reconnect safe.
-5. LISS-0069 validates the complete flow.
+2. LISS-0079, LISS-0080, LISS-0081 establish the 20Hz authoritative frame and wire results.
+3. LISS-0060〜0063 make the world playable without a client.
+4. LISS-0064〜0065, LISS-0082, LISS-0083 add a client with independent rendering/effects.
+5. LISS-0066〜0068, LISS-0084 make operation, congestion, and reconnect safe.
+6. LISS-0069, LISS-0085 validate the complete flow.
