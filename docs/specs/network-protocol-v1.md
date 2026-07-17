@@ -20,6 +20,17 @@ Loginだけsession ID 0を許可し、それ以外はサーバーが発行した
 
 TCPの部分read/write、切断、タイムアウト、再送はConnection/transport adapterで処理し、codecは完全なframe単位だけを受け取る。codecはWorld状態を変更しない。
 
+## Login payloadの意味変更予定（2026-07-18、未実装）
+
+現在Loginのpayloadは自己申告ニックネーム（自由記述文字列）として扱われる
+（`SessionRegistry::isValidClaimedId`が文字種・長さのみ検証し、資格情報の
+検証は行わない）。ADR 0018（登録制プレイヤー認証）・LISS-0147により、
+Loginのpayloadは**`seed_auth`が発行した一回限りのセッションキー**に
+意味が変わる予定。フレームレイアウト自体（16バイトヘッダ+payload）は
+変更しないが、payloadの内容とサーバー側の検証ロジックが置き換わる。
+LISS-0147がmainへ着地するまでは、この節は将来の変更点の記録であり、
+現在の実装（自己申告ニックネーム）を正とする。
+
 ## Server frame and client presentation contract
 
 - The authoritative server advances the World at 20 Hz; one simulation frame is 50 ms.
