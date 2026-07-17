@@ -15,10 +15,10 @@
 | 0 | LISS-0019 | world安全性ゲートと所有権契約 | in_progress |
 | 1 | LISS-0137 | 攻撃・魔法の結果Eventと原子性 | review（実装済み） |
 | 2 | LISS-0138 | MP・クールダウン・二重実行防止 | review（実装済み） |
-| 3 | LISS-0139-A | 共通CombatTargetとNPC対象適用 | in_progress |
-| 4 | LISS-0139-B | NPC公開Snapshot | in_progress |
+| 3 | LISS-0139-A | 共通CombatTargetとNPC対象適用 | review（実装済み） |
+| 4 | LISS-0139-B | NPC公開Snapshot | review（実装済み） |
 | 5 | LISS-0139-C | NPC配置・死亡・再配置 | review（実装済み） |
-| 6 | LISS-0139-D | NPC AIの決定論的入力 | proposed |
+| 6 | LISS-0139-D | NPC AIの決定論的入力 | review（実装済み） |
 | 7 | LISS-0131 | 不正入力・レート制限 | proposed |
 | 8 | LISS-0130 | ID名寄せの永続化と削除方針 | proposed |
 | 9 | LISS-0128 | クライアント通信シェル | proposed |
@@ -43,6 +43,9 @@
 - NPC配置、公開状態、HP、耐性、死亡状態をWorld frameへ接続する。
 - NPC AI、再配置、攻撃判断は別スライスとして分離する。
 - 実装順は0139-A（対象適用）、0139-B（公開Snapshot）、0139-C（配置・死亡・再配置）、0139-D（AI）とする。
+- 0139-A〜Dの実装を完了し、Adjudicatorレビュー待ちへ移行した。0139-Dは固定ステップ
+  移動DecisionとWorldFrame入力境界までを対象とし、NPC発Combatや乱数・時刻・経路探索は
+  後続Issueで仕様化する。
 
 ### 棚卸し結果
 

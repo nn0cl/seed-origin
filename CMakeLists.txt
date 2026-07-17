@@ -47,6 +47,7 @@ set(SEED_CORE_SOURCES
     src/ClientWorldUpdateReceiver.cpp
     src/MovementCommandHandler.cpp
     src/Npc.cpp
+    src/NpcAi.cpp
     src/Player.cpp
     src/Position.cpp
     src/SeedBinary.cpp
@@ -101,6 +102,7 @@ add_executable(seed_tests
     tests/ServerCommandDispatcherTest.cpp
     tests/MovementCommandHandlerTest.cpp
     tests/NpcCombatTargetTest.cpp
+    tests/NpcAiTest.cpp
     tests/StatusSaturationTest.cpp
     tests/TestMain.cpp
 )

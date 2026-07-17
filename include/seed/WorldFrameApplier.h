@@ -6,6 +6,7 @@
 
 #include "Field.h"
 #include "MovementIntentQueue.h"
+#include "NpcAi.h"
 #include "WorldInputTick.h"
 #include "WorldFrameUpdateBuilder.h"
 
@@ -15,6 +16,9 @@ class WorldFrameApplier {
 public:
     explicit WorldFrameApplier(Field& field);
     WorldFrameApplier(Field& field, MovementIntentQueue& movementQueue);
+    WorldFrameApplier(Field& field, NpcAiInputQueue& npcAiInputQueue);
+    WorldFrameApplier(Field& field, MovementIntentQueue& movementQueue,
+                      NpcAiInputQueue& npcAiInputQueue);
 
     bool apply(const FrameActions& frame,
                std::vector<network::WorldUpdate>& updates,
@@ -26,6 +30,7 @@ public:
 private:
     Field& field;
     MovementIntentQueue* movementQueue;
+    NpcAiInputQueue* npcAiInputQueue;
     WorldFrameUpdateBuilder updateBuilder;
 };
 

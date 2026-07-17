@@ -181,6 +181,12 @@ void applies_queued_npc_movement_on_world_frame();
 void respawns_npc_on_the_authoritative_world_tick();
 }
 
+namespace npc_ai_tests {
+void produces_a_deterministic_fixed_step_decision();
+void queues_ai_decisions_without_mutating_the_field();
+void applies_ai_input_only_through_the_world_frame();
+}
+
 namespace environment_ether_tests {
 void increases_conductivity_with_ether_magnitude();
 void resolves_spell_and_decays_environment();
@@ -312,6 +318,9 @@ int main() {
     npc_combat_target_tests::rejects_damage_to_a_dead_npc_without_mutation();
     npc_combat_target_tests::applies_queued_npc_movement_on_world_frame();
     npc_combat_target_tests::respawns_npc_on_the_authoritative_world_tick();
+    npc_ai_tests::produces_a_deterministic_fixed_step_decision();
+    npc_ai_tests::queues_ai_decisions_without_mutating_the_field();
+    npc_ai_tests::applies_ai_input_only_through_the_world_frame();
     environment_ether_tests::increases_conductivity_with_ether_magnitude();
     environment_ether_tests::resolves_spell_and_decays_environment();
     environment_ether_tests::rejects_unknown_element();

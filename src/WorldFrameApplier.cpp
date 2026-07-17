@@ -5,10 +5,20 @@
 namespace server {
 
 WorldFrameApplier::WorldFrameApplier(Field& field)
-    : field(field), movementQueue(nullptr), updateBuilder() {}
+    : field(field), movementQueue(nullptr), npcAiInputQueue(nullptr), updateBuilder() {}
 
 WorldFrameApplier::WorldFrameApplier(Field& field, MovementIntentQueue& movementQueue)
-    : field(field), movementQueue(&movementQueue), updateBuilder() {}
+    : field(field), movementQueue(&movementQueue), npcAiInputQueue(nullptr), updateBuilder() {}
+
+WorldFrameApplier::WorldFrameApplier(Field& field, NpcAiInputQueue& npcAiInputQueue)
+    : field(field), movementQueue(nullptr), npcAiInputQueue(&npcAiInputQueue),
+      updateBuilder() {}
+
+WorldFrameApplier::WorldFrameApplier(Field& field,
+                                     MovementIntentQueue& movementQueue,
+                                     NpcAiInputQueue& npcAiInputQueue)
+    : field(field), movementQueue(&movementQueue),
+      npcAiInputQueue(&npcAiInputQueue), updateBuilder() {}
 
 bool WorldFrameApplier::apply(const FrameActions& frame,
                               std::vector<network::WorldUpdate>& updates,
@@ -34,6 +44,23 @@ bool WorldFrameApplier::apply(const FrameActions& frame,
             }
         }
     }
+    std::vector<NpcAiInput> npcInputs;
+    if (npcAiInputQueue != nullptr) {
+        npcInputs = npcAiInputQueue->takeFrame();
+        for (std::vector<NpcAiInput>::const_iterator it = npcInputs.begin();
+             it != npcInputs.end(); ++it) {
+            const Npc* npc = field.findNpc(it->decision.npcId);
+            if (npc == nullptr || !npc->isAlive() ||
+                !isValidMovementDelta(it->decision.dx, it->decision.dy,
+                                      it->decision.dz)) {
+                if (movementQueue != nullptr) movementQueue->restoreFrame(intents);
+                npcAiInputQueue->restoreFrame(npcInputs);
+                updates.clear();
+                error = "NPC AI input is invalid for the world frame";
+                return false;
+            }
+        }
+    }
     if (!updateBuilder.build(frame, updates, error)) {
         if (movementQueue != nullptr) movementQueue->restoreFrame(intents);
         return false;
@@ -44,8 +71,23 @@ bool WorldFrameApplier::apply(const FrameActions& frame,
              it != intents.end(); ++it) {
             if (!field.queueMovement(it->sessionId, it->dx, it->dy, it->dz)) {
                 movementQueue->restoreFrame(intents);
+                if (npcAiInputQueue != nullptr) npcAiInputQueue->restoreFrame(npcInputs);
                 updates.clear();
                 error = "movement intent could not be queued in the field";
+                return false;
+            }
+        }
+    }
+
+    if (npcAiInputQueue != nullptr) {
+        for (std::vector<NpcAiInput>::const_iterator it = npcInputs.begin();
+             it != npcInputs.end(); ++it) {
+            if (!field.queueNpcMovement(it->decision.npcId, it->decision.dx,
+                                        it->decision.dy, it->decision.dz)) {
+                if (movementQueue != nullptr) movementQueue->restoreFrame(intents);
+                npcAiInputQueue->restoreFrame(npcInputs);
+                updates.clear();
+                error = "NPC AI input could not be queued in the field";
                 return false;
             }
         }
