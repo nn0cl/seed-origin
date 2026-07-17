@@ -31,9 +31,14 @@ jobs:
             ".github/dependabot.yml"
             ".github/copilot-instructions.md"
             ".github/pull_request_template.md"
-            ".github/ISSUE_TEMPLATE/bug_report.md"
+            ".github/ISSUE_TEMPLATE/architecture.yml"
+            ".github/ISSUE_TEMPLATE/bug.yml"
             ".github/ISSUE_TEMPLATE/config.yml"
-            ".github/ISSUE_TEMPLATE/feature_request.md"
+            ".github/ISSUE_TEMPLATE/feature.yml"
+            "CODE_OF_CONDUCT.md"
+            "CONTRIBUTING.md"
+            "LICENSE"
+            "SECURITY.md"
             ".grok/rules/01-quickstart.md"
             ".grok/rules/02-architecture-boundaries.md"
             ".grok/rules/03-collaboration-and-completion.md"
@@ -93,9 +98,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for n in 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010 0011; do
+          for n in 0001 0002 0003 0004 0005 0006 0007 0008 0009 0010 0011 0013 0014; do
             ls "docs/architecture/adr/${n}-"*.md >/dev/null
           done
+
+      - name: Check issue form YAML
+        shell: bash
+        run: |
+          set -euo pipefail
+          ruby -e '
+            require "yaml"
+            Dir[".github/ISSUE_TEMPLATE/*.yml"].sort.each do |path|
+              YAML.load_file(path)
+              puts "#{path}: valid YAML"
+            end
+          '
 
       - name: Check script syntax
         shell: bash
