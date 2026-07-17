@@ -5,8 +5,27 @@
 
 namespace session {
 
+namespace {
+int64_t nextAliasIdFor(const IdentityAliasStore& store) {
+    int64_t nextId = 1;
+    const std::vector<IdentityAliasRecord> records = store.exportRecords();
+    for (std::vector<IdentityAliasRecord>::const_iterator it = records.begin();
+         it != records.end(); ++it) {
+        if (it->aliasId >= nextId && it->aliasId < std::numeric_limits<int64_t>::max()) {
+            nextId = it->aliasId + 1;
+        }
+    }
+    return nextId;
+}
+}
+
 SessionRegistry::SessionRegistry()
-    : nextInternalId(1), nextAliasId(1) {}
+    : nextInternalId(1), nextAliasId(1), activeSessions(), defaultAliasStore(),
+      aliasStore(&defaultAliasStore) {}
+
+SessionRegistry::SessionRegistry(IdentityAliasStore& aliasStore)
+    : nextInternalId(1), nextAliasId(nextAliasIdFor(aliasStore)), activeSessions(), defaultAliasStore(),
+      aliasStore(&aliasStore) {}
 
 bool SessionRegistry::isValidClaimedId(const std::string& claimedId) {
     if (claimedId.empty() || claimedId.size() > 64) return false;
@@ -31,23 +50,30 @@ std::string SessionRegistry::canonicalClaimedId(const std::string& claimedId) {
 }
 
 SessionInfo SessionRegistry::login(const std::string& claimedId) {
+    return login(claimedId, 0);
+}
+
+SessionInfo SessionRegistry::login(const std::string& claimedId, uint64_t worldTick) {
     SessionInfo result = {0, 0, std::string(), false};
     if (nextInternalId == std::numeric_limits<int64_t>::max()) return result;
 
+    if (isValidClaimedId(claimedId)) {
+        const std::string canonicalId = canonicalClaimedId(claimedId);
+        IdentityAliasRecord record = {};
+        if (aliasStore->find(canonicalId, record)) {
+            result.aliasId = record.aliasId;
+            if (!aliasStore->touch(canonicalId, worldTick)) return result;
+        } else {
+            if (nextAliasId == std::numeric_limits<int64_t>::max()) return result;
+            record = {nextAliasId, canonicalId, worldTick, worldTick, 1.0f,
+                      AliasReviewStatus::Unreviewed};
+            if (!aliasStore->insert(record)) return result;
+            result.aliasId = nextAliasId++;
+        }
+        result.claimedId = claimedId;
+    }
     result.internalId = nextInternalId++;
     activeSessions.insert(result.internalId);
-    if (!isValidClaimedId(claimedId)) return result;
-
-    const std::string canonicalId = canonicalClaimedId(claimedId);
-    std::map<std::string, int64_t>::const_iterator found = aliases.find(canonicalId);
-    if (found == aliases.end()) {
-        if (nextAliasId == std::numeric_limits<int64_t>::max()) return result;
-        aliases[canonicalId] = nextAliasId;
-        result.aliasId = nextAliasId++;
-    } else {
-        result.aliasId = found->second;
-    }
-    result.claimedId = claimedId;
     return result;
 }
 
@@ -57,6 +83,15 @@ bool SessionRegistry::logout(int64_t internalId) {
 
 bool SessionRegistry::isActive(int64_t internalId) const {
     return activeSessions.find(internalId) != activeSessions.end();
+}
+
+std::vector<IdentityAliasRecord> SessionRegistry::exportAliasRecords() const {
+    return aliasStore->exportRecords();
+}
+
+bool SessionRegistry::forgetClaimedId(const std::string& claimedId) {
+    if (!isValidClaimedId(claimedId)) return false;
+    return aliasStore->erase(canonicalClaimedId(claimedId));
 }
 
 }

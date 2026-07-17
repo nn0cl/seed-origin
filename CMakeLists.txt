@@ -53,6 +53,7 @@ set(SEED_CORE_SOURCES
     src/Position.cpp
     src/SeedBinary.cpp
     src/SessionRegistry.cpp
+    src/IdentityAliasStore.cpp
     src/Status.cpp
 )
 
@@ -78,6 +79,7 @@ add_executable(seed_tests
     tests/PlayerOwnershipTest.cpp
     tests/SeedBinaryTest.cpp
     tests/SessionRegistryTest.cpp
+    tests/IdentityAliasStoreTest.cpp
     tests/NetworkCommandTest.cpp
     tests/ServerRuntimeTest.cpp
     tests/NetworkFrameCodecTest.cpp

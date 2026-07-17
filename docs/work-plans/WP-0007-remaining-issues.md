@@ -20,7 +20,7 @@
 | 5 | LISS-0139-C | NPC配置・死亡・再配置 | review（実装済み） |
 | 6 | LISS-0139-D | NPC AIの決定論的入力 | review（実装済み） |
 | 7 | LISS-0131 | 不正入力・レート制限 | review（実装済み） |
-| 8 | LISS-0130 | ID名寄せの永続化と削除方針 | proposed |
+| 8 | LISS-0130 | ID名寄せの永続化と削除方針 | in_progress |
 | 9 | LISS-0128 | クライアント通信シェル | proposed |
 | 10 | LISS-0129 | クライアントプレイシェル | proposed |
 | 11 | LISS-0132 | 再接続・backpressure・観測性 | proposed |
