@@ -45,6 +45,7 @@
 | LISS-0098 | Non-blocking outbound write boundary | critical | LISS-0091, LISS-0097 | review |
 | LISS-0099 | Session lifecycle and duplicate login | critical | LISS-0053, LISS-0072, LISS-0094, LISS-0098 | review |
 | LISS-0100 | Runtime client session collection | critical | LISS-0090, LISS-0091, LISS-0098, LISS-0099 | review |
+| LISS-0101 | Runtime client frame processing | critical | LISS-0094, LISS-0096, LISS-0098, LISS-0100 | review |
 | LISS-0082 | Client Snapshot application/interpolation | high | LISS-0063, LISS-0080 | proposed |
 | LISS-0083 | Client EffectQueue | high | LISS-0065, LISS-0080 | proposed |
 | LISS-0084 | Sync gaps/backpressure/effect backlog | high | LISS-0080, LISS-0083 | in_progress |

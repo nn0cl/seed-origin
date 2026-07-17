@@ -5,6 +5,7 @@
 #include "ServerRuntime.h"
 #include "ServerCommandDispatcher.h"
 #include "NetworkFrameCodec.h"
+#include "LoginResponseCodec.h"
 
 namespace server_runtime_tests {
 
@@ -119,6 +120,14 @@ void clears_owned_clients_on_stop() {
     assert(runtime.removeClosedClients() == 0);
     assert(runtime.stop());
     assert(runtime.connectedClientCount() == 0);
+}
+
+void rejects_client_frame_processing_when_runtime_is_stopped() {
+    server::ServerRuntime runtime;
+    session::SessionRegistry registry;
+    server::ServerCommandDispatcher dispatcher(registry);
+    std::string error;
+    assert(runtime.processClientFrames(dispatcher, error) == 0);
 }
 
 } // namespace server_runtime_tests

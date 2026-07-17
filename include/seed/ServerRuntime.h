@@ -30,6 +30,7 @@ public:
     ClientSession* clientSession(uint64_t connectionId);
     size_t connectedClientCount() const;
     size_t removeClosedClients();
+    size_t processClientFrames(ServerCommandDispatcher& dispatcher, std::string& error);
     bool submit(const network::NetworkCommand& command);
     ReceiveStatus ingest(ClientSession& session, std::string& error);
     std::vector<network::NetworkCommand> drainCommands();
@@ -38,11 +39,20 @@ public:
     size_t pendingCommandCount() const;
 
 private:
+    struct PendingCommand {
+        uint64_t connectionId;
+        network::NetworkCommand command;
+    };
+
+    bool enqueueCommands(uint64_t connectionId,
+                         const std::vector<network::NetworkCommand>& commands,
+                         std::string& error);
+
     Connection listener;
     bool running;
     uint64_t nextConnectionId;
     std::map<uint64_t, std::unique_ptr<ClientSession> > clients;
-    std::deque<network::NetworkCommand> pendingCommands;
+    std::deque<PendingCommand> pendingCommands;
 };
 
 }

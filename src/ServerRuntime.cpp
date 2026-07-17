@@ -1,4 +1,5 @@
 #include "ServerRuntime.h"
+#include "LoginResponseCodec.h"
 #include "ServerCommandDispatcher.h"
 
 #include <limits>
@@ -84,7 +85,7 @@ bool ServerRuntime::submit(const network::NetworkCommand& command) {
     if (!running || pendingCommands.size() >= MAX_PENDING_COMMANDS) return false;
     std::string error;
     if (!network::validateCommand(command, error)) return false;
-    pendingCommands.push_back(command);
+    pendingCommands.push_back({0, command});
     return true;
 }
 
@@ -97,9 +98,17 @@ ReceiveStatus ServerRuntime::ingest(ClientSession& session, std::string& error) 
     std::vector<network::NetworkCommand> commands;
     const ReceiveStatus status = session.receive(commands, error);
     if (status != ReceiveStatus::Commands) return status;
+    if (!enqueueCommands(0, commands, error)) return ReceiveStatus::Failed;
+    return ReceiveStatus::Commands;
+}
+
+bool ServerRuntime::enqueueCommands(
+    uint64_t connectionId,
+    const std::vector<network::NetworkCommand>& commands,
+    std::string& error) {
     if (commands.size() > MAX_PENDING_COMMANDS - pendingCommands.size()) {
         error = "server command queue is full";
-        return ReceiveStatus::Failed;
+        return false;
     }
 
     for (std::vector<network::NetworkCommand>::const_iterator it = commands.begin();
@@ -107,19 +116,75 @@ ReceiveStatus ServerRuntime::ingest(ClientSession& session, std::string& error) 
         std::string validationError;
         if (!network::validateCommand(*it, validationError)) {
             error = validationError;
-            return ReceiveStatus::Failed;
+            return false;
         }
     }
-    pendingCommands.insert(pendingCommands.end(), commands.begin(), commands.end());
+    for (std::vector<network::NetworkCommand>::const_iterator it = commands.begin();
+         it != commands.end(); ++it) {
+        pendingCommands.push_back({connectionId, *it});
+    }
     error.clear();
-    return ReceiveStatus::Commands;
+    return true;
+}
+
+size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
+                                          std::string& error) {
+    if (!running) {
+        error = "server runtime is stopped";
+        return 0;
+    }
+
+    for (std::map<uint64_t, std::unique_ptr<ClientSession> >::iterator it = clients.begin();
+         it != clients.end(); ++it) {
+        std::vector<network::NetworkCommand> commands;
+        std::string receiveError;
+        const ReceiveStatus status = it->second->receive(commands, receiveError);
+        if (status == ReceiveStatus::Failed) {
+            if (error.empty()) error = receiveError;
+            continue;
+        }
+        if (status == ReceiveStatus::Commands) {
+            std::string enqueueError;
+            if (!enqueueCommands(it->first, commands, enqueueError)) {
+                if (error.empty()) error = enqueueError;
+                continue;
+            }
+        }
+    }
+
+    size_t processed = 0;
+    while (!pendingCommands.empty()) {
+        const PendingCommand pending = pendingCommands.front();
+        pendingCommands.pop_front();
+        const CommandDispatchResult result = dispatcher.dispatch(pending.command);
+        ++processed;
+        if (pending.connectionId == 0 || pending.command.type != network::CommandType::Login) {
+            continue;
+        }
+        ClientSession* session = clientSession(pending.connectionId);
+        if (session == 0 || !session->isOpen()) continue;
+        const network::LoginResponse response = {
+            network::CURRENT_PROTOCOL_VERSION,
+            result.accepted ? network::LoginResponseStatus::Accepted
+                            : network::LoginResponseStatus::Rejected,
+            result.accepted ? result.session.internalId : 0,
+            result.accepted ? std::string() : result.error
+        };
+        std::vector<uint8_t> frame;
+        std::string responseError;
+        if (!network::encodeLoginResponseFrame(response, frame, responseError) ||
+            !session->enqueueFrame(frame, responseError)) {
+            if (error.empty()) error = responseError;
+        }
+    }
+    return processed;
 }
 
 std::vector<network::NetworkCommand> ServerRuntime::drainCommands() {
     std::vector<network::NetworkCommand> drained;
     drained.reserve(pendingCommands.size());
     while (!pendingCommands.empty()) {
-        drained.push_back(pendingCommands.front());
+        drained.push_back(pendingCommands.front().command);
         pendingCommands.pop_front();
     }
     return drained;
