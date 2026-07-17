@@ -62,12 +62,14 @@ bool WorldFrameUpdateBuilder::build(const WorldFrameInputs& frame,
         } else if (it->kind() == WorldInputKind::Combat) {
             payload << "combat=attacker:" << it->combat().attackerId
                     << ";target:" << it->combat().targetId
-                    << ";power:" << it->combat().power;
+                    << ";power:" << it->combat().power
+                    << ";requestId:" << it->combat().requestId;
         } else if (it->kind() == WorldInputKind::Spell) {
             payload << "spell=caster:" << it->spell().casterId
                     << ";target:" << it->spell().targetId
                     << ";element:" << it->spell().element
-                    << ";power:" << it->spell().power;
+                    << ";power:" << it->spell().power
+                    << ";requestId:" << it->spell().requestId;
         } else {
             payload << "chat=sender:" << it->chat().senderId
                     << ";audience:" << it->chat().audience
@@ -103,6 +105,7 @@ bool WorldFrameUpdateBuilder::appendCombatResolution(
                 << ";target:" << resolution.targetId
                 << ";damage:" << resolution.damage
                 << ";remainingHp:" << resolution.remainingHp
+                << ";requestId:" << resolution.requestId
                 << ";inputSequence:" << resolution.inputSequence;
     } else {
         payload << "spellResult=caster:" << resolution.actorId
@@ -112,6 +115,7 @@ bool WorldFrameUpdateBuilder::appendCombatResolution(
                 << ";effectivePower:" << resolution.effectivePower
                 << ";damage:" << resolution.damage
                 << ";remainingHp:" << resolution.remainingHp
+                << ";requestId:" << resolution.requestId
                 << ";etherDelta:fire=" << resolution.etherDelta[0]
                 << ",water=" << resolution.etherDelta[1]
                 << ",earth=" << resolution.etherDelta[2]

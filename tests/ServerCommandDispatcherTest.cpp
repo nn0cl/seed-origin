@@ -33,14 +33,14 @@ void routes_combat_only_for_an_active_session() {
     const session::SessionInfo session = registry.login("player");
     const network::NetworkCommand attack = {
         network::CURRENT_PROTOCOL_VERSION, network::CommandType::Attack,
-        session.internalId, "2,100"};
+        session.internalId, "attack-1|2,100"};
     const server::CommandDispatchResult accepted = dispatcher.dispatch(attack);
     assert(accepted.accepted);
     assert(queue.pendingCount() == 1);
 
     const network::NetworkCommand forged = {
         network::CURRENT_PROTOCOL_VERSION, network::CommandType::CastSpell,
-        9999, "2,fire,100"};
+        9999, "spell-1|2,fire,100"};
     const server::CommandDispatchResult rejected = dispatcher.dispatch(forged);
     assert(!rejected.accepted);
     assert(queue.pendingCount() == 1);

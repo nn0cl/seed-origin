@@ -6,6 +6,18 @@
 
 namespace server {
 
+namespace {
+bool isValidRequestId(const std::string& requestId) {
+    if (requestId.empty() || requestId.size() > 64) return false;
+    for (std::string::const_iterator it = requestId.begin();
+         it != requestId.end(); ++it) {
+        if (!std::isalnum(static_cast<unsigned char>(*it)) && *it != '_' &&
+            *it != '-') return false;
+    }
+    return true;
+}
+}
+
 WorldInput::WorldInput(uint64_t sequence, const Action& action)
     : inputSequence(sequence), inputKind(WorldInputKind::Action), inputAction(action),
       inputMovement({0, 0, 0.0f, 0.0f, 0.0f}), inputCombat({0, 0, 0.0f}),
@@ -61,18 +73,36 @@ bool WorldInputQueue::enqueueMovement(int64_t sessionId, float dx, float dy, flo
 }
 
 bool WorldInputQueue::enqueueCombat(int64_t attackerId, int64_t targetId, float power) {
+    return enqueueCombat(attackerId, targetId, power, std::string());
+}
+
+bool WorldInputQueue::enqueueCombat(int64_t attackerId, int64_t targetId,
+                                    float power, const std::string& requestId) {
     if (attackerId <= 0 || targetId <= 0 || !std::isfinite(power) || power <= 0.0f) {
         return false;
     }
     std::lock_guard<std::mutex> lock(mutex);
     if (pending.size() >= MAX_PENDING_INPUTS ||
         nextSequence == std::numeric_limits<uint64_t>::max()) return false;
-    pending.push_back(WorldInput(nextSequence++, {attackerId, targetId, power}));
+    if ((!requestId.empty() && !isValidRequestId(requestId)) ||
+        (!requestId.empty() && acceptedCombatRequests.find(
+            std::to_string(attackerId) + ":" + requestId) !=
+                              acceptedCombatRequests.end()) return false;
+    pending.push_back(WorldInput(nextSequence++,
+                                 {attackerId, targetId, power, requestId}));
+    if (!requestId.empty()) acceptedCombatRequests.insert(
+        std::to_string(attackerId) + ":" + requestId);
     return true;
 }
 
 bool WorldInputQueue::enqueueSpell(int64_t casterId, int64_t targetId,
                                    const std::string& element, float power) {
+    return enqueueSpell(casterId, targetId, element, power, std::string());
+}
+
+bool WorldInputQueue::enqueueSpell(int64_t casterId, int64_t targetId,
+                                   const std::string& element, float power,
+                                   const std::string& requestId) {
     if (casterId <= 0 || targetId <= 0 || element.empty() || element.size() > 32 ||
         !std::isfinite(power) || power <= 0.0f) return false;
     for (std::string::const_iterator it = element.begin(); it != element.end(); ++it) {
@@ -83,7 +113,14 @@ bool WorldInputQueue::enqueueSpell(int64_t casterId, int64_t targetId,
     std::lock_guard<std::mutex> lock(mutex);
     if (pending.size() >= MAX_PENDING_INPUTS ||
         nextSequence == std::numeric_limits<uint64_t>::max()) return false;
-    pending.push_back(WorldInput(nextSequence++, {casterId, targetId, element, power}));
+    if ((!requestId.empty() && !isValidRequestId(requestId)) ||
+        (!requestId.empty() && acceptedCombatRequests.find(
+            std::to_string(casterId) + ":" + requestId) !=
+                              acceptedCombatRequests.end()) return false;
+    pending.push_back(WorldInput(nextSequence++,
+                                 {casterId, targetId, element, power, requestId}));
+    if (!requestId.empty()) acceptedCombatRequests.insert(
+        std::to_string(casterId) + ":" + requestId);
     return true;
 }
 
@@ -119,6 +156,7 @@ std::vector<WorldInput> WorldInputQueue::takeFrame() {
 void WorldInputQueue::clear() {
     std::lock_guard<std::mutex> lock(mutex);
     pending.clear();
+    acceptedCombatRequests.clear();
 }
 
 size_t WorldInputQueue::pendingCount() const {

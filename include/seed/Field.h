@@ -30,6 +30,7 @@ struct CombatResolution {
     int64_t actorId;
     int64_t targetId;
     std::string element;
+    std::string requestId;
     float basePower;
     float effectivePower;
     long damage;

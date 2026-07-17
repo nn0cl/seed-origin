@@ -1,6 +1,6 @@
 # LISS-0138: MP・クールダウン・二重実行防止
 
-- Status: proposed
+- Status: review
 - Phase: phase-1-red
 - Type: feature + security + determinism
 - Priority: critical
@@ -17,6 +17,10 @@
 - 不足MP、cooldown中、期限切れrequestを状態変更なしで拒否する。
 - 同一request IDを一度だけ確定し、再送は同じ結果を返すか明示的に重複拒否する。
 - HP、MP、エーテル、cooldown更新を一つの確定処理にする。
+
+## 実装資料
+
+Attack／CastSpell payloadを`requestId|targetId,power`または`requestId|targetId,element,power`形式へ拡張し、ネットワークCommand経路ではrequest IDを必須にした。WorldInputQueueは送信者内部IDとrequest IDの組を一度だけ受け付ける。MP・クールダウン・再送時の結果再利用は後続スライスで実装する。テスト・ビルドは実行していない。
 
 ## English
 

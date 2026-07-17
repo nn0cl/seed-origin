@@ -15,7 +15,7 @@
 | 0 | LISS-0019 | world安全性ゲートと所有権契約 | in_progress |
 | 1 | LISS-0134 | FFXI型8属性移行の採用判断 | proposed |
 | 2 | LISS-0137 | 攻撃・魔法の結果Eventと原子性 | review |
-| 3 | LISS-0138 | MP・クールダウン・二重実行防止 | proposed |
+| 3 | LISS-0138 | MP・クールダウン・二重実行防止 | review |
 | 4 | LISS-0139 | NPCをCombatTargetへ統合 | proposed |
 | 5 | LISS-0131 | 不正入力・レート制限 | proposed |
 | 6 | LISS-0130 | ID名寄せの永続化と削除方針 | proposed |

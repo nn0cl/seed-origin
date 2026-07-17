@@ -157,6 +157,7 @@ void emits_inputs_in_common_sequence_order();
 namespace combat_command_handler_tests {
 void queues_attack_and_spell_intents();
 void rejects_malformed_or_oversized_power();
+void rejects_duplicate_request_id();
 }
 
 namespace chat_command_handler_tests {
@@ -287,6 +288,7 @@ int main() {
     world_input_tick_tests::emits_inputs_in_common_sequence_order();
     combat_command_handler_tests::queues_attack_and_spell_intents();
     combat_command_handler_tests::rejects_malformed_or_oversized_power();
+    combat_command_handler_tests::rejects_duplicate_request_id();
     chat_command_handler_tests::queues_authenticated_chat_and_preserves_sequence();
     chat_command_handler_tests::rejects_control_text_and_missing_audience();
     combat_resolution_event_tests::emits_authoritative_combat_and_spell_results();

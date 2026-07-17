@@ -6,6 +6,7 @@
 #include <deque>
 #include <mutex>
 #include <string>
+#include <set>
 #include <vector>
 
 #include "Action.h"
@@ -25,6 +26,7 @@ struct CombatIntent {
     int64_t attackerId;
     int64_t targetId;
     float power;
+    std::string requestId;
 };
 
 struct SpellIntent {
@@ -32,6 +34,7 @@ struct SpellIntent {
     int64_t targetId;
     std::string element;
     float power;
+    std::string requestId;
 };
 
 struct ChatIntent {
@@ -74,8 +77,13 @@ public:
     bool enqueueAction(const Action& action);
     bool enqueueMovement(int64_t sessionId, float dx, float dy, float dz);
     bool enqueueCombat(int64_t attackerId, int64_t targetId, float power);
+    bool enqueueCombat(int64_t attackerId, int64_t targetId, float power,
+                       const std::string& requestId);
     bool enqueueSpell(int64_t casterId, int64_t targetId,
                       const std::string& element, float power);
+    bool enqueueSpell(int64_t casterId, int64_t targetId,
+                      const std::string& element, float power,
+                      const std::string& requestId);
     bool enqueueChat(int64_t senderId, const std::string& audience,
                      const std::string& message);
     std::vector<WorldInput> takeFrame();
@@ -85,6 +93,7 @@ public:
 private:
     mutable std::mutex mutex;
     std::deque<WorldInput> pending;
+    std::set<std::string> acceptedCombatRequests;
     uint64_t nextSequence;
 };
 

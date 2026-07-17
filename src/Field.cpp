@@ -226,6 +226,7 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
             resolution.actorId = it->combat().attackerId;
             resolution.targetId = it->combat().targetId;
             resolution.basePower = it->combat().power;
+            resolution.requestId = it->combat().requestId;
             resolution.effectivePower = it->combat().power;
             resolution.damage = hpBefore - targetAfter->getStatus().getHp();
             resolution.remainingHp = targetAfter->getStatus().getHp();
@@ -251,6 +252,7 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
             resolution.actorId = it->spell().casterId;
             resolution.targetId = it->spell().targetId;
             resolution.element = it->spell().element;
+            resolution.requestId = it->spell().requestId;
             resolution.basePower = it->spell().power;
             resolution.damage = hpBefore - targetAfter->getStatus().getHp();
             resolution.effectivePower = effectivePower;
