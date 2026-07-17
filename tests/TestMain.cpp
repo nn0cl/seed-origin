@@ -90,6 +90,12 @@ namespace frame_accumulator_tests {
 void joins_partial_frame_and_preserves_multiple_frames();
 }
 
+namespace login_response_codec_tests {
+void round_trips_accepted_response();
+void round_trips_rejected_response();
+void rejects_invalid_response_identity();
+}
+
 namespace server_command_dispatcher_tests {
 void accepts_login();
 void rejects_unimplemented_command();
@@ -140,6 +146,9 @@ int main() {
     server_runtime_tests::dispatches_ingested_login_to_session_registry();
     network_frame_tests::round_trips_a_valid_command();
     network_frame_tests::rejects_incomplete_and_oversized_frames();
+    login_response_codec_tests::round_trips_accepted_response();
+    login_response_codec_tests::round_trips_rejected_response();
+    login_response_codec_tests::rejects_invalid_response_identity();
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();
