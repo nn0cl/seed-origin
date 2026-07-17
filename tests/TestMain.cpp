@@ -24,6 +24,11 @@ void accepts_ordered_updates_and_initial_snapshot();
 void detects_duplicates_and_gaps_without_advancing();
 }
 
+namespace world_update_sync_tests {
+void requests_snapshot_on_gap_and_does_not_apply_it();
+void resumes_after_snapshot_confirmation();
+}
+
 namespace field_state_tests {
 void removes_players_by_full_id();
 void accepts_empty_frame();
@@ -100,6 +105,8 @@ int main() {
     world_update_tests::rejects_invalid_update_identity();
     world_update_sequence_tests::accepts_ordered_updates_and_initial_snapshot();
     world_update_sequence_tests::detects_duplicates_and_gaps_without_advancing();
+    world_update_sync_tests::requests_snapshot_on_gap_and_does_not_apply_it();
+    world_update_sync_tests::resumes_after_snapshot_confirmation();
     field_state_tests::removes_players_by_full_id();
     field_state_tests::accepts_empty_frame();
     connection_tests::close_is_idempotent();
