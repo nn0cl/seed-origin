@@ -3,6 +3,8 @@
 - Status: proposed
 - Priority: high
 - Depends on: LISS-0121, LISS-0122, LISS-0044
+- Related ADR: `docs/architecture/adr/0020-game-client-mvp-godot.md`
+  （MVP実装はGodot 4.7 + GDScriptで行う方針、2026-07-18時点で未承認）
 
 ## 目的
 

@@ -120,7 +120,9 @@ Technology choices still open for ADR decision:
   component (ADR 0018 follow-ups; tracked as LISS-0146/0147).
 - player progression (level/item) domain model and persistence schema
   (LISS-0148, not designed yet).
-- client platform, renderer, and UI framework.
+- production client platform, renderer, and UI framework (LISS-0064
+  remains open; a Godot 4.7/GDScript MVP scope is proposed separately in
+  ADR 0020, not yet approved, and does not decide the production choice).
 - snapshot/event wire encoding extension.
 - deployment and observability stack.
 
