@@ -37,6 +37,7 @@ set(SEED_CORE_SOURCES
     src/WorldInputTick.cpp
     src/CombatCommandHandler.cpp
     src/EnvironmentEther.cpp
+    src/WorldSnapshotBuilder.cpp
     src/MovementCommandHandler.cpp
     src/Player.cpp
     src/Position.cpp
@@ -79,6 +80,7 @@ add_executable(seed_tests
     tests/WorldInputTickTest.cpp
     tests/CombatCommandHandlerTest.cpp
     tests/EnvironmentEtherTest.cpp
+    tests/WorldSnapshotBuilderTest.cpp
     tests/FrameAccumulatorTest.cpp
     tests/LoginCommandHandlerTest.cpp
     tests/ServerCommandDispatcherTest.cpp

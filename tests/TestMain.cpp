@@ -160,6 +160,11 @@ void rejects_unknown_element();
 void applies_opposing_attribute_reaction_and_reports_instability();
 }
 
+namespace world_snapshot_builder_tests {
+void builds_environment_snapshot();
+void rejects_negative_hazard();
+}
+
 namespace server_command_dispatcher_tests {
 void accepts_login();
 void rejects_unimplemented_command();
@@ -250,6 +255,8 @@ int main() {
     environment_ether_tests::resolves_spell_and_decays_environment();
     environment_ether_tests::rejects_unknown_element();
     environment_ether_tests::applies_opposing_attribute_reaction_and_reports_instability();
+    world_snapshot_builder_tests::builds_environment_snapshot();
+    world_snapshot_builder_tests::rejects_negative_hazard();
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();
