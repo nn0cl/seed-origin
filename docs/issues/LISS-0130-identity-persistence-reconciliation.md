@@ -27,6 +27,10 @@
 - `SessionRegistry`はStore注入、エクスポート、明示的な申告ID削除を提供する。
   削除しても既存のactive internal sessionは変更しない。
 - 注入Store内の既存alias IDを調査して次の採番値を決め、再起動・移行時のID衝突を避ける。
+- `IdentityAliasStore::reviewAlias`と`SessionRegistry::recordAliasReview`を追加し、
+  衝突時の人間判断（レビュー状態の確定・却下）と確信度の更新手段を提供した。
+  対象レコードが存在しない、または確信度が[0,1]範囲外の場合は状態を変更せず失敗を返す。
+  レビュー結果の記録もactive internal sessionに影響しない。
 
 ## Remaining decisions
 
@@ -36,9 +40,10 @@
 
 ## Verification
 
-- Store注入、大小文字をまたぐ名寄せ、metadata更新、明示削除、active session非変更の
-  テスト資料を追加した。
-- `git diff --check`と警告有効C++20ビルドのみ実行。テスト、成果物、サーバーは未実行。
+- Store注入、大小文字をまたぐ名寄せ、metadata更新、明示削除、レビュー状態の確定・却下、
+  存在しないaliasや不正な確信度の拒否、active session非変更のテスト資料を追加した。
+- 警告有効C++20ビルドを実行し成功を確認した。Adjudicator方針によりテスト実行
+  （ctest）は保留し、成果物・サーバーは未実行。
 
 ## English
 

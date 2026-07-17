@@ -29,6 +29,9 @@ public:
     bool isActive(int64_t internalId) const;
     std::vector<IdentityAliasRecord> exportAliasRecords() const;
     bool forgetClaimedId(const std::string& claimedId);
+    bool recordAliasReview(const std::string& claimedId,
+                           AliasReviewStatus status,
+                           float confidence);
 
 private:
     static bool isValidClaimedId(const std::string& claimedId);

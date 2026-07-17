@@ -32,6 +32,18 @@ bool InMemoryIdentityAliasStore::touch(const std::string& canonicalClaimedId,
     return true;
 }
 
+bool InMemoryIdentityAliasStore::reviewAlias(const std::string& canonicalClaimedId,
+                                             AliasReviewStatus status,
+                                             float confidence) {
+    if (confidence < 0.0f || confidence > 1.0f) return false;
+    std::map<std::string, IdentityAliasRecord>::iterator found =
+        records.find(canonicalClaimedId);
+    if (found == records.end()) return false;
+    found->second.reviewStatus = status;
+    found->second.confidence = confidence;
+    return true;
+}
+
 bool InMemoryIdentityAliasStore::erase(const std::string& canonicalClaimedId) {
     return records.erase(canonicalClaimedId) > 0;
 }

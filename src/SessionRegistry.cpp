@@ -94,4 +94,11 @@ bool SessionRegistry::forgetClaimedId(const std::string& claimedId) {
     return aliasStore->erase(canonicalClaimedId(claimedId));
 }
 
+bool SessionRegistry::recordAliasReview(const std::string& claimedId,
+                                        AliasReviewStatus status,
+                                        float confidence) {
+    if (!isValidClaimedId(claimedId)) return false;
+    return aliasStore->reviewAlias(canonicalClaimedId(claimedId), status, confidence);
+}
+
 }

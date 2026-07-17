@@ -74,6 +74,8 @@ void never_reuses_disconnected_ids();
 namespace identity_alias_store_tests {
 void preserves_alias_metadata_and_case_insensitive_reconciliation();
 void supports_explicit_claimed_id_deletion_without_affecting_sessions();
+void records_human_review_decision_without_affecting_active_sessions();
+void rejects_review_for_missing_alias_or_invalid_confidence();
 }
 
 namespace network_command_tests {
@@ -276,6 +278,8 @@ int main() {
     session_registry_tests::never_reuses_disconnected_ids();
     identity_alias_store_tests::preserves_alias_metadata_and_case_insensitive_reconciliation();
     identity_alias_store_tests::supports_explicit_claimed_id_deletion_without_affecting_sessions();
+    identity_alias_store_tests::records_human_review_decision_without_affecting_active_sessions();
+    identity_alias_store_tests::rejects_review_for_missing_alias_or_invalid_confidence();
     network_command_tests::validates_login_without_client_internal_id();
     network_command_tests::rejects_invalid_session_and_oversized_payload();
     login_command_handler_tests::creates_temporary_session_from_valid_login();

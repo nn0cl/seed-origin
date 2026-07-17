@@ -31,6 +31,9 @@ public:
     virtual bool insert(const IdentityAliasRecord& record) = 0;
     virtual bool touch(const std::string& canonicalClaimedId,
                        uint64_t lastUsedTick) = 0;
+    virtual bool reviewAlias(const std::string& canonicalClaimedId,
+                             AliasReviewStatus status,
+                             float confidence) = 0;
     virtual bool erase(const std::string& canonicalClaimedId) = 0;
     virtual std::vector<IdentityAliasRecord> exportRecords() const = 0;
 };
@@ -42,6 +45,9 @@ public:
     bool insert(const IdentityAliasRecord& record) override;
     bool touch(const std::string& canonicalClaimedId,
                uint64_t lastUsedTick) override;
+    bool reviewAlias(const std::string& canonicalClaimedId,
+                     AliasReviewStatus status,
+                     float confidence) override;
     bool erase(const std::string& canonicalClaimedId) override;
     std::vector<IdentityAliasRecord> exportRecords() const override;
 
