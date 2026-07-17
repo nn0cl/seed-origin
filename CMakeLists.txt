@@ -29,6 +29,7 @@ set(SEED_CORE_SOURCES
     src/LoginResponse.cpp
     src/LoginResponseCodec.cpp
     src/OutboundFrameQueue.cpp
+    src/SessionLifecycle.cpp
     src/MovementCommandHandler.cpp
     src/Player.cpp
     src/Position.cpp
@@ -63,6 +64,7 @@ add_executable(seed_tests
     tests/NetworkFrameCodecTest.cpp
     tests/LoginResponseCodecTest.cpp
     tests/OutboundFrameQueueTest.cpp
+    tests/SessionLifecycleTest.cpp
     tests/FrameAccumulatorTest.cpp
     tests/LoginCommandHandlerTest.cpp
     tests/ServerCommandDispatcherTest.cpp
