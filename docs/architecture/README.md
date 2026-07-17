@@ -104,6 +104,7 @@ through the versioned network protocol rather than depend on World internals.
 - `adr/0014-adjudicator-and-developer-role-model.md`
 - `adr/0015-cpp20-language-standard-adoption.md`
 - `adr/0016-identity-alias-persistence-and-review.md`
+- `adr/0017-admin-authentication-and-http-surface.md`
 
 ## Remaining Technology Evaluation
 
@@ -111,10 +112,12 @@ Technology choices still open for ADR decision:
 
 - identity persistence schema, migration tooling, and PostgreSQL driver
   (engine selection itself is decided by ADR 0016).
-- admin authentication mechanism for the identity export page and collision
-  review queue (ADR 0016 decision 4/5 ambiguity).
 - wall-clock-to-WorldTick mapping needed for retention purge (ADR 0016
   decision 2 ambiguity).
+- `/login` brute-force rate limiting, session TTL/revocation policy, and TLS
+  termination for the admin HTTP surface (ADR 0017 follow-up).
+- browser-based admin UI framework (ADR 0017 decision 5 explicitly defers
+  this; admin authentication mechanism itself is decided).
 - client platform, renderer, and UI framework.
 - snapshot/event wire encoding extension.
 - deployment and observability stack.

@@ -54,6 +54,7 @@ set(SEED_CORE_SOURCES
     src/SeedBinary.cpp
     src/SessionRegistry.cpp
     src/IdentityAliasStore.cpp
+    src/AdminSessionStore.cpp
     src/Status.cpp
 )
 
@@ -80,7 +81,7 @@ endif()
 if(LIBPQXX_FOUND)
     message(STATUS "libpqxx found: building PostgresIdentityAliasStore adapter")
 
-    add_library(seed_postgres src/PostgresIdentityAliasStore.cpp)
+    add_library(seed_postgres src/PostgresIdentityAliasStore.cpp src/AdminAuthStore.cpp)
     target_include_directories(seed_postgres PUBLIC include/seed)
     target_link_libraries(seed_postgres PUBLIC seed_core)
     target_include_directories(seed_postgres PUBLIC ${LIBPQXX_INCLUDE_DIRS})
@@ -98,6 +99,18 @@ if(LIBPQXX_FOUND)
     add_test(NAME seed_postgres_tests COMMAND seed_postgres_tests)
 else()
     message(STATUS "libpqxx not found: PostgresIdentityAliasStore adapter is skipped")
+endif()
+
+# Optional admin HTTP surface (LISS-0144, ADR 0017). Requires both libpqxx
+# and cpp-httplib; seed_core/seed_postgres never depend on HTTP.
+find_package(httplib CONFIG QUIET)
+
+if(LIBPQXX_FOUND AND httplib_FOUND)
+    message(STATUS "cpp-httplib found: building seed_admin")
+    add_executable(seed_admin src/AdminMain.cpp)
+    target_link_libraries(seed_admin PRIVATE seed_postgres httplib::httplib)
+elseif(LIBPQXX_FOUND)
+    message(STATUS "cpp-httplib not found: seed_admin is skipped")
 endif()
 
 add_executable(seed_tests

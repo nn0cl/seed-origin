@@ -42,9 +42,10 @@
   at-rest暗号化とアクセス制御・監査ログを主軸とする。
 - ADR 0016が持ち越したambiguity: (1) `lastUsedTick`（WorldTick）から
   実時間の保存期間を算出する対応関係が未設計、(2) エクスポート/衝突解決
-  キューを守る管理者認証機構が未存在、(3) PostgreSQLドライバ選定と
-  依存adoption checklistの脆弱性確認等が未実施。これらはPostgreSQLアダプタ・
-  管理者ページの実装Issueで解決する。
+  キューを守る管理者認証機構、(3) PostgreSQLドライバ選定と
+  依存adoption checklistの脆弱性確認等が未実施。(2)は
+  `docs/architecture/adr/0017-admin-authentication-and-http-surface.md`
+  （LISS-0144）で決定・実装した。(1)(3)は引き続き未解決。
 - `CLAUDE.md`の「Current Non-Decisions」の「Identity persistence
   format/backend」表記は、エンジン決定（PostgreSQL）を反映するよう更新が
   必要だが、これはagent operating contractの変更であり
