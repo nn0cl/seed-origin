@@ -180,6 +180,11 @@ void preserves_order_and_drains_by_display_limit();
 void rejects_duplicates_gaps_and_non_hazard_events();
 }
 
+namespace client_world_receiver_tests {
+void applies_split_snapshot_and_hazard_event();
+void rejects_sequence_gap_without_partial_application();
+}
+
 namespace server_command_dispatcher_tests {
 void accepts_login();
 void rejects_unimplemented_command();
@@ -278,6 +283,8 @@ int main() {
     client_snapshot_tests::rejects_incomplete_or_invalid_environment_snapshot();
     client_hazard_effect_tests::preserves_order_and_drains_by_display_limit();
     client_hazard_effect_tests::rejects_duplicates_gaps_and_non_hazard_events();
+    client_world_receiver_tests::applies_split_snapshot_and_hazard_event();
+    client_world_receiver_tests::rejects_sequence_gap_without_partial_application();
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();

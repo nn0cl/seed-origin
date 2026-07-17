@@ -74,6 +74,10 @@ HazardIngestResult ClientHazardEffectQueue::ingest(
     return HazardIngestResult::Applied;
 }
 
+void ClientHazardEffectQueue::confirmSnapshot(uint64_t sequence) {
+    sync.confirmSnapshot(sequence);
+}
+
 size_t ClientHazardEffectQueue::drain(
     size_t limit, std::vector<HazardEffect>& output) {
     output.clear();

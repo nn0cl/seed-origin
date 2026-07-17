@@ -1,0 +1,32 @@
+#ifndef SEED_CLIENT_WORLD_UPDATE_RECEIVER_H
+#define SEED_CLIENT_WORLD_UPDATE_RECEIVER_H
+
+#include <stddef.h>
+#include <string>
+#include <vector>
+
+#include "ClientEnvironmentState.h"
+#include "ClientHazardEffectQueue.h"
+#include "WorldUpdateAccumulator.h"
+#include "ClientWorldSnapshotApplier.h"
+
+namespace client {
+
+class ClientWorldUpdateReceiver {
+public:
+    ClientWorldUpdateReceiver();
+    bool receive(const std::vector<uint8_t>& bytes, size_t& applied,
+                 std::string& error);
+    const ClientEnvironmentState& environment() const;
+    const ClientHazardEffectQueue& hazardEffects() const;
+
+private:
+    network::WorldUpdateAccumulator accumulator;
+    ClientWorldSnapshotApplier snapshotApplier;
+    ClientEnvironmentState environmentState;
+    ClientHazardEffectQueue hazardQueue;
+};
+
+}
+
+#endif

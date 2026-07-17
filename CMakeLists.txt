@@ -42,6 +42,8 @@ set(SEED_CORE_SOURCES
     src/ClientEnvironmentState.cpp
     src/ClientWorldSnapshotApplier.cpp
     src/ClientHazardEffectQueue.cpp
+    src/WorldUpdateAccumulator.cpp
+    src/ClientWorldUpdateReceiver.cpp
     src/MovementCommandHandler.cpp
     src/Player.cpp
     src/Position.cpp
@@ -88,6 +90,7 @@ add_executable(seed_tests
     tests/WorldSnapshotBuilderTest.cpp
     tests/ClientWorldSnapshotApplierTest.cpp
     tests/ClientHazardEffectQueueTest.cpp
+    tests/ClientWorldUpdateReceiverTest.cpp
     tests/FrameAccumulatorTest.cpp
     tests/LoginCommandHandlerTest.cpp
     tests/ServerCommandDispatcherTest.cpp

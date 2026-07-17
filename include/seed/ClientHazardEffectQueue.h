@@ -34,6 +34,7 @@ public:
     ClientHazardEffectQueue();
     HazardIngestResult ingest(const network::WorldUpdate& update,
                               std::string& error);
+    void confirmSnapshot(uint64_t sequence);
     size_t drain(size_t limit, std::vector<HazardEffect>& effects);
     size_t size() const;
     const network::WorldUpdateSyncController& synchronization() const;
