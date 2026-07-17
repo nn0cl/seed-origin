@@ -50,4 +50,18 @@ void applies_queued_npc_movement_on_world_frame() {
     assert(field->findNpc(19503)->getPosition().getY() == 1.0f);
 }
 
+void respawns_npc_on_the_authoritative_world_tick() {
+    Field* field = Field::getInstance();
+    assert(field->setNpc(Npc(19504, "goblin", Status(0, 0),
+                             Position(19504, 0, 0, 0))));
+    assert(field->scheduleNpcRespawn(19504, 5, Status(80, 10),
+                                     Position(19504, 4, 2, 1)));
+    field->processFrame(4);
+    assert(!field->findNpc(19504)->isAlive());
+    field->processFrame(5);
+    assert(field->findNpc(19504)->isAlive());
+    assert(field->findNpc(19504)->getStatus().getHp() == 80);
+    assert(field->findNpc(19504)->getPosition().getX() == 4.0f);
+}
+
 } // namespace npc_combat_target_tests

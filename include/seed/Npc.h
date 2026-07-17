@@ -20,6 +20,7 @@ public:
     bool isAlive() const;
     bool setPosition(const Position& position);
     bool applyDamage(long damage);
+    bool respawn(const Status& status, const Position& position);
 
 private:
     std::int64_t id;

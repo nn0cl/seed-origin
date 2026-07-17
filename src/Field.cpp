@@ -92,7 +92,26 @@ bool Field::setNpc(Npc npc){
 
 bool Field::unsetNpc(Npc npc){
     Field* instance = Field::getInstance();
+    instance->npcRespawns.erase(npc.getNpcId());
     return instance->npcList.erase(npc.getNpcId()) > 0;
+}
+
+bool Field::scheduleNpcRespawn(int64_t npcId, uint64_t respawnTick,
+                               const Status& status, const Position& position) {
+    Npc* npc = findNpc(npcId);
+    const float x = position.getX();
+    const float y = position.getY();
+    const float z = position.getZ();
+    if (npc == nullptr || npc->isAlive() || respawnTick == 0 ||
+        status.getHp() <= 0 || !std::isfinite(x) || !std::isfinite(y) ||
+        !std::isfinite(z) || std::fabs(x) > server::MAX_WORLD_COORDINATE ||
+        std::fabs(y) > server::MAX_WORLD_COORDINATE ||
+        std::fabs(z) > server::MAX_WORLD_COORDINATE ||
+        npcRespawns.count(npcId) != 0) {
+        return false;
+    }
+    npcRespawns.emplace(npcId, NpcRespawnState{status, position, respawnTick});
+    return true;
 }
 
 bool
@@ -176,8 +195,11 @@ std::vector<NpcSnapshot> Field::publicNpcSnapshots() const {
     return snapshots;
 }
 
-void
-Field::processFrame(){
+void Field::processFrame(){
+    processFrame(0);
+}
+
+void Field::processFrame(uint64_t worldTick){
 
     //playerへのポジションキュー判定
     std::list<Position>::iterator positionItt = this->positionQueue.begin();
@@ -233,6 +255,19 @@ Field::processFrame(){
         ++actionItt;
     }
     this->actionQueue.clear();
+
+    std::map<int64_t, NpcRespawnState>::iterator respawnIt = npcRespawns.begin();
+    while (respawnIt != npcRespawns.end()) {
+        if (respawnIt->second.respawnTick > worldTick) {
+            ++respawnIt;
+            continue;
+        }
+        Npc* npc = findNpc(respawnIt->first);
+        if (npc != nullptr && !npc->isAlive()) {
+            npc->respawn(respawnIt->second.status, respawnIt->second.position);
+        }
+        respawnIt = npcRespawns.erase(respawnIt);
+    }
     
     //
     std::map<int64_t,Player>::iterator playerItt = this->playerList.begin();

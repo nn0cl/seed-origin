@@ -41,3 +41,11 @@ bool Npc::applyDamage(long damage) {
     if (status.getHp() == 0) alive = false;
     return true;
 }
+
+bool Npc::respawn(const Status& newStatus, const Position& newPosition) {
+    if (newStatus.getHp() <= 0) return false;
+    status = newStatus;
+    setPosition(newPosition);
+    alive = true;
+    return true;
+}

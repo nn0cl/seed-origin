@@ -48,6 +48,12 @@ struct CombatResolution {
 };
 }
 
+struct NpcRespawnState {
+    Status status;
+    Position position;
+    uint64_t respawnTick;
+};
+
 class Field {
 private:
     std::map<int64_t,Player> playerList;
@@ -69,6 +75,8 @@ public:
     static bool unsetPlayer(Player player);
     static bool setNpc(Npc npc);
     static bool unsetNpc(Npc npc);
+    bool scheduleNpcRespawn(int64_t npcId, uint64_t respawnTick,
+                            const Status& status, const Position& position);
     bool queueMovement(int64_t playerId, float dx, float dy, float dz);
     bool queueNpcMovement(int64_t npcId, float dx, float dy, float dz);
     bool hasPlayer(int64_t playerId) const;
@@ -81,6 +89,7 @@ public:
     const world::EnvironmentEther& environmentEther() const;
     float environmentHazard() const;
     void processFrame();
+    void processFrame(uint64_t worldTick);
     bool processInputs(const std::vector<server::WorldInput>& inputs);
     bool processInputs(const std::vector<server::WorldInput>& inputs,
                        std::vector<server::CombatResolution>& resolutions);
@@ -104,6 +113,7 @@ private:
     bool applyDamageToTarget(int64_t targetId, long damage);
     std::map<int64_t, uint64_t> nextAttackTick;
     std::map<int64_t, uint64_t> nextSpellTick;
+    std::map<int64_t, NpcRespawnState> npcRespawns;
 };
 
 #endif

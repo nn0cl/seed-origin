@@ -55,7 +55,7 @@ bool WorldFrameApplier::apply(const FrameActions& frame,
          it != frame.actions.end(); ++it) {
         field.putActionQueue(it->getAction());
     }
-    field.processFrame();
+    field.processFrame(frame.worldTick);
     error.clear();
     return true;
 }

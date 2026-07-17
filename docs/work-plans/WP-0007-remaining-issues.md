@@ -17,7 +17,7 @@
 | 2 | LISS-0138 | MP・クールダウン・二重実行防止 | review（実装済み） |
 | 3 | LISS-0139-A | 共通CombatTargetとNPC対象適用 | in_progress |
 | 4 | LISS-0139-B | NPC公開Snapshot | in_progress |
-| 5 | LISS-0139-C | NPC配置・死亡・再配置 | in_progress |
+| 5 | LISS-0139-C | NPC配置・死亡・再配置 | review（実装済み） |
 | 6 | LISS-0139-D | NPC AIの決定論的入力 | proposed |
 | 7 | LISS-0131 | 不正入力・レート制限 | proposed |
 | 8 | LISS-0130 | ID名寄せの永続化と削除方針 | proposed |
