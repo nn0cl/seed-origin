@@ -28,6 +28,7 @@ private:
     std::list<Action> actionQueue;
     Status fieldStatus;
     world::EnvironmentEther fieldEther;
+    float lastEtherHazard;
 protected:
     Field();
 public:
@@ -44,6 +45,7 @@ public:
     Player* findPlayer(int64_t playerId);
     world::EnvironmentEther& environmentEther();
     const world::EnvironmentEther& environmentEther() const;
+    float environmentHazard() const;
     void processFrame();
     bool processInputs(const std::vector<server::WorldInput>& inputs);
     

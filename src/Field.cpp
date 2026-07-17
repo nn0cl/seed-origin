@@ -13,7 +13,7 @@
 #include <cmath>
 #include <limits>
 
-Field::Field() {
+Field::Field() : lastEtherHazard(0.0f) {
     
 };
 
@@ -88,6 +88,10 @@ world::EnvironmentEther& Field::environmentEther() {
 
 const world::EnvironmentEther& Field::environmentEther() const {
     return fieldEther;
+}
+
+float Field::environmentHazard() const {
+    return lastEtherHazard;
 }
 
 Player*
@@ -194,6 +198,7 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs) {
         }
     }
     fieldEther.decay();
+    lastEtherHazard = fieldEther.adverseEffectSeverity();
     return true;
 }
 

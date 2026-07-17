@@ -156,6 +156,7 @@ namespace environment_ether_tests {
 void increases_conductivity_with_ether_magnitude();
 void resolves_spell_and_decays_environment();
 void rejects_unknown_element();
+void applies_opposing_attribute_reaction_and_reports_instability();
 }
 
 namespace server_command_dispatcher_tests {
@@ -246,6 +247,7 @@ int main() {
     environment_ether_tests::increases_conductivity_with_ether_magnitude();
     environment_ether_tests::resolves_spell_and_decays_environment();
     environment_ether_tests::rejects_unknown_element();
+    environment_ether_tests::applies_opposing_attribute_reaction_and_reports_instability();
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();

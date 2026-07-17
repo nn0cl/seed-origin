@@ -26,6 +26,9 @@ public:
     bool isKnownElement(const std::string& element) const;
     float value(EtherAttribute attribute) const;
     float conductivity(EtherAttribute attribute) const;
+    float instability() const;
+    float adverseEffectSeverity() const;
+    bool hasAdverseEffect() const;
     bool add(EtherAttribute attribute, float amount);
     bool resolveSpell(const std::string& element, float basePower,
                       float& effectivePower, std::string& error);

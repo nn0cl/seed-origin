@@ -31,4 +31,18 @@ void rejects_unknown_element() {
     assert(!ether.resolveSpell("void", 100.0f, effectivePower, error));
 }
 
+void applies_opposing_attribute_reaction_and_reports_instability() {
+    world::EnvironmentEther ether;
+    float effectivePower = 0.0f;
+    std::string error;
+    assert(ether.resolveSpell("fire", 1000.0f, effectivePower, error));
+    assert(ether.value(world::EtherAttribute::Fire) == 100.0f);
+    assert(ether.value(world::EtherAttribute::Water) == -25.0f);
+    assert(ether.instability() > 0.0f);
+    assert(!ether.hasAdverseEffect());
+    assert(ether.add(world::EtherAttribute::Earth, 200.0f));
+    assert(ether.hasAdverseEffect());
+    assert(ether.adverseEffectSeverity() > 0.0f);
+}
+
 } // namespace environment_ether_tests
