@@ -4,6 +4,12 @@ void permits_field_action_without_players();
 void rejects_unknown_action_type();
 }
 
+namespace action_queue_tests {
+void assigns_arrival_sequence_and_preserves_order();
+void arrivals_after_frame_cutover_are_deferred();
+void rejects_invalid_actions();
+}
+
 namespace field_state_tests {
 void removes_players_by_full_id();
 void accepts_empty_frame();
@@ -72,6 +78,9 @@ int main() {
     action_input_tests::rejects_missing_players_for_target_action();
     action_input_tests::permits_field_action_without_players();
     action_input_tests::rejects_unknown_action_type();
+    action_queue_tests::assigns_arrival_sequence_and_preserves_order();
+    action_queue_tests::arrivals_after_frame_cutover_are_deferred();
+    action_queue_tests::rejects_invalid_actions();
     field_state_tests::removes_players_by_full_id();
     field_state_tests::accepts_empty_frame();
     connection_tests::close_is_idempotent();

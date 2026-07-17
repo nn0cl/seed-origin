@@ -1,6 +1,6 @@
 # LISS-0081: Server tickとActionQueue実装
 
-- Status: proposed
+- Status: review
 - Phase: phase-1-red
 - Type: feature + determinism
 - Priority: critical
@@ -19,3 +19,5 @@
 - 停止・満杯・空キューを安全に扱う。
 - queueの所有権が明確でraw pointerを保持しない。
 - 固定入力列の再実行結果が一致する。
+
+値を保持するActionQueue、受付sequence、mutexによる受付境界、`takeFrame`によるフレーム切り替えを実装した。固定時計とWorld適用は後続スライスで扱う。テスト・ビルドは運用規約により実行していない。

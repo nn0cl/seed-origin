@@ -1,6 +1,6 @@
 # LISS-0079: 20 FPS ActionQueueフレーム契約
 
-- Status: proposed
+- Status: review
 - Phase: phase-0-design
 - Type: architecture + feature
 - Priority: critical
@@ -23,3 +23,5 @@
 - 並行受付と固定フレーム処理の排他境界をテスト資料化する。
 
 実装は後続スライスで行う。テスト・ビルドは運用規約により実行しない。
+
+LISS-0081で、値保持・受付sequence・mutex境界・フレーム切り替え用`takeFrame`を実装した。固定時計とWorldへの適用は後続スライスで扱う。

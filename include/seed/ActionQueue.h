@@ -1,21 +1,41 @@
-//
-//  ActionQueue.h
-//  seeds
-//
-//  Created by nn0cl on 2013/12/15.
-//  Copyright (c) 2013年 nn0cl. All rights reserved.
-//
+#ifndef SEED_ACTION_QUEUE_H
+#define SEED_ACTION_QUEUE_H
 
-#ifndef seeds_ActionQueue_h
-#define seeds_ActionQueue_h
+#include <deque>
+#include <stddef.h>
+#include <stdint.h>
+#include <vector>
+#include <mutex>
 
-#include "Player.h"
 #include "Action.h"
 
-class ActionQueue{
+class QueuedAction {
+public:
+    QueuedAction(uint64_t sequence, const Action& action);
+
+    uint64_t getSequence() const;
+    const Action& getAction() const;
+
 private:
-    Player* player;
-    Action* action;
+    uint64_t sequence;
+    Action action;
+};
+
+class ActionQueue {
+public:
+    static const uint64_t FRAME_DURATION_MILLISECONDS = 50;
+    static const size_t MAX_PENDING_ACTIONS = 4096;
+
+    ActionQueue();
+
+    bool enqueue(const Action& action);
+    std::vector<QueuedAction> takeFrame();
+    size_t pendingCount() const;
+
+private:
+    mutable std::mutex mutex;
+    std::deque<QueuedAction> pending;
+    uint64_t nextSequence;
 };
 
 #endif

@@ -28,9 +28,9 @@
 | LISS-0076 | Server command dispatch boundary | critical | LISS-0058, LISS-0057 | review |
 | LISS-0077 | Runtime-to-dispatch bridge | critical | LISS-0058, LISS-0076 | review |
 | LISS-0078 | Movement command validation and Field application | critical | LISS-0060, LISS-0058 | review |
-| LISS-0079 | 20 FPS ActionQueue frame contract | critical | LISS-0023, LISS-0022 | proposed |
+| LISS-0079 | 20 FPS ActionQueue frame contract | critical | LISS-0023, LISS-0022 | review |
 | LISS-0080 | Snapshot/Event envelope contract | critical | LISS-0049, LISS-0055 | proposed |
-| LISS-0081 | Server tick and ActionQueue implementation | critical | LISS-0079, LISS-0058 | proposed |
+| LISS-0081 | Server tick and ActionQueue implementation | critical | LISS-0079, LISS-0058 | review |
 | LISS-0082 | Client Snapshot application/interpolation | high | LISS-0063, LISS-0080 | proposed |
 | LISS-0083 | Client EffectQueue | high | LISS-0065, LISS-0080 | proposed |
 | LISS-0084 | Sync gaps/backpressure/effect backlog | high | LISS-0080, LISS-0083 | proposed |
