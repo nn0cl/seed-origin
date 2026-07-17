@@ -195,6 +195,7 @@ void requests_a_snapshot_after_reconnect_before_accepting_events();
 namespace server_command_dispatcher_tests {
 void accepts_login();
 void rejects_unimplemented_command();
+void routes_combat_only_for_an_active_session();
 }
 
 namespace movement_command_handler_tests {
@@ -300,6 +301,7 @@ int main() {
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();
+    server_command_dispatcher_tests::routes_combat_only_for_an_active_session();
     movement_command_handler_tests::rejects_malformed_or_unknown_move();
     movement_command_handler_tests::accepts_bounded_move_for_existing_player();
     movement_command_handler_tests::rejects_move_that_exceeds_frame_distance();

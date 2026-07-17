@@ -26,4 +26,24 @@ void rejects_unimplemented_command() {
     assert(result.error == "command handler is not implemented");
 }
 
+void routes_combat_only_for_an_active_session() {
+    session::SessionRegistry registry;
+    server::WorldInputQueue queue;
+    server::ServerCommandDispatcher dispatcher(registry, queue);
+    const session::SessionInfo session = registry.login("player");
+    const network::NetworkCommand attack = {
+        network::CURRENT_PROTOCOL_VERSION, network::CommandType::Attack,
+        session.internalId, "2,100"};
+    const server::CommandDispatchResult accepted = dispatcher.dispatch(attack);
+    assert(accepted.accepted);
+    assert(queue.pendingCount() == 1);
+
+    const network::NetworkCommand forged = {
+        network::CURRENT_PROTOCOL_VERSION, network::CommandType::CastSpell,
+        9999, "2,fire,100"};
+    const server::CommandDispatchResult rejected = dispatcher.dispatch(forged);
+    assert(!rejected.accepted);
+    assert(queue.pendingCount() == 1);
+}
+
 } // namespace server_command_dispatcher_tests

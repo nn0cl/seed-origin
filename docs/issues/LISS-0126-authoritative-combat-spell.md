@@ -1,6 +1,6 @@
 # LISS-0126: 権威サーバー攻撃・魔法
 
-- Status: proposed
+- Status: review
 - Priority: high
 - Depends on: LISS-0113, LISS-0115, LISS-0120
 
@@ -21,6 +21,10 @@
 - 成功した魔法だけがHP／MP／エーテルを変更する。
 - 伝導率計算は発動前の環境値を一度だけ参照する。
 - エーテル注入、対属性反作用、実効威力を結果Eventへ記録する。
+
+## 実装資料
+
+`ServerCommandDispatcher`へAttack／CastSpellを接続した。アクティブな匿名セッションだけがCombatCommandHandlerを通じてWorldInputQueueへ投入でき、クライアント申告の別内部IDは拒否する。結果Eventの原子性、クールダウン、MP、NPC対象は後続スライスで扱う。テスト・ビルドは実行していない。
 
 ## English
 

@@ -1,5 +1,6 @@
 #include "ServerCommandDispatcher.h"
 #include "ChatCommandHandler.h"
+#include "CombatCommandHandler.h"
 
 namespace server {
 
@@ -49,6 +50,23 @@ CommandDispatchResult ServerCommandDispatcher::dispatch(
         }
         ChatCommandHandler handler(*inputQueue);
         result.accepted = handler.handle(command, result.error);
+        return result;
+    }
+
+    if (command.type == network::CommandType::Attack ||
+        command.type == network::CommandType::CastSpell) {
+        if (inputQueue == 0) {
+            result.error = "combat world input queue is not bound";
+            return result;
+        }
+        if (!loginHandler.sessionRegistry().isActive(command.sessionId)) {
+            result.error = "combat requires an active anonymous session";
+            return result;
+        }
+        CombatCommandHandler handler(*inputQueue);
+        const CombatCommandResult combat = handler.handle(command);
+        result.accepted = combat.accepted;
+        result.error = combat.error;
         return result;
     }
 
