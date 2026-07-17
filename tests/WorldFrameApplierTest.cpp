@@ -124,4 +124,17 @@ void applies_spell_with_environment_conductivity_and_decay() {
     assert(field->environmentEther().value(world::EtherAttribute::Fire) < 5.0f);
 }
 
+void emits_hazard_event_when_environment_is_unstable() {
+    Field* field = Field::getInstance();
+    assert(field->environmentEther().add(world::EtherAttribute::Fire, 200.0f));
+    assert(field->environmentEther().add(world::EtherAttribute::Earth, 200.0f));
+    const server::WorldFrameInputs frame = {1, std::vector<server::WorldInput>()};
+    server::WorldFrameApplier applier(*field);
+    std::vector<network::WorldUpdate> updates;
+    std::string error;
+    assert(applier.apply(frame, updates, error));
+    assert(updates.size() == 1);
+    assert(updates[0].payload.find("etherHazard=") == 0);
+}
+
 } // namespace world_frame_applier_tests

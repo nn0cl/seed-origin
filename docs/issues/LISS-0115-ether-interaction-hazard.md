@@ -36,4 +36,5 @@ Spellで増加する属性エーテルが対属性へ反作用し、環境全体
 
 ## 次のIssue
 
-hazardをWorld対象物へ適用する安全なルールと、WorldUpdate／Snapshotへの表現を定義する。
+LISS-0116でhazardをWorldUpdate Eventへ表現した。対象物への具体的な影響とSnapshot集約は
+後続Issueで扱う。

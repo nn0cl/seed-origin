@@ -51,6 +51,7 @@
 | LISS-0113 | Combat and spell world application | high | LISS-0112, LISS-0020, LISS-0022 | review |
 | LISS-0114 | Environment ether, conductivity and decay | high | LISS-0113, LISS-0104 | review |
 | LISS-0115 | Ether interaction and hazard severity | high | LISS-0114, LISS-0113 | review |
+| LISS-0116 | Hazard WorldUpdate event | high | LISS-0115, LISS-0105, LISS-0106 | review |
 | LISS-0082 | Client Snapshot application/interpolation | high | LISS-0063, LISS-0080 | proposed |
 | LISS-0083 | Client EffectQueue | high | LISS-0065, LISS-0080 | proposed |
 | LISS-0084 | Sync gaps/backpressure/effect backlog | high | LISS-0080, LISS-0083 | in_progress |

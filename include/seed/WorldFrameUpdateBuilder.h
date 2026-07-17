@@ -21,6 +21,9 @@ public:
     bool build(const WorldFrameInputs& frame,
                std::vector<network::WorldUpdate>& updates,
                std::string& error);
+    bool appendHazard(uint64_t worldTick, float severity, float instability,
+                      std::vector<network::WorldUpdate>& updates,
+                      std::string& error);
     uint64_t nextSequence() const;
 
 private:

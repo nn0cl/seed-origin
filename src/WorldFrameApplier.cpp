@@ -98,6 +98,14 @@ bool WorldFrameApplier::apply(const WorldFrameInputs& frame,
         error = "world input could not be applied in the field";
         return false;
     }
+    if (field.environmentEther().hasAdverseEffect() &&
+        !updateBuilder.appendHazard(frame.worldTick,
+                                    field.environmentHazard(),
+                                    field.environmentEther().instability(),
+                                    updates, error)) {
+        updates.clear();
+        return false;
+    }
     error.clear();
     return true;
 }

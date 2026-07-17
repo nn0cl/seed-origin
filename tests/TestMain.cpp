@@ -129,6 +129,7 @@ void restores_movement_intents_when_target_is_missing();
 void applies_combat_damage_after_range_validation();
 void rejects_out_of_range_combat_without_damage();
 void applies_spell_with_environment_conductivity_and_decay();
+void emits_hazard_event_when_environment_is_unstable();
 }
 
 namespace movement_intent_queue_tests {
@@ -235,6 +236,7 @@ int main() {
     world_frame_applier_tests::applies_combat_damage_after_range_validation();
     world_frame_applier_tests::rejects_out_of_range_combat_without_damage();
     world_frame_applier_tests::applies_spell_with_environment_conductivity_and_decay();
+    world_frame_applier_tests::emits_hazard_event_when_environment_is_unstable();
     movement_intent_queue_tests::queues_valid_movement_without_field_mutation();
     movement_intent_queue_tests::rejects_invalid_session_without_queue_mutation();
     movement_intent_queue_tests::restores_a_cut_frame_in_original_order();

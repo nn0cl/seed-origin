@@ -1,5 +1,6 @@
 #include "WorldFrameUpdateBuilder.h"
 
+#include <cmath>
 #include <limits>
 #include <sstream>
 
@@ -72,6 +73,20 @@ bool WorldFrameUpdateBuilder::build(const WorldFrameInputs& frame,
     }
     error.clear();
     return true;
+}
+
+bool WorldFrameUpdateBuilder::appendHazard(
+    uint64_t worldTick, float severity, float instability,
+    std::vector<network::WorldUpdate>& updates, std::string& error) {
+    if (!std::isfinite(severity) || !std::isfinite(instability) ||
+        severity <= 0.0f || instability <= 1.0f) {
+        error = "world hazard is invalid";
+        return false;
+    }
+    std::ostringstream payload;
+    payload << "etherHazard=severity:" << severity
+            << ";instability:" << instability;
+    return appendEvent(worldTick, payload.str(), updates, error);
 }
 
 bool WorldFrameUpdateBuilder::appendEvent(uint64_t worldTick,
