@@ -57,6 +57,18 @@
 | LISS-0119 | Client hazard effect queue | high | LISS-0116, LISS-0118 | review |
 | LISS-0120 | WorldUpdate delivery boundary | high | LISS-0117, LISS-0118, LISS-0119, LISS-0056 | review |
 | LISS-0121 | Client WorldUpdate receiver | high | LISS-0118, LISS-0119, LISS-0120 | review |
+| LISS-0122 | Reconnect Snapshot recovery | critical | LISS-0121, LISS-0089 | review |
+| LISS-0123 | Anonymous login and alias reconciliation | high | LISS-0042, LISS-0053, LISS-0066 | proposed |
+| LISS-0124 | Chat command and delivery | medium | LISS-0120, LISS-0123, LISS-0059 | proposed |
+| LISS-0125 | Authoritative 3D movement | high | LISS-0108, LISS-0120 | proposed |
+| LISS-0126 | Authoritative combat and spells | high | LISS-0113, LISS-0115, LISS-0120 | proposed |
+| LISS-0127 | Authoritative NPC lifecycle | high | LISS-0125, LISS-0126, LISS-0047 | proposed |
+| LISS-0128 | Client transport shell | high | LISS-0121, LISS-0122, LISS-0044 | proposed |
+| LISS-0129 | Client play shell | medium | LISS-0128, LISS-0125, LISS-0126, LISS-0127 | proposed |
+| LISS-0130 | Identity persistence and reconciliation | high | LISS-0123, LISS-0053 | proposed |
+| LISS-0131 | Abuse controls and rate limits | critical | LISS-0123, LISS-0124, LISS-0125, LISS-0126 | proposed |
+| LISS-0132 | Reconnect, backpressure, observability | high | LISS-0122, LISS-0128, LISS-0131 | proposed |
+| LISS-0133 | Playable client acceptance | critical | LISS-0124〜0132 | proposed |
 | LISS-0082 | Client Snapshot application/interpolation | high | LISS-0063, LISS-0080 | proposed |
 | LISS-0083 | Client EffectQueue | high | LISS-0065, LISS-0080 | proposed |
 | LISS-0084 | Sync gaps/backpressure/effect backlog | high | LISS-0080, LISS-0083 | in_progress |

@@ -39,6 +39,23 @@ void rejects_sequence_gap_without_partial_application() {
     size_t applied = 0;
     assert(!receiver.receive(frame, applied, error));
     assert(applied == 0 && receiver.hazardEffects().size() == 0);
+    assert(receiver.snapshotRequested());
+    assert(receiver.lastDecision() == client::WorldReceiveDecision::RequestSnapshot);
+}
+
+void requests_a_snapshot_after_reconnect_before_accepting_events() {
+    client::ClientWorldUpdateReceiver receiver;
+    receiver.beginReconnect();
+    assert(receiver.snapshotRequested());
+    const network::WorldUpdate event = {
+        1, network::UpdateKind::Event, 1, 1, 1,
+        "etherHazard=severity:2;instability:3"};
+    std::vector<uint8_t> frame;
+    std::string error;
+    assert(network::encodeWorldUpdateFrame(event, frame, error));
+    size_t applied = 0;
+    assert(!receiver.receive(frame, applied, error));
+    assert(applied == 0 && receiver.snapshotRequested());
 }
 
 } // namespace client_world_receiver_tests

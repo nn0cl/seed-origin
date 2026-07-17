@@ -183,6 +183,7 @@ void rejects_duplicates_gaps_and_non_hazard_events();
 namespace client_world_receiver_tests {
 void applies_split_snapshot_and_hazard_event();
 void rejects_sequence_gap_without_partial_application();
+void requests_a_snapshot_after_reconnect_before_accepting_events();
 }
 
 namespace server_command_dispatcher_tests {
@@ -285,6 +286,7 @@ int main() {
     client_hazard_effect_tests::rejects_duplicates_gaps_and_non_hazard_events();
     client_world_receiver_tests::applies_split_snapshot_and_hazard_event();
     client_world_receiver_tests::rejects_sequence_gap_without_partial_application();
+    client_world_receiver_tests::requests_a_snapshot_after_reconnect_before_accepting_events();
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();
