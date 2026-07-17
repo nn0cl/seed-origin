@@ -105,18 +105,27 @@ through the versioned network protocol rather than depend on World internals.
 - `adr/0015-cpp20-language-standard-adoption.md`
 - `adr/0016-identity-alias-persistence-and-review.md`
 - `adr/0017-admin-authentication-and-http-surface.md`
+- `adr/0018-registered-player-authentication.md` (supersedes ADR 0016 for
+  player identity; ADR 0016 remains for historical record)
 
 ## Remaining Technology Evaluation
 
 Technology choices still open for ADR decision:
 
-- identity persistence schema, migration tooling, and PostgreSQL driver
-  (engine selection itself is decided by ADR 0016).
-- wall-clock-to-WorldTick mapping needed for retention purge (ADR 0016
-  decision 2 ambiguity).
-- React admin SPA build tooling, directory placement, and SSE payload/auth
-  contract (ADR 0017 decision 5 resolution scope; tracked as LISS-0145,
-  design intake only).
+- React admin SPA and player registration/login SPA build tooling and
+  directory placement (ADR 0017 decision 5 / ADR 0018 decision 5; tracked
+  as LISS-0145 and LISS-0149, design intake only).
+- player session token TTL, reconnect-window integration with LISS-0122,
+  and whether seed_auth/seed_admin share a Postgres-backed session-store
+  component (ADR 0018 follow-ups; tracked as LISS-0146/0147).
+- player progression (level/item) domain model and persistence schema
+  (LISS-0148, not designed yet).
 - client platform, renderer, and UI framework.
 - snapshot/event wire encoding extension.
 - deployment and observability stack.
+
+Retired by ADR 0018 (no longer open — player identity is resolved by
+registered accounts, not these): identity-alias persistence schema/driver
+selection detail, and the wall-clock-to-WorldTick retention mapping (ADR
+0016 decisions 2/... — ADR 0016 itself remains as a historical record, see
+LISS-0150 for the formal deprecation Issue).
