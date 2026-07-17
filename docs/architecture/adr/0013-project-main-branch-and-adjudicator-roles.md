@@ -17,11 +17,15 @@ standards for humans and AI agents from unequal decision authority.
 - `main` is the working branch for issue-scoped changes in this repository.
 - A local Issue, acceptance specification, and required phase artifacts remain
   mandatory even when a separate branch is not used.
-- The human Adjudicator owns phase transitions, Phase 1 test review, ADR
-  acceptance, ambiguity decisions, and final responsibility.
-- AI agents and humans are subject to the same safety, evidence, and review
-  standards. AI agents do not acquire Adjudicator authority by producing code,
-  passing tools, or receiving an autonomous execution instruction.
+- The Adjudicator role owns phase transitions, Phase 1 test review, ADR
+  acceptance, ambiguity decisions, and final responsibility. This role is
+  normally held by a human, but it is a role boundary rather than a synonym
+  for every human participant.
+- A human may participate as a Developer without being an Adjudicator.
+- Developers may be human or AI agents and are subject to the same safety,
+  evidence, and review standards. A human Developer follows the same
+  repository-native workflow as an AI agent and does not acquire Adjudicator
+  authority by producing code or passing tools.
 - A completed Issue is committed and pushed to `main`; CodeQL is inspected
   before the next Issue begins.
 
@@ -31,8 +35,8 @@ standards for humans and AI agents from unequal decision authority.
   is documented rather than left as an implicit chat instruction.
 - Direct main delivery increases the importance of small slices, clean working
   trees, CodeQL review, and accurate Issue status.
-- Human decision points remain explicit even when implementation is delegated
-  to an AI agent.
+- Human decision points remain explicit even when implementation is performed
+  by an AI agent or by a human Developer.
 
 ## Related documents
 

@@ -18,9 +18,10 @@ Responsibilities:
 - confirm when AI may use broader context, external providers, or stronger
   models.
 
-### Agent
+### Developer (human or AI agent)
 
-An AI coding or design assistant.
+An AI coding or design assistant, or a human contributor acting in the
+Developer role rather than the Adjudicator role.
 
 Responsibilities:
 
@@ -30,6 +31,10 @@ Responsibilities:
 - keep payloads minimal.
 - produce reviewable artifacts.
 - stop when a Adjudicator decision is required.
+
+Human Developers follow the same workflow, evidence requirements, phase gates,
+and review boundaries. Being human does not itself grant Adjudicator authority;
+that authority belongs to the explicitly assigned Adjudicator role.
 
 ### Deterministic Tool
 
