@@ -128,7 +128,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if git grep -n -E '^(<<<<<<<|=======|>>>>>>>)' -- . ':!.git' >/tmp/conflict-markers.txt; then
+          if git grep -n -E '^(<<<<<<<|=======|>>>>>>>)($| )' -- . ':!.git' >/tmp/conflict-markers.txt; then
             cat /tmp/conflict-markers.txt >&2
             exit 1
           fi
