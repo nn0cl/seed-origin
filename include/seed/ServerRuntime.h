@@ -42,6 +42,8 @@ public:
     bool stop(session::SessionRegistry& registry);
     size_t processClientFrames(ServerCommandDispatcher& dispatcher, std::string& error);
     ServerFrameResult processFrame(ServerCommandDispatcher& dispatcher, std::string& error);
+    size_t publishWorldUpdates(const std::vector<network::WorldUpdate>& updates,
+                               std::string& error);
     bool submit(const network::NetworkCommand& command);
     bool submitAction(const Action& action);
     bool submitMovement(int64_t sessionId, float dx, float dy, float dz);

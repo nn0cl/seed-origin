@@ -29,6 +29,11 @@ void requests_snapshot_on_gap_and_does_not_apply_it();
 void resumes_after_snapshot_confirmation();
 }
 
+namespace world_update_frame_tests {
+void round_trips_snapshot_and_rejects_wrong_magic();
+void rejects_truncated_or_oversized_world_update_frames();
+}
+
 namespace field_state_tests {
 void removes_players_by_full_id();
 void accepts_empty_frame();
@@ -199,6 +204,8 @@ int main() {
     world_update_sequence_tests::detects_duplicates_and_gaps_without_advancing();
     world_update_sync_tests::requests_snapshot_on_gap_and_does_not_apply_it();
     world_update_sync_tests::resumes_after_snapshot_confirmation();
+    world_update_frame_tests::round_trips_snapshot_and_rejects_wrong_magic();
+    world_update_frame_tests::rejects_truncated_or_oversized_world_update_frames();
     field_state_tests::removes_players_by_full_id();
     field_state_tests::accepts_empty_frame();
     connection_tests::close_is_idempotent();

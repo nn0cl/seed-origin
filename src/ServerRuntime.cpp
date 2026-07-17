@@ -1,6 +1,7 @@
 #include "ServerRuntime.h"
 #include "LoginResponseCodec.h"
 #include "ServerCommandDispatcher.h"
+#include "WorldUpdateFrameCodec.h"
 
 #include <limits>
 #include <utility>
@@ -253,6 +254,32 @@ ServerFrameResult ServerRuntime::processFrame(ServerCommandDispatcher& dispatche
     ServerFrameResult result = {worldFrame.worldTick, accepted + processed,
                                 worldFrame.inputs};
     return result;
+}
+
+size_t ServerRuntime::publishWorldUpdates(
+    const std::vector<network::WorldUpdate>& updates, std::string& error) {
+    if (!running) {
+        error = "server runtime is stopped";
+        return 0;
+    }
+    size_t published = 0;
+    for (std::vector<network::WorldUpdate>::const_iterator update = updates.begin();
+         update != updates.end(); ++update) {
+        std::vector<uint8_t> frame;
+        if (!network::encodeWorldUpdateFrame(*update, frame, error)) return published;
+        for (std::map<uint64_t, std::unique_ptr<ClientSession> >::iterator it =
+                 clients.begin(); it != clients.end(); ++it) {
+            if (!lifecycle.hasSession(it->first)) continue;
+            std::string enqueueError;
+            if (!it->second->enqueueFrame(frame, enqueueError)) {
+                error = enqueueError;
+                return published;
+            }
+            ++published;
+        }
+    }
+    error.clear();
+    return published;
 }
 
 std::vector<network::NetworkCommand> ServerRuntime::drainCommands() {

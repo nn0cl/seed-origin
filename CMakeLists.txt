@@ -13,6 +13,7 @@ set(SEED_CORE_SOURCES
     src/WorldUpdate.cpp
     src/WorldUpdateSequence.cpp
     src/WorldUpdateSync.cpp
+    src/WorldUpdateFrameCodec.cpp
     src/Buff.cpp
     src/Connection.cpp
     src/ClientSession.cpp
@@ -64,6 +65,7 @@ add_executable(seed_tests
     tests/WorldUpdateTest.cpp
     tests/WorldUpdateSequenceTest.cpp
     tests/WorldUpdateSyncTest.cpp
+    tests/WorldUpdateFrameCodecTest.cpp
     tests/ConnectionTest.cpp
     tests/ClientSessionTest.cpp
     tests/FieldStateTest.cpp
