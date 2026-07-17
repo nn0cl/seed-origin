@@ -112,17 +112,21 @@ through the versioned network protocol rather than depend on World internals.
 
 Technology choices still open for ADR decision:
 
-- React admin SPA and player registration/login SPA build tooling and
-  directory placement (ADR 0017 decision 5 / ADR 0018 decision 5; tracked
-  as LISS-0145 and LISS-0149, design intake only).
+- Static-asset serving for the React admin/auth SPAs (Spring Boot vs.
+  Nginx); build tooling and directory placement are decided (LISS-0145/
+  0149: Vite, `seed-admin/frontend/` and `seed-auth/frontend/`, separate
+  apps, TanStack Query + Zustand + shadcn/ui + Tailwind CSS v4).
 - player session token TTL, reconnect-window integration with LISS-0122,
   and whether seed_auth/seed_admin share a Postgres-backed session-store
-  component (ADR 0018 follow-ups; tracked as LISS-0146/0147).
+  component (ADR 0018 follow-ups; tracked as LISS-0146/0147). `seed_auth`'s
+  own implementation language is also still open (LISS-0146).
 - player progression (level/item) domain model and persistence schema
   (LISS-0148, not designed yet).
-- production client platform, renderer, and UI framework (LISS-0064
-  remains open; a Godot 4.7/GDScript MVP scope is proposed separately in
-  ADR 0020, not yet approved, and does not decide the production choice).
+- production client platform (LISS-0064): Unreal Engine is proposed in
+  ADR 0021, not yet approved (version, scripting approach, and repository
+  placement still open). A separate Godot 4.7/GDScript MVP (ADR 0020, also
+  not yet approved) is a throwaway validation client, not the production
+  choice.
 - snapshot/event wire encoding extension.
 - deployment and observability stack.
 

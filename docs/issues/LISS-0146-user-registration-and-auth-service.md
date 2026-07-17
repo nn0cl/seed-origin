@@ -29,6 +29,22 @@
 - `seed_auth`は`seed_admin`・`seed_server`と別プロセス・別実行ファイルと
   する。
 
+## ディレクトリ構造・Dockerネットワーク（2026-07-18確定）
+
+```
+seed-auth/
+├── docker-compose.yml
+├── backend/            # 実装言語は下記「実装言語」参照、未確定
+│   └── ...
+└── frontend/           # LISS-0149のスコープ
+    └── src/...
+```
+
+`seed-admin`と同じ外部共有Dockerネットワーク（`seed-network`、
+LISS-0145参照）に参加する。`db/docker-compose.yml`・
+`seed-admin/docker-compose.yml`・`seed-auth/docker-compose.yml`が
+共通の`seed-network`を参照する構成。
+
 ## 資格情報の流通境界（2026-07-18、Adjudicator確認済み）
 
 パスワード（および`pgcrypto`ハッシュ）は`seed_auth`とゲームクライアント
