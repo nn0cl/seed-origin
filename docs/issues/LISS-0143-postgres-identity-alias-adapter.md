@@ -46,6 +46,12 @@ ADR 0016で決定したPostgreSQLを実バックエンドとする`IdentityAlias
 - `CMakeLists.txt`: `pkg_check_modules`でlibpqxxを検出した場合のみアダプタと
   対応する統合テストをビルド対象に加える（`SEED_HAVE_LIBPQXX`）。
 
+## サーバー配線（2026-07-18追加）
+
+`src/ServerMain.cpp`（LISS-0056の合成ルート、`seed_server`実行ファイル）が
+`SEED_IDENTITY_DB_URL`の有無で`PostgresIdentityAliasStore`／
+`InMemoryIdentityAliasStore`を選択する。詳細はLISS-0056側に記録した。
+
 ## Remaining decisions
 
 - 保存期間purgeジョブ、admin認証、export管理者ページはADR 0016の別ambiguityとして

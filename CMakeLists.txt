@@ -63,6 +63,10 @@ target_include_directories(seed_core PUBLIC include/seed)
 add_executable(seed_cli src/main.cpp)
 target_link_libraries(seed_cli PRIVATE seed_core)
 
+# LISS-0056 composition root: fixed-tick accept/dispatch/apply/publish loop.
+add_executable(seed_server src/ServerMain.cpp)
+target_link_libraries(seed_server PRIVATE seed_core)
+
 enable_testing()
 
 # Optional PostgreSQL-backed IdentityAliasStore adapter (LISS-0143, ADR 0016).
@@ -83,6 +87,9 @@ if(LIBPQXX_FOUND)
     target_link_directories(seed_postgres PUBLIC ${LIBPQXX_LIBRARY_DIRS})
     target_link_libraries(seed_postgres PUBLIC ${LIBPQXX_LIBRARIES})
     target_compile_options(seed_postgres PUBLIC ${LIBPQXX_CFLAGS_OTHER})
+
+    target_link_libraries(seed_server PRIVATE seed_postgres)
+    target_compile_definitions(seed_server PRIVATE SEED_HAVE_LIBPQXX)
 
     add_executable(seed_postgres_tests
         tests/PostgresIdentityAliasStoreTest.cpp
