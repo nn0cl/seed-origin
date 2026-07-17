@@ -1,6 +1,6 @@
 # LISS-0119: クライアントhazard EffectQueue
 
-- Status: proposed
+- Status: review
 - Phase: phase-1-red
 - Type: feature + client presentation boundary
 - Priority: high
@@ -23,7 +23,7 @@
 
 ## 実装方針
 
-まず純粋なEvent変換・FIFO・重複排除・backpressureを実装し、描画APIや実通信への依存を置かない。エフェクトの寿命・優先度・キャンセル規則はクライアントシェルIssueで別途確定する。
+純粋なEvent変換・FIFO・重複排除・backpressureを実装し、描画APIや実通信への依存を置かない。エフェクトの寿命・優先度・キャンセル規則はクライアントシェルIssueで別途確定する。テスト・ビルドは実行していない。
 
 ---
 
