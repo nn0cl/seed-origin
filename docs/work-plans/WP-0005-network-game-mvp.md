@@ -80,7 +80,7 @@
 | LISS-0133 | Playable client acceptance | critical | LISS-0124〜0132 | proposed |
 | LISS-0134 | FFXI-inspired element migration study | high | LISS-0114, LISS-0115, LISS-0126, LISS-0129 | proposed |
 | LISS-0137 | Combat resolution atomicity and result events | critical | LISS-0126, LISS-0115, LISS-0120 | review |
-| LISS-0138 | Combat resources and idempotency | critical | LISS-0137, LISS-0126 | review |
+| LISS-0138 | Combat resources and idempotency | critical | LISS-0137, LISS-0126 | in_progress |
 | LISS-0139 | NPC combat target integration | high | LISS-0127, LISS-0137 | proposed |
 | LISS-0082 | Client Snapshot application/interpolation | high | LISS-0063, LISS-0080 | proposed |
 | LISS-0083 | Client EffectQueue | high | LISS-0065, LISS-0080 | proposed |

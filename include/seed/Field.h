@@ -35,10 +35,13 @@ struct CombatResolution {
     float effectivePower;
     long damage;
     long remainingHp;
+    long mpSpent;
+    uint64_t cooldownUntil;
     float etherDelta[4];
     CombatResolution()
         : spell(false), inputSequence(0), actorId(0), targetId(0), element(),
           basePower(0.0f), effectivePower(0.0f), damage(0), remainingHp(0),
+          mpSpent(0), cooldownUntil(0),
           etherDelta{0.0f, 0.0f, 0.0f, 0.0f} {}
 };
 }
@@ -72,6 +75,9 @@ public:
     bool processInputs(const std::vector<server::WorldInput>& inputs);
     bool processInputs(const std::vector<server::WorldInput>& inputs,
                        std::vector<server::CombatResolution>& resolutions);
+    bool processInputs(const std::vector<server::WorldInput>& inputs,
+                       std::vector<server::CombatResolution>& resolutions,
+                       uint64_t worldTick);
     
     void putPositionQueue(Position position);
     void putActionQueue(Action action);
@@ -83,6 +89,8 @@ private:
     bool validateSpell(const server::SpellIntent& intent, std::string& error) const;
     bool applyCombat(const server::CombatIntent& intent, std::string& error);
     bool applySpell(const server::SpellIntent& intent, std::string& error);
+    std::map<int64_t, uint64_t> nextAttackTick;
+    std::map<int64_t, uint64_t> nextSpellTick;
 };
 
 #endif

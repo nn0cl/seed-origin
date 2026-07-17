@@ -105,6 +105,8 @@ bool WorldFrameUpdateBuilder::appendCombatResolution(
                 << ";target:" << resolution.targetId
                 << ";damage:" << resolution.damage
                 << ";remainingHp:" << resolution.remainingHp
+                << ";mpSpent:" << resolution.mpSpent
+                << ";cooldownUntil:" << resolution.cooldownUntil
                 << ";requestId:" << resolution.requestId
                 << ";inputSequence:" << resolution.inputSequence;
     } else {
@@ -115,6 +117,8 @@ bool WorldFrameUpdateBuilder::appendCombatResolution(
                 << ";effectivePower:" << resolution.effectivePower
                 << ";damage:" << resolution.damage
                 << ";remainingHp:" << resolution.remainingHp
+                << ";mpSpent:" << resolution.mpSpent
+                << ";cooldownUntil:" << resolution.cooldownUntil
                 << ";requestId:" << resolution.requestId
                 << ";etherDelta:fire=" << resolution.etherDelta[0]
                 << ",water=" << resolution.etherDelta[1]

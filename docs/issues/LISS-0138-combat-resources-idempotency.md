@@ -1,6 +1,6 @@
 # LISS-0138: MP・クールダウン・二重実行防止
 
-- Status: review
+- Status: in_progress
 - Phase: phase-1-red
 - Type: feature + security + determinism
 - Priority: critical
@@ -20,7 +20,7 @@
 
 ## 実装資料
 
-Attack／CastSpell payloadを`requestId|targetId,power`または`requestId|targetId,element,power`形式へ拡張し、ネットワークCommand経路ではrequest IDを必須にした。WorldInputQueueは送信者内部IDとrequest IDの組を一度だけ受け付ける。MP・クールダウン・再送時の結果再利用は後続スライスで実装する。テスト・ビルドは実行していない。
+Attack／CastSpell payloadを`requestId|targetId,power`または`requestId|targetId,element,power`形式へ拡張し、ネットワークCommand経路ではrequest IDを必須にした。WorldInputQueueは送信者内部IDとrequest IDの組を一度だけ受け付ける。現在のスライスでは、攻撃はMP 0・1 tick、魔法は`ceil(basePower * 0.1)`（最低1）MP・2 tickをWorldTick基準でサーバー側が確定し、同一frame内の同一種別の連続使用、不足MP、cooldown中を状態変更なしで拒否する。結果Eventには`mpSpent`と`cooldownUntil`を含める。重複requestへの確定結果再利用と全状態のロールバックは後続スライスで実装する。テスト・ビルドは実行していない。
 
 ## English
 

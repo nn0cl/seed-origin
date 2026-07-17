@@ -101,7 +101,7 @@ bool WorldFrameApplier::apply(const WorldFrameInputs& frame,
     }
     if (!updateBuilder.build(frame, updates, error)) return false;
     std::vector<CombatResolution> resolutions;
-    if (!field.processInputs(frame.inputs, resolutions)) {
+    if (!field.processInputs(frame.inputs, resolutions, frame.worldTick)) {
         updates.clear();
         error = "world input could not be applied in the field";
         return false;

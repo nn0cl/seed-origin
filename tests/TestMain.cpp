@@ -169,6 +169,11 @@ namespace combat_resolution_event_tests {
 void emits_authoritative_combat_and_spell_results();
 }
 
+namespace combat_resource_tests {
+void charges_spell_mp_and_publishes_cooldown();
+void rejects_same_frame_spell_repetition_without_resource_mutation();
+}
+
 namespace environment_ether_tests {
 void increases_conductivity_with_ether_magnitude();
 void resolves_spell_and_decays_environment();
@@ -292,6 +297,8 @@ int main() {
     chat_command_handler_tests::queues_authenticated_chat_and_preserves_sequence();
     chat_command_handler_tests::rejects_control_text_and_missing_audience();
     combat_resolution_event_tests::emits_authoritative_combat_and_spell_results();
+    combat_resource_tests::charges_spell_mp_and_publishes_cooldown();
+    combat_resource_tests::rejects_same_frame_spell_repetition_without_resource_mutation();
     environment_ether_tests::increases_conductivity_with_ether_magnitude();
     environment_ether_tests::resolves_spell_and_decays_environment();
     environment_ether_tests::rejects_unknown_element();

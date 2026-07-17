@@ -13,6 +13,28 @@
 #include <cmath>
 #include <limits>
 
+namespace {
+const uint64_t kAttackCooldownTicks = 1;
+const uint64_t kSpellCooldownTicks = 2;
+const float kSpellMpCostRatio = 0.1f;
+
+bool spellMpCost(float power, long& cost) {
+    const double raw = std::ceil(static_cast<double>(power) * kSpellMpCostRatio);
+    if (!std::isfinite(raw) || raw < 1.0 ||
+        raw > static_cast<double>(std::numeric_limits<long>::max())) {
+        return false;
+    }
+    cost = static_cast<long>(raw);
+    return true;
+}
+
+bool tickAfter(uint64_t tick, uint64_t duration, uint64_t& result) {
+    if (tick > std::numeric_limits<uint64_t>::max() - duration) return false;
+    result = tick + duration;
+    return true;
+}
+}
+
 Field::Field() : lastEtherHazard(0.0f) {
     
 };
@@ -58,7 +80,10 @@ Field::setPlayer(Player player){
 bool
 Field::unsetPlayer(Player player){
     Field* instance = Field::getInstance();
-    return instance->playerList.erase(player.getPlayerId()) > 0;
+    const int64_t playerId = player.getPlayerId();
+    instance->nextAttackTick.erase(playerId);
+    instance->nextSpellTick.erase(playerId);
+    return instance->playerList.erase(playerId) > 0;
 }
 
 bool
@@ -166,7 +191,16 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs) {
 
 bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
                           std::vector<server::CombatResolution>& resolutions) {
+    return processInputs(inputs, resolutions, 0);
+}
+
+bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
+                          std::vector<server::CombatResolution>& resolutions,
+                          uint64_t worldTick) {
     resolutions.clear();
+    std::map<int64_t, long> projectedMp;
+    std::map<int64_t, uint64_t> projectedAttackTick = nextAttackTick;
+    std::map<int64_t, uint64_t> projectedSpellTick = nextSpellTick;
     for (std::vector<server::WorldInput>::const_iterator it = inputs.begin();
          it != inputs.end(); ++it) {
         if (it->kind() == server::WorldInputKind::Movement &&
@@ -190,6 +224,31 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
         if (it->kind() == server::WorldInputKind::Spell) {
             std::string error;
             if (!validateSpell(it->spell(), error)) return false;
+        }
+        if (it->kind() == server::WorldInputKind::Combat) {
+            uint64_t nextTick = 0;
+            if (!tickAfter(worldTick, kAttackCooldownTicks, nextTick) ||
+                (projectedAttackTick.count(it->combat().attackerId) != 0 &&
+                 worldTick < projectedAttackTick[it->combat().attackerId])) {
+                return false;
+            }
+            projectedAttackTick[it->combat().attackerId] = nextTick;
+        }
+        if (it->kind() == server::WorldInputKind::Spell) {
+            long cost = 0;
+            uint64_t nextTick = 0;
+            if (!spellMpCost(it->spell().power, cost) ||
+                !tickAfter(worldTick, kSpellCooldownTicks, nextTick) ||
+                (projectedSpellTick.count(it->spell().casterId) != 0 &&
+                 worldTick < projectedSpellTick[it->spell().casterId])) {
+                return false;
+            }
+            const Player* caster = findPlayer(it->spell().casterId);
+            const long available = projectedMp.count(it->spell().casterId) != 0
+                ? projectedMp[it->spell().casterId] : caster->getStatus().getMp();
+            if (available < cost) return false;
+            projectedMp[it->spell().casterId] = available - cost;
+            projectedSpellTick[it->spell().casterId] = nextTick;
         }
         if (it->kind() == server::WorldInputKind::Movement) {
             const Player* player = findPlayer(it->movement().sessionId);
@@ -230,6 +289,9 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
             resolution.effectivePower = it->combat().power;
             resolution.damage = hpBefore - targetAfter->getStatus().getHp();
             resolution.remainingHp = targetAfter->getStatus().getHp();
+            resolution.mpSpent = 0;
+            tickAfter(worldTick, kAttackCooldownTicks, resolution.cooldownUntil);
+            nextAttackTick[it->combat().attackerId] = resolution.cooldownUntil;
             resolutions.push_back(resolution);
         } else if (it->kind() == server::WorldInputKind::Spell) {
             const Player* targetBefore = findPlayer(it->spell().targetId);
@@ -245,6 +307,10 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
                 it->spell().power * fieldEther.conductivity(spellAttribute);
             std::string error;
             if (!applySpell(it->spell(), error)) return false;
+            long mpCost = 0;
+            if (!spellMpCost(it->spell().power, mpCost)) return false;
+            Player* caster = findPlayer(it->spell().casterId);
+            caster->getStatus().gainMp(-mpCost);
             const Player* targetAfter = findPlayer(it->spell().targetId);
             server::CombatResolution resolution;
             resolution.spell = true;
@@ -257,6 +323,9 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
             resolution.damage = hpBefore - targetAfter->getStatus().getHp();
             resolution.effectivePower = effectivePower;
             resolution.remainingHp = targetAfter->getStatus().getHp();
+            resolution.mpSpent = mpCost;
+            tickAfter(worldTick, kSpellCooldownTicks, resolution.cooldownUntil);
+            nextSpellTick[it->spell().casterId] = resolution.cooldownUntil;
             const float after[4] = {
                 fieldEther.value(world::EtherAttribute::Fire),
                 fieldEther.value(world::EtherAttribute::Water),
