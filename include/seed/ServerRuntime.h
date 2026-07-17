@@ -20,6 +20,7 @@
 namespace server {
 
 inline constexpr std::size_t MAX_PENDING_COMMANDS = 1024;
+inline constexpr std::size_t MAX_PENDING_COMMANDS_PER_CONNECTION = 128;
 inline constexpr std::size_t MAX_ACCEPTS_PER_FRAME = 64;
 
 struct ServerFrameResult {
@@ -39,7 +40,8 @@ public:
     AcceptStatus acceptPendingClient(uint64_t& connectionId, std::string& error);
     ClientSession* clientSession(uint64_t connectionId);
     size_t connectedClientCount() const;
-    size_t removeClosedClients(session::SessionRegistry& registry);
+    size_t removeClosedClients(session::SessionRegistry& registry,
+                               ServerCommandDispatcher* dispatcher = nullptr);
     bool stop(session::SessionRegistry& registry);
     size_t processClientFrames(ServerCommandDispatcher& dispatcher, std::string& error);
     ServerFrameResult processFrame(ServerCommandDispatcher& dispatcher, std::string& error);

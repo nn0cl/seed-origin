@@ -224,6 +224,11 @@ void rejects_unimplemented_command();
 void routes_combat_only_for_an_active_session();
 }
 
+namespace command_rate_limiter_tests {
+void limits_commands_per_session_and_kind_per_world_frame();
+void keeps_sessions_isolated_and_releases_counters();
+}
+
 namespace movement_command_handler_tests {
 void rejects_malformed_or_unknown_move();
 void accepts_bounded_move_for_existing_player();
@@ -342,6 +347,8 @@ int main() {
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();
     server_command_dispatcher_tests::routes_combat_only_for_an_active_session();
+    command_rate_limiter_tests::limits_commands_per_session_and_kind_per_world_frame();
+    command_rate_limiter_tests::keeps_sessions_isolated_and_releases_counters();
     movement_command_handler_tests::rejects_malformed_or_unknown_move();
     movement_command_handler_tests::accepts_bounded_move_for_existing_player();
     movement_command_handler_tests::rejects_move_that_exceeds_frame_distance();

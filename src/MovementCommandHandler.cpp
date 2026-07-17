@@ -25,10 +25,14 @@ bool withinLimit(float value) {
 }
 
 MovementCommandHandler::MovementCommandHandler(Field& field)
-    : field(field), intentQueue(nullptr) {}
+    : field(field), intentQueue(nullptr), worldInputQueue(nullptr) {}
 
 MovementCommandHandler::MovementCommandHandler(MovementIntentQueue& intentQueue)
-    : field(*Field::getInstance()), intentQueue(&intentQueue) {}
+    : field(*Field::getInstance()), intentQueue(&intentQueue), worldInputQueue(nullptr) {}
+
+MovementCommandHandler::MovementCommandHandler(WorldInputQueue& worldInputQueue)
+    : field(*Field::getInstance()), intentQueue(nullptr),
+      worldInputQueue(&worldInputQueue) {}
 
 MovementResult MovementCommandHandler::handle(const network::NetworkCommand& command) {
     MovementResult result = {false, std::string()};
@@ -50,7 +54,12 @@ MovementResult MovementCommandHandler::handle(const network::NetworkCommand& com
         result.error = "move delta exceeds limit";
         return result;
     }
-    if (intentQueue != nullptr) {
+    if (worldInputQueue != nullptr) {
+        if (!worldInputQueue->enqueueMovement(command.sessionId, dx, dy, dz)) {
+            result.error = "movement world input queue is full";
+            return result;
+        }
+    } else if (intentQueue != nullptr) {
         if (!intentQueue->enqueue(command.sessionId, dx, dy, dz)) {
             result.error = "movement intent queue is full";
             return result;

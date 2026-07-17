@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "LoginCommandHandler.h"
+#include "CommandRateLimiter.h"
 #include "WorldInputQueue.h"
 
 namespace server {
@@ -22,6 +23,9 @@ public:
     ServerCommandDispatcher(session::SessionRegistry& registry,
                             WorldInputQueue& inputQueue);
     void bindWorldInputQueue(WorldInputQueue& inputQueue);
+    void beginFrame(uint64_t worldTick);
+    void forgetSession(int64_t sessionId);
+    void clearRateLimits();
 
     CommandDispatchResult dispatch(const network::NetworkCommand& command);
     session::SessionRegistry& sessionRegistry();
@@ -31,6 +35,7 @@ public:
 private:
     LoginCommandHandler loginHandler;
     WorldInputQueue* inputQueue;
+    CommandRateLimiter rateLimiter;
 };
 
 }

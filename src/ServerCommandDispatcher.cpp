@@ -1,6 +1,7 @@
 #include "ServerCommandDispatcher.h"
 #include "ChatCommandHandler.h"
 #include "CombatCommandHandler.h"
+#include "MovementCommandHandler.h"
 
 namespace server {
 
@@ -21,6 +22,18 @@ ServerCommandDispatcher::ServerCommandDispatcher(session::SessionRegistry& regis
 
 void ServerCommandDispatcher::bindWorldInputQueue(WorldInputQueue& queue) {
     inputQueue = &queue;
+}
+
+void ServerCommandDispatcher::beginFrame(uint64_t worldTick) {
+    rateLimiter.beginFrame(worldTick);
+}
+
+void ServerCommandDispatcher::forgetSession(int64_t sessionId) {
+    rateLimiter.forgetSession(sessionId);
+}
+
+void ServerCommandDispatcher::clearRateLimits() {
+    rateLimiter.clear();
 }
 
 session::SessionRegistry& ServerCommandDispatcher::sessionRegistry() {
@@ -48,6 +61,10 @@ CommandDispatchResult ServerCommandDispatcher::dispatch(
             result.error = "chat requires an active anonymous session";
             return result;
         }
+        if (!rateLimiter.allow(command.sessionId, command.type)) {
+            result.error = "chat command rate limit exceeded";
+            return result;
+        }
         ChatCommandHandler handler(*inputQueue);
         result.accepted = handler.handle(command, result.error);
         return result;
@@ -63,10 +80,34 @@ CommandDispatchResult ServerCommandDispatcher::dispatch(
             result.error = "combat requires an active anonymous session";
             return result;
         }
+        if (!rateLimiter.allow(command.sessionId, command.type)) {
+            result.error = "combat command rate limit exceeded";
+            return result;
+        }
         CombatCommandHandler handler(*inputQueue);
         const CombatCommandResult combat = handler.handle(command);
         result.accepted = combat.accepted;
         result.error = combat.error;
+        return result;
+    }
+
+    if (command.type == network::CommandType::Move) {
+        if (inputQueue == nullptr) {
+            result.error = "movement world input queue is not bound";
+            return result;
+        }
+        if (!loginHandler.sessionRegistry().isActive(command.sessionId)) {
+            result.error = "movement requires an active anonymous session";
+            return result;
+        }
+        if (!rateLimiter.allow(command.sessionId, command.type)) {
+            result.error = "movement command rate limit exceeded";
+            return result;
+        }
+        MovementCommandHandler handler(*inputQueue);
+        const MovementResult movement = handler.handle(command);
+        result.accepted = movement.accepted;
+        result.error = movement.error;
         return result;
     }
 

@@ -83,7 +83,8 @@ size_t ServerRuntime::connectedClientCount() const {
     return clients.size();
 }
 
-size_t ServerRuntime::removeClosedClients(session::SessionRegistry& registry) {
+size_t ServerRuntime::removeClosedClients(session::SessionRegistry& registry,
+                                          ServerCommandDispatcher* dispatcher) {
     size_t removed = 0;
     for (std::map<uint64_t, std::unique_ptr<ClientSession> >::iterator it = clients.begin();
          it != clients.end();) {
@@ -91,7 +92,11 @@ size_t ServerRuntime::removeClosedClients(session::SessionRegistry& registry) {
             ++it;
             continue;
         }
+        const int64_t sessionId = lifecycle.sessionId(it->first);
         lifecycle.disconnect(it->first, registry);
+        if (dispatcher != nullptr) {
+            dispatcher->forgetSession(sessionId);
+        }
         it = clients.erase(it);
         ++removed;
     }
@@ -136,6 +141,18 @@ bool ServerRuntime::enqueueCommands(
         return false;
     }
 
+    std::size_t connectionPending = 0;
+    for (std::deque<PendingCommand>::const_iterator pending = pendingCommands.begin();
+         pending != pendingCommands.end(); ++pending) {
+        if (pending->connectionId == connectionId) ++connectionPending;
+    }
+    if (connectionPending >= MAX_PENDING_COMMANDS_PER_CONNECTION ||
+        commands.size() > MAX_PENDING_COMMANDS_PER_CONNECTION -
+                           connectionPending) {
+        error = "connection command queue is full";
+        return false;
+    }
+
     for (std::vector<network::NetworkCommand>::const_iterator it = commands.begin();
          it != commands.end(); ++it) {
         std::string validationError;
@@ -160,6 +177,7 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
     }
 
     dispatcher.bindWorldInputQueue(inputQueue);
+    dispatcher.beginFrame(inputTick.currentWorldTick() + 1);
     for (std::map<uint64_t, std::unique_ptr<ClientSession> >::iterator it = clients.begin();
          it != clients.end(); ++it) {
         std::vector<network::NetworkCommand> commands;
@@ -219,7 +237,7 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
             if (error.empty()) error = responseError;
         }
     }
-    removeClosedClients(dispatcher.sessionRegistry());
+    removeClosedClients(dispatcher.sessionRegistry(), &dispatcher);
     return processed;
 }
 
@@ -251,7 +269,7 @@ ServerFrameResult ServerRuntime::processFrame(ServerCommandDispatcher& dispatche
         const SendStatus status = it->second->flushOutbound(sendError);
         if (status == SendStatus::Failed && error.empty()) error = sendError;
     }
-    removeClosedClients(dispatcher.sessionRegistry());
+    removeClosedClients(dispatcher.sessionRegistry(), &dispatcher);
     const WorldFrameInputs worldFrame = inputTick.advanceFrame();
     ServerFrameResult result = {worldFrame.worldTick, accepted + processed,
                                 worldFrame.inputs};

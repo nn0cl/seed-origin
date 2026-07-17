@@ -6,6 +6,7 @@
 #include "Field.h"
 #include "NetworkCommand.h"
 #include "MovementIntentQueue.h"
+#include "WorldInputQueue.h"
 
 namespace server {
 
@@ -20,11 +21,13 @@ class MovementCommandHandler {
 public:
     explicit MovementCommandHandler(Field& field);
     explicit MovementCommandHandler(MovementIntentQueue& intentQueue);
+    explicit MovementCommandHandler(WorldInputQueue& worldInputQueue);
     MovementResult handle(const network::NetworkCommand& command);
 
 private:
     Field& field;
     MovementIntentQueue* intentQueue;
+    WorldInputQueue* worldInputQueue;
 };
 
 }

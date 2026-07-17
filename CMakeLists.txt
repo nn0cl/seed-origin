@@ -27,6 +27,7 @@ set(SEED_CORE_SOURCES
     src/FrameAccumulator.cpp
     src/LoginCommandHandler.cpp
     src/ServerCommandDispatcher.cpp
+    src/CommandRateLimiter.cpp
     src/LoginResponse.cpp
     src/LoginResponseCodec.cpp
     src/OutboundFrameQueue.cpp
@@ -100,6 +101,7 @@ add_executable(seed_tests
     tests/FrameAccumulatorTest.cpp
     tests/LoginCommandHandlerTest.cpp
     tests/ServerCommandDispatcherTest.cpp
+    tests/CommandRateLimiterTest.cpp
     tests/MovementCommandHandlerTest.cpp
     tests/NpcCombatTargetTest.cpp
     tests/NpcAiTest.cpp
