@@ -30,5 +30,4 @@ World適用器とSnapshot配信を分離する。
 
 ## 次のIssue
 
-World更新器でEventを決定論的に適用し、Field・Player・環境エーテルの状態変化を
-WorldUpdateへ反映する。
+LISS-0106でEventを決定論的に適用し、Fieldへ反映する（実装済み）。

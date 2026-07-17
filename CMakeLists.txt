@@ -31,6 +31,7 @@ set(SEED_CORE_SOURCES
     src/OutboundFrameQueue.cpp
     src/SessionLifecycle.cpp
     src/WorldFrameUpdateBuilder.cpp
+    src/WorldFrameApplier.cpp
     src/MovementCommandHandler.cpp
     src/Player.cpp
     src/Position.cpp
@@ -67,6 +68,7 @@ add_executable(seed_tests
     tests/OutboundFrameQueueTest.cpp
     tests/SessionLifecycleTest.cpp
     tests/WorldFrameUpdateBuilderTest.cpp
+    tests/WorldFrameApplierTest.cpp
     tests/FrameAccumulatorTest.cpp
     tests/LoginCommandHandlerTest.cpp
     tests/ServerCommandDispatcherTest.cpp
