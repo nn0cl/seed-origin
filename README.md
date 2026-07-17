@@ -7,6 +7,8 @@
 
 本リポジトリは、無改変のソースコード・バイナリの再配布を許可し、改変物・派生物の作成を禁止するカスタムライセンスで管理しています。詳細は[LICENSE](LICENSE)を参照してください。
 
+開発への参加方法は[CONTRIBUTING.md](CONTRIBUTING.md)、行動規範は[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)、脆弱性の報告は[SECURITY.md](SECURITY.md)を参照してください。
+
 ## プロジェクトテンプレート
 
 本プロジェクトは [nn0cl/llm-project-template](https://github.com/nn0cl/llm-project-template)
