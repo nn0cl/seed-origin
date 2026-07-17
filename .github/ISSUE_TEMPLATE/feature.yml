@@ -1,0 +1,109 @@
+name: "Feature / 機能"
+description: "Propose a feature with AT-TDD-ready acceptance criteria and decision points. / 受入条件と判断点を備えた機能を提案します。"
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal / 目的
+      description: What user or system outcome should change?
+      placeholder: The system should ... so that ...
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria / 受入条件
+      description: Use observable Given/When/Then criteria. Do not describe only implementation steps.
+      placeholder: |
+        Given ...
+        When ...
+        Then ...
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and non-goals / 範囲と対象外
+      description: State what is included and explicitly excluded from this slice.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies / 依存関係
+      description: List parent, depends-on, blocks, and related local or GitHub issues.
+      placeholder: |
+        Parent:
+        Depends on:
+        Blocks:
+        Related:
+  - type: textarea
+    id: decisions
+    attributes:
+      label: Adjudicator decision points / 審判者の判断点
+      description: List architecture, product, privacy, schema, provider, license, or phase decisions that require approval.
+    validations:
+      required: true
+  - type: textarea
+    id: external_resources
+    attributes:
+      label: External resources and ports / 外部リソースとPort
+      description: Identify filesystem, TCP, persistence, renderer, provider, or secret boundaries. Do not add a concrete dependency without an ADR/adoption note.
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Intended phase / 想定フェーズ
+      options:
+        - Phase 0 - Design Intake
+        - Phase 1 - Red tests/specification
+        - Phase 2 - Green implementation
+        - Phase 3 - Refactor
+        - Documentation or ADR only
+    validations:
+      required: true
+  - type: dropdown
+    id: planning_size
+    attributes:
+      label: Initial planning size / 初期計画サイズ
+      options:
+        - S
+        - M
+        - L
+        - XL
+        - TBD
+      default: 4
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context ledger / コンテキスト台帳
+      description: Record included context, intentionally omitted context, assumptions, and open decisions.
+      placeholder: |
+        Included:
+        Omitted:
+        Assumptions:
+        Open decisions:
+    validations:
+      required: true
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification plan / 検証計画
+      description: State tests, static analysis, CodeQL, manual checks, and any intentionally unrun verification.
+    validations:
+      required: true
+  - type: checkboxes
+    id: planning
+    attributes:
+      label: Planning checklist / 計画確認
+      options:
+        - label: I searched for an existing issue or ADR.
+          required: true
+        - label: I will create or update the local LISS issue and work plan before implementation.
+          required: true
+        - label: I understand that architecture or phase decisions require Adjudicator review.
+          required: true

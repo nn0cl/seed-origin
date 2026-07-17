@@ -1,1 +1,8 @@
-blank_issues_enabled: true
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability report
+    url: https://github.com/nn0cl/seed-origin/security/advisories/new
+    about: Do not disclose vulnerabilities in a public issue. Use a private security advisory or the address in SECURITY.md.
+  - name: Local issue planning guide
+    url: https://github.com/nn0cl/seed-origin/blob/main/docs/collaboration/local-issue-planning.md
+    about: Read the repository-native LISS planning and dependency rules before opening a feature or architecture issue.

@@ -1,0 +1,88 @@
+name: "Bug / 不具合"
+description: "Report a reproducible defect with evidence and an acceptance source. / 再現可能な不具合を根拠付きで報告します。"
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        公開Issueへ秘密情報や脆弱性の詳細を書かないでください。脆弱性は`SECURITY.md`の手順を使用してください。
+
+        Do not disclose secrets or vulnerability details in a public issue. Use `SECURITY.md` for security reports.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary / 概要
+      description: What happened? Include the affected behavior and impact.
+      placeholder: Describe the observed defect and its impact.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior / 期待動作
+      description: State the accepted or intended behavior.
+      placeholder: Given ..., when ..., then ...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction / 再現手順
+      description: Give the smallest reproducible steps or input.
+      placeholder: |
+        1. Start with ...
+        2. Submit ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: input
+    id: commit
+    attributes:
+      label: Commit, version, or environment / コミット・バージョン・環境
+      placeholder: "e.g. 1234abc, macOS version, Xcode/CMake version"
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence / 根拠
+      description: Add logs, screenshots, test output, or a minimal input. Remove secrets and personal data.
+  - type: input
+    id: accepted_source
+    attributes:
+      label: Accepted behavior source / 仕様・受入条件
+      description: Link a local issue, spec, ADR, or test that defines the expected behavior.
+      placeholder: "LISS-0000, docs/specs/..., or ADR-0000"
+    validations:
+      required: true
+  - type: input
+    id: related_planning
+    attributes:
+      label: Local issue or work plan / 関連Issue・計画
+      placeholder: "LISS-0000 or WP-0000"
+  - type: dropdown
+    id: planning_size
+    attributes:
+      label: Initial planning size / 初期計画サイズ
+      options:
+        - S
+        - M
+        - L
+        - XL
+        - TBD
+      default: 4
+    validations:
+      required: true
+  - type: checkboxes
+    id: triage
+    attributes:
+      label: Triage checklist / トリアージ確認
+      options:
+        - label: I searched for an existing issue.
+          required: true
+        - label: I removed secrets, private data, and undisclosed vulnerability details.
+          required: true
+        - label: I understand that a discovered bug may require a separate local Issue before implementation.
+          required: true

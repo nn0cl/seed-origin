@@ -1,0 +1,68 @@
+name: "Architecture / ADR"
+description: "Record an architectural decision or an ambiguity that needs Adjudicator judgment. / ADRまたは審判者判断が必要な設計事項を記録します。"
+title: "[Architecture]: "
+labels:
+  - architecture
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Architecture Issues should lead to a local LISS issue and, when accepted, an ADR. Keep research and rationale separate from normative decisions.
+  - type: textarea
+    id: decision_needed
+    attributes:
+      label: Decision needed / 判断事項
+      description: State the decision as one concrete question or choice.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context and constraints / 背景と制約
+      description: Include the relevant specification, current behavior, constraints, and intentionally omitted context.
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Options and trade-offs / 選択肢とトレードオフ
+      placeholder: |
+        Option A:
+        Benefits:
+        Costs:
+
+        Option B:
+        Benefits:
+        Costs:
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_decision
+    attributes:
+      label: Proposed decision / 提案
+      description: If proposing a decision, state its boundaries and what it does not decide.
+    validations:
+      required: true
+  - type: textarea
+    id: consequences
+    attributes:
+      label: Consequences and follow-up / 結果と後続作業
+      description: List positive, negative, migration, security, privacy, testing, and documentation consequences.
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: References / 参照
+      description: Link local Issues, work plans, specs, ADRs, and verified external sources.
+    validations:
+      required: true
+  - type: checkboxes
+    id: review
+    attributes:
+      label: Review gate / レビューゲート
+      options:
+        - label: I understand that this is not accepted until the Adjudicator records a decision in an ADR or the Issue.
+          required: true
+        - label: I separated normative decision text from non-normative research or rationale.
+          required: true
