@@ -29,6 +29,14 @@
 - `seed_auth`は`seed_admin`・`seed_server`と別プロセス・別実行ファイルと
   する。
 
+## 資格情報の流通境界（2026-07-18、Adjudicator確認済み）
+
+パスワード（および`pgcrypto`ハッシュ）は`seed_auth`とゲームクライアント
+（またはその手前のWeb登録・ログイン画面、LISS-0149）の間でのみやり取り
+する。`seed_server`とクライアントの間、`seed_server`と`seed_auth`の間は
+**一回限りのトークンのみ**が流れ、パスワード・ハッシュは一切渡さない
+（LISS-0147の「先勝ちセッションキーローテーション」参照）。
+
 ## 実装言語（2026-07-18時点で未確定）
 
 ADR 0019により`seed_admin`はKotlin + Spring Boot + Reactへ移行する方針と

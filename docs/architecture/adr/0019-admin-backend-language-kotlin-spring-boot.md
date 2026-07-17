@@ -2,12 +2,13 @@
 
 ## Status
 
-Proposed — awaiting Adjudicator review. **No implementation may begin until
-this ADR is explicitly reviewed and approved.** ADR 0017 was previously
-implemented before review, which was a process violation
-(`AGENTS.md` Prime Directive: "No implementation without a reviewed
-acceptance specification"); this ADR corrects that by stopping at the
-proposal stage.
+Proposed — awaiting final Adjudicator sign-off before implementation
+begins. Most open questions have been answered (2026-07-18); one inference
+below (password-hashing boundary for `seed_admin` itself) needs explicit
+confirmation. ADR 0017 was previously implemented before review, which was
+a process violation (`AGENTS.md` Prime Directive: "No implementation
+without a reviewed acceptance specification"); this ADR corrects that by
+stopping for review before any code is written.
 
 ## Context
 
@@ -30,44 +31,65 @@ language-independent and are **not** being reopened by this ADR:
 - No HTTP "create admin" endpoint; bootstrap remains a manual DB operation
   (still open for reconsideration — see Open Questions).
 
-## Decision (proposed, not yet approved)
+## Decision
 
 1. The admin backend becomes a Kotlin + Spring Boot service, replacing the
    C++ `seed_admin` executable (`src/AdminMain.cpp`,
    `include/seed/AdminAuthStore.h`/`src/AdminAuthStore.cpp`,
    `include/seed/AdminSessionStore.h`/`src/AdminSessionStore.cpp`,
    `include/seed/AdminLoginLockout.h`/`src/AdminLoginLockout.cpp`, and the
-   `seed_admin`/`httplib`-related `CMakeLists.txt` entries).
-2. It connects to the same PostgreSQL database (`seed_identity`) and the
-   same `admin_users`/`identity_aliases` tables, via Spring Data JDBC or
-   Spring Data JPA (exact choice not decided here — open question).
-3. It remains a separate process/deployment from `seed_server` (C++) and
-   any future `seed_auth` service, consistent with the Adjudicator's
+   `seed_admin`/`httplib`-related `CMakeLists.txt` entries). **The C++
+   version is kept, unmodified, until the Kotlin replacement is built and
+   verified working, then discarded** — not deleted immediately.
+2. Build tool: **Gradle (Kotlin DSL)**.
+3. Persistence: **MyBatis** as the SQL mapper, not Spring Data JPA/
+   Hibernate. The persistence layer follows **DDD + Clean Architecture**
+   layering: MyBatis mapper interfaces and generated SQL live in the
+   infrastructure/adapter layer only; domain and application-service code
+   depend on repository interfaces, never on MyBatis types directly. This
+   mirrors the same dependency-direction rule `AGENTS.md` already applies
+   to the C++ side (`Adapter -> UseCase, Ports`, never the reverse).
+4. It remains a separate process/deployment from `seed_server` (C++) and
+   the future `seed_auth` service, consistent with the Adjudicator's
    earlier instruction that these stay separate instances.
-4. Session/token behavior (Bearer-only, no cookies, 1-hour TTL, 3-attempt
+5. Session/token behavior (Bearer-only, no cookies, 1-hour TTL, 3-attempt
    lockout) is preserved as a behavioral contract, reimplemented in Kotlin
    rather than ported line-by-line from the C++ version.
-5. Docker Compose (`db/docker-compose.yml`) gains a service definition for
-   the Kotlin/Spring Boot admin backend and the React front-end, per the
-   Adjudicator's stated preference for Docker Compose deployment of the
-   Kotlin/React pieces.
+6. Frontend: React + **Vite** (resolves LISS-0145/LISS-0149's open
+   build-tooling question for both the admin SPA and the player
+   registration/login SPA).
+7. Deployment: **Docker Compose** brings up the Kotlin/Spring Boot backend
+   and the Vite/React frontend, alongside the existing PostgreSQL service
+   in `db/docker-compose.yml`.
 
-## Open questions (must not guess — require explicit Adjudicator answers)
+## Resolved questions
 
-- Spring Data JDBC vs. JPA/Hibernate for the `admin_users`/`identity_aliases`
-  access layer.
-- Build tool: Gradle (Kotlin DSL) vs. Maven.
-- Whether the existing C++ `seed_admin` code is deleted immediately or kept
-  until the Kotlin replacement is verified working (this question was asked
-  once already and not yet answered).
-- Whether `pgcrypto` password verification stays server-side in SQL (as the
-  C++ version did, avoiding any password-hashing library in the new
-  service too) or moves to a JVM library (e.g. Spring Security's
-  `BCryptPasswordEncoder`) — these produce different hash formats and are
-  **not interchangeable**; picking wrong would lock out the bootstrap admin
-  account.
-- Dependency-adoption checklist (`docs/architecture/dependency-policy.md`)
-  for Spring Boot and its transitive dependencies has not been performed.
+- ~~Spring Data JDBC vs. JPA/Hibernate~~ — moot; MyBatis was chosen instead
+  of either.
+- ~~Build tool~~ — Gradle (Kotlin DSL).
+- ~~Fate of existing C++ code~~ — kept until Kotlin replacement is verified,
+  then discarded.
+
+## Open question requiring explicit confirmation
+
+The Adjudicator specified that **raw passwords/hashes travel only between
+`seed_auth` and the game client**, with only one-time tokens crossing to
+`seed_server` — this is clearly scoped to the *player* authentication flow
+(ADR 0018 / LISS-0146-0147). It is not yet explicit whether the same
+boundary statement also settles `seed_admin`'s own credential check.
+
+Inferred default (not yet confirmed): since MyBatis is explicit-SQL (not an
+ORM that hides queries), `seed_admin`'s Kotlin implementation calls
+PostgreSQL's `pgcrypto` `crypt()` directly from a MyBatis mapper query,
+exactly as the C++ version did — **no JVM password-hashing library is
+introduced**, and the bootstrap admin account's existing `pgcrypto` hash in
+`admin_users` remains valid without migration. This needs an explicit yes/no
+before Phase 1 (Red) starts, since guessing wrong here would lock out the
+bootstrap admin account.
+
+Also still open: dependency-adoption checklist
+(`docs/architecture/dependency-policy.md`) for Spring Boot, MyBatis,
+Gradle, and their transitive dependencies has not been performed.
 
 ## Consequences (anticipated, pending approval)
 
@@ -81,10 +103,11 @@ Positive:
 Negative:
 
 - The working, manually-verified C++ implementation (ADR 0017/LISS-0144) is
-  discarded or left dormant.
-- Introduces a second language runtime (JVM/Kotlin/Gradle or Maven) into a
-  project that was previously C++-only, which is a meaningful new
-  operational surface (build, deploy, monitor).
+  kept dormant until the Kotlin replacement works, then discarded —
+  duplicate maintenance burden during the transition.
+- Introduces a second language runtime (JVM/Kotlin/Gradle) into a project
+  that was previously C++-only, which is a meaningful new operational
+  surface (build, deploy, monitor).
 - `seed_auth` (LISS-0146, not yet built) will likely follow the same
   language choice for consistency, though that is not decided by this ADR.
 
