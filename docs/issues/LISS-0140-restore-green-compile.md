@@ -4,7 +4,7 @@
 
 - Local issue ID: LISS-0140
 - GitHub issue: 未作成
-- Status: review
+- Status: done
 - Phase: phase-2-implementation
 - Type: bugfix + build foundation
 - Priority: critical
@@ -103,3 +103,7 @@ namespace、初期化の不整合を直すための安全ゲートである。
   not run.
 - Header self-containment, protocol constant visibility, request-ID syntax,
   `Player` initialization, and affected test namespace references compile.
+
+## Adjudicator Approval
+
+- Approved by the Adjudicator on 2026-07-17.

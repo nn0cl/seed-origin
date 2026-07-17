@@ -28,9 +28,9 @@ C++11ベースのビルド・ソース記法をC++20へ移行し、同時にビ�
 
 | Issue | Status | Initial size | Current size | Planning record | Depends on | Blocks | Branch |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| LISS-0140 | review | M | M | AIP-0140-001 | - | LISS-0141, LISS-0142 | main |
-| LISS-0141 | review | M | M | AIP-0141-001 | LISS-0140, ADR-0015 | LISS-0142 | main |
-| LISS-0142 | review | L | L | AIP-0142-001 | LISS-0141 | future C++ API cleanup | main |
+| LISS-0140 | done | M | M | AIP-0140-001 | - | LISS-0141, LISS-0142 | main |
+| LISS-0141 | done | M | M | AIP-0141-001 | LISS-0140, ADR-0015 | LISS-0142 | main |
+| LISS-0142 | done | L | L | AIP-0142-001 | LISS-0141 | future C++ API cleanup | main |
 
 ## AI Planning Records
 
@@ -66,11 +66,11 @@ C++11ベースのビルド・ソース記法をC++20へ移行し、同時にビ�
 2. LISS-0141: adopt C++20 in CMake and architecture documentation.
 3. LISS-0142: apply safe modern idioms and memory-safety refactors.
 
-## Current Review Gate
+## Completion Gate
 
 - Issues: LISS-0140, LISS-0141, LISS-0142
-- Reason: the implementation and compile/static verification are complete;
-  human review remains before these migration Issues are marked done.
+- Reason: implementation, compile/static verification, and Adjudicator approval
+  are complete.
 - Runtime tests and executable/server execution remain intentionally pending by
   the Adjudicator's safety constraint.
 

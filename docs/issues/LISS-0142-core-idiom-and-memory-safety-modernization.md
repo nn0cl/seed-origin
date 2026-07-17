@@ -4,7 +4,7 @@
 
 - Local issue ID: LISS-0142
 - GitHub issue: 未作成
-- Status: review
+- Status: done
 - Phase: phase-0-design
 - Type: refactor + safety
 - Priority: high
@@ -104,3 +104,7 @@ C++20標準への移行後、公開挙動を変えずに、危険な所有権・
 - Warning-enabled C++20 configure/build completed successfully. Remaining
   warnings are unused legacy fields (`Player::name`, `Position::mapId`), not
   memory or initialization diagnostics. No test or executable was run.
+
+## Adjudicator Approval
+
+- Approved by the Adjudicator on 2026-07-17.

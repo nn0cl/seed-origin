@@ -4,7 +4,7 @@
 
 - Local issue ID: LISS-0141
 - GitHub issue: 未作成
-- Status: review
+- Status: done
 - Phase: phase-0-design
 - Type: architecture + build configuration
 - Priority: high
@@ -95,3 +95,7 @@ README相当の技術選定記述をC++11からC++20へ同期する。
 - Architecture documentation and the accepted ADR now state C++20.
 - CMake C++20 configure/build completed successfully without changing wire
   protocol values.
+
+## Adjudicator Approval
+
+- Approved by the Adjudicator on 2026-07-17.
