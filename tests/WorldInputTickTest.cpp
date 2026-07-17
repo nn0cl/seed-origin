@@ -1,6 +1,8 @@
 #include <cassert>
 
 #include "WorldInputTick.h"
+#include "WorldFrameUpdateBuilder.h"
+#include "WorldUpdate.h"
 
 namespace world_input_tick_tests {
 

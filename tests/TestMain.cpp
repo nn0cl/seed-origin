@@ -236,8 +236,8 @@ int main() {
     connection_tests::reports_no_pending_client_without_blocking();
     client_session_tests::receives_complete_commands_and_closes_peer_cleanly();
     client_session_tests::flushes_one_queued_response_to_peer();
-    player_ownership_tests::playerOwnershipCopyAssignmentTest();
-    player_ownership_tests::playerOwnershipContainerUpdateTest();
+    playerOwnershipCopyAssignmentTest();
+    playerOwnershipContainerUpdateTest();
     seed_binary_tests::rejects_out_of_range_input();
     seed_binary_tests::zero_fills_unused_block_bytes();
     seed_binary_tests::rejects_missing_block_on_save();

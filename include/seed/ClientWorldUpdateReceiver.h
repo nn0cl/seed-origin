@@ -1,7 +1,7 @@
 #ifndef SEED_CLIENT_WORLD_UPDATE_RECEIVER_H
 #define SEED_CLIENT_WORLD_UPDATE_RECEIVER_H
 
-#include <stddef.h>
+#include <cstddef>
 #include <string>
 #include <vector>
 

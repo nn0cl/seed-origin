@@ -1,7 +1,7 @@
 #ifndef SEED_WORLD_UPDATE_SEQUENCE_H
 #define SEED_WORLD_UPDATE_SEQUENCE_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 
 #include "WorldUpdate.h"

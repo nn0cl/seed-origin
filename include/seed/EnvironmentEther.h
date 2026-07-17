@@ -1,7 +1,7 @@
 #ifndef SEED_ENVIRONMENT_ETHER_H
 #define SEED_ENVIRONMENT_ETHER_H
 
-#include <stddef.h>
+#include <cstddef>
 #include <string>
 
 namespace world {
@@ -13,9 +13,9 @@ enum class EtherAttribute {
     Air = 3
 };
 
-static const size_t ETHER_ATTRIBUTE_COUNT = 4;
-static const float MAX_ETHER_VALUE = 100000.0f;
-static const float ETHER_DECAY_FACTOR = 0.98f;
+inline constexpr std::size_t ETHER_ATTRIBUTE_COUNT = 4;
+inline constexpr float MAX_ETHER_VALUE = 100000.0f;
+inline constexpr float ETHER_DECAY_FACTOR = 0.98f;
 
 class EnvironmentEther {
 public:

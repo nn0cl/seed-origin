@@ -1,7 +1,7 @@
 #ifndef SEED_FRAME_ACCUMULATOR_H
 #define SEED_FRAME_ACCUMULATOR_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <vector>
 

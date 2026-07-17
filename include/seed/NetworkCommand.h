@@ -1,14 +1,15 @@
 #ifndef SEED_NETWORK_COMMAND_H
 #define SEED_NETWORK_COMMAND_H
 
-#include <stdint.h>
-#include <stddef.h>
+#include <cstddef>
+#include <cstdint>
 #include <string>
+
+#include "Protocol.h"
 
 namespace network {
 
-static const uint16_t CURRENT_PROTOCOL_VERSION = 1;
-static const size_t MAX_COMMAND_PAYLOAD = 4096;
+inline constexpr std::size_t MAX_COMMAND_PAYLOAD = 4096;
 
 enum class CommandType {
     Login = 1,
@@ -26,7 +27,7 @@ struct NetworkCommand {
     std::string payload;
 };
 
-bool validateCommand(const NetworkCommand& command, std::string& error);
+[[nodiscard]] bool validateCommand(const NetworkCommand& command, std::string& error);
 
 }
 

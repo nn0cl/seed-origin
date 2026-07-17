@@ -10,10 +10,12 @@
 #define seeds_Logger_h
 
 #include <iostream>
+#include <string>
 
 class Logger{
 public:
     static void log(int _id,std::string str) {
+       (void)_id;
        //std::cout << _id << str << std::endl;
         std::cout << str << std::endl;
     }

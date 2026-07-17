@@ -8,7 +8,7 @@
 
 namespace server {
 
-static const float MAX_COMBAT_POWER = 100000.0f;
+inline constexpr float MAX_COMBAT_POWER = 100000.0f;
 
 struct CombatCommandResult {
     bool accepted;

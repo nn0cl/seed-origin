@@ -4,6 +4,14 @@
 
 このリポジトリには、初期のデータ・バイナリ処理実装と、後続のゲーム状態処理実装が統合されています。一般的なC++構成として、実装は `src/`、公開ヘッダーは `include/seed/`、テストは `tests/` に配置し、`seed.xcodeproj` もこの構成を参照します。
 
+ADR 0015 により、CMake上の標準C++は C++20 です。移行方針は保守的であり、
+wire protocol、ゲームルール、公開値の意味は変更しません。現在採用する
+modernizationは、`<cstdint>`/`<cstddef>`、`inline constexpr`定数、
+member initializer list、`[[nodiscard]]`、読みやすいrange-based `for`など、
+安全性とレビュー容易性を高める範囲に限定します。C++20 modules、coroutines、
+`std::span`/`std::optional`を含む公開API再設計、strong typed-ID全面導入は
+後続Issueで扱います。
+
 主なサブシステムは次の2つです。
 
 1. データ・ファイル処理

@@ -10,7 +10,7 @@
 #define __seeds__Connection__
 
 #include <iostream>
-#include <stdint.h>
+#include <cstdint>
 
 #include <stdio.h>
 #include <sys/types.h>

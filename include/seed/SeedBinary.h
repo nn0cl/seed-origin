@@ -9,15 +9,17 @@
 #ifndef seeds_SeedBinary_h
 #define seeds_SeedBinary_h
 
-#define STANDARD_BINARY_SIZE 1024
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 #include <map>
 
-typedef struct{
+inline constexpr std::size_t STANDARD_BINARY_SIZE = 1024;
+
+struct Binary {
     bool isValid;
-    size_t size;
+    std::size_t size;
     char data[STANDARD_BINARY_SIZE];
-} Binary;
+};
 
 class SeedBinary{
 private:
@@ -28,7 +30,6 @@ public:
     SeedBinary();
     /** Destructor */
     ~SeedBinary();
-    //SeedBinary(const SeedBinary& cpy);
     /** バイナリーデータを指定されたインデックスへセットする。*/
     int setBinary(const char data[STANDARD_BINARY_SIZE],size_t size,int idx);
     /** 指定されたアドレスのバイナリーデータを取得する。 */

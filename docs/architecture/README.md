@@ -3,7 +3,7 @@
 The project uses Clean Architecture with a local-first C++ core and a future
 POSIX TCP game server. The current runtime has no external service dependency.
 
-The current stack is C++11, CMake/CTest, and Xcode project integration. The
+The current stack is C++20, CMake/CTest, and Xcode project integration. The
 application core and server contracts live in `include/seed/` and `src/`; a
 client UI and renderer remain undecided under LISS-0064.
 
@@ -66,7 +66,7 @@ through the versioned network protocol rather than depend on World internals.
 
 ## Selected Technology
 
-- C++11 runtime and POSIX socket adapter.
+- C++20 runtime and POSIX socket adapter.
 - CMake/CTest and the existing Xcode project as build/test tooling.
 - Client renderer/UI: undecided until LISS-0064.
 - Dependency management: repository/system tooling only; no runtime package
@@ -102,6 +102,7 @@ through the versioned network protocol rather than depend on World internals.
 - `adr/0011-external-resource-adoption-contract.md`
 - `adr/0013-project-main-branch-and-adjudicator-roles.md`
 - `adr/0014-adjudicator-and-developer-role-model.md`
+- `adr/0015-cpp20-language-standard-adoption.md`
 
 ## Remaining Technology Evaluation
 

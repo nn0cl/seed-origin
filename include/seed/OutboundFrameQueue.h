@@ -1,8 +1,8 @@
 #ifndef SEED_OUTBOUND_FRAME_QUEUE_H
 #define SEED_OUTBOUND_FRAME_QUEUE_H
 
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 #include <deque>
 #include <string>
 #include <vector>
@@ -11,8 +11,8 @@
 
 namespace server {
 
-static const size_t MAX_OUTBOUND_FRAMES = 256;
-static const size_t MAX_OUTBOUND_FRAME_SIZE = network::FRAME_HEADER_SIZE + 16384;
+inline constexpr std::size_t MAX_OUTBOUND_FRAMES = 256;
+inline constexpr std::size_t MAX_OUTBOUND_FRAME_SIZE = network::FRAME_HEADER_SIZE + 16384;
 
 class OutboundFrameQueue {
 public:

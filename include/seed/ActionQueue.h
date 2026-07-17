@@ -2,8 +2,8 @@
 #define SEED_ACTION_QUEUE_H
 
 #include <deque>
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 #include <vector>
 #include <mutex>
 
@@ -23,8 +23,8 @@ private:
 
 class ActionQueue {
 public:
-    static const uint64_t FRAME_DURATION_MILLISECONDS = 50;
-    static const size_t MAX_PENDING_ACTIONS = 4096;
+    inline static constexpr std::uint64_t FRAME_DURATION_MILLISECONDS = 50;
+    inline static constexpr std::size_t MAX_PENDING_ACTIONS = 4096;
 
     ActionQueue();
 

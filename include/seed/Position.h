@@ -9,7 +9,7 @@
 #ifndef seeds_Position_h
 #define seeds_Position_h
 
-#include <stdint.h>
+#include <cstdint>
 
 class Position{
 private:
@@ -21,8 +21,8 @@ private:
 
 public:
     Position(int64_t playerId, float x, float y, float z);
-    Position(Position* position);
-    ~Position();
+    Position(const Position* position);
+    ~Position() = default;
     void setPosition(const float x, const float y, const float z);
     void movePosition(const float x, const float y, const float z);
     int64_t getPlayerId() const;

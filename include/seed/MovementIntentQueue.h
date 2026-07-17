@@ -1,17 +1,17 @@
 #ifndef SEED_MOVEMENT_INTENT_QUEUE_H
 #define SEED_MOVEMENT_INTENT_QUEUE_H
 
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 #include <deque>
 #include <vector>
 
 namespace server {
 
-static const float MAX_MOVE_DISTANCE_PER_FRAME = 100.0f;
-static const float MAX_WORLD_COORDINATE = 1000000.0f;
+inline constexpr float MAX_MOVE_DISTANCE_PER_FRAME = 100.0f;
+inline constexpr float MAX_WORLD_COORDINATE = 1000000.0f;
 
-bool isValidMovementDelta(float dx, float dy, float dz);
+[[nodiscard]] bool isValidMovementDelta(float dx, float dy, float dz);
 
 struct MovementIntent {
     uint64_t sequence;
@@ -23,7 +23,7 @@ struct MovementIntent {
 
 class MovementIntentQueue {
 public:
-    static const size_t MAX_PENDING_INTENTS = 4096;
+    inline static constexpr std::size_t MAX_PENDING_INTENTS = 4096;
 
     MovementIntentQueue();
     bool enqueue(int64_t sessionId, float dx, float dy, float dz);

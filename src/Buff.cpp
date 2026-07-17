@@ -42,6 +42,6 @@ Buff::getStatus(){
 };
 
 void
-Buff::setStatus(const Status& status) {
-    this->status = status;
+Buff::setStatus(const Status& newStatus) {
+    this->status = newStatus;
 };

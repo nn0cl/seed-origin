@@ -16,14 +16,7 @@ SeedBinary::SeedBinary()
     fIndex = 0;
 }
 /** Destructor */
-SeedBinary::~SeedBinary(){
-    
-}
-/*
-SeedBinary::SeedBinary(const SeedBinary& cpy){
-    isValid = new bool;
-    bData = cpy.bData;
-}*/
+SeedBinary::~SeedBinary() = default;
 /** バイナリーデータを指定されたアドレスへセットする。*/
 int 
 SeedBinary::setBinary(const char data[STANDARD_BINARY_SIZE],size_t size,int idx){
@@ -54,7 +47,7 @@ SeedBinary::getBinary(char data[STANDARD_BINARY_SIZE],size_t& size,int idx,bool 
     if(iter == bData.end()){
         return 0;
     }
-    for(int i=0;i<STANDARD_BINARY_SIZE;++i){
+    for(std::size_t i = 0; i < STANDARD_BINARY_SIZE; ++i){
      data[i] = iter->second.data[i];
     }
     isValid = iter->second.isValid;

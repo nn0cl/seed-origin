@@ -1,13 +1,15 @@
 #ifndef SEED_WORLD_UPDATE_H
 #define SEED_WORLD_UPDATE_H
 
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 #include <string>
+
+#include "Protocol.h"
 
 namespace network {
 
-static const size_t MAX_UPDATE_PAYLOAD = 16384;
+inline constexpr std::size_t MAX_UPDATE_PAYLOAD = 16384;
 
 enum class UpdateKind {
     Snapshot = 1,
@@ -23,7 +25,7 @@ struct WorldUpdate {
     std::string payload;
 };
 
-bool validateWorldUpdate(const WorldUpdate& update, std::string& error);
+[[nodiscard]] bool validateWorldUpdate(const WorldUpdate& update, std::string& error);
 
 }
 

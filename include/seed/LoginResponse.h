@@ -1,7 +1,7 @@
 #ifndef SEED_LOGIN_RESPONSE_H
 #define SEED_LOGIN_RESPONSE_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 
 #include "NetworkCommand.h"
@@ -20,7 +20,7 @@ struct LoginResponse {
     std::string payload;
 };
 
-bool validateLoginResponse(const LoginResponse& response, std::string& error);
+[[nodiscard]] bool validateLoginResponse(const LoginResponse& response, std::string& error);
 
 }
 

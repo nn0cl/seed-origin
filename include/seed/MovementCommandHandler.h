@@ -9,7 +9,7 @@
 
 namespace server {
 
-static const float MAX_MOVE_DELTA = MAX_MOVE_DISTANCE_PER_FRAME;
+inline constexpr float MAX_MOVE_DELTA = MAX_MOVE_DISTANCE_PER_FRAME;
 
 struct MovementResult {
     bool accepted;

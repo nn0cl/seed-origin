@@ -13,7 +13,7 @@ void emits_authoritative_combat_and_spell_results() {
     assert(queue.enqueueSpell(1001, 1002, "fire", 30.0f));
     server::WorldInputTick tick(queue);
     const server::WorldFrameInputs frame = tick.advanceFrame();
-    WorldFrameApplier applier(*field);
+    server::WorldFrameApplier applier(*field);
     std::vector<network::WorldUpdate> updates;
     std::string error;
     assert(applier.apply(frame, updates, error));

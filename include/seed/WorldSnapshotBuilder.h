@@ -1,7 +1,7 @@
 #ifndef SEED_WORLD_SNAPSHOT_BUILDER_H
 #define SEED_WORLD_SNAPSHOT_BUILDER_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 
 #include "EnvironmentEther.h"

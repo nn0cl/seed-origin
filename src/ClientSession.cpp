@@ -8,7 +8,7 @@
 namespace server {
 
 namespace {
-static const size_t READ_BUFFER_SIZE = 4096;
+constexpr std::size_t READ_BUFFER_SIZE = 4096;
 }
 
 ClientSession::ClientSession(int clientSocket)

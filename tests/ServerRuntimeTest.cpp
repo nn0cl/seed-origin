@@ -87,7 +87,7 @@ void ingests_decoded_commands_from_client_session() {
 }
 
 void dispatches_ingested_login_to_session_registry() {
-    server::SessionRegistry registry;
+    session::SessionRegistry registry;
     server::ServerCommandDispatcher dispatcher(registry);
     server::ServerRuntime runtime;
     assert(runtime.start(0));
@@ -108,7 +108,7 @@ void rejects_client_accept_when_runtime_is_stopped() {
     server::ServerRuntime runtime;
     uint64_t connectionId = 0;
     std::string error;
-    assert(runtime.acceptPendingClient(connectionId, error) == server::AcceptStatus::Failed);
+    assert(runtime.acceptPendingClient(connectionId, error) == AcceptStatus::Failed);
     assert(connectionId == 0);
     assert(runtime.connectedClientCount() == 0);
 }

@@ -1,8 +1,8 @@
 #ifndef SEED_CLIENT_HAZARD_EFFECT_QUEUE_H
 #define SEED_CLIENT_HAZARD_EFFECT_QUEUE_H
 
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 #include <deque>
 #include <string>
 #include <vector>
@@ -11,7 +11,7 @@
 
 namespace client {
 
-static const size_t MAX_HAZARD_EFFECTS = 256;
+inline constexpr std::size_t MAX_HAZARD_EFFECTS = 256;
 
 struct HazardEffect {
     uint64_t worldTick;

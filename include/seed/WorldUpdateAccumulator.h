@@ -1,7 +1,7 @@
 #ifndef SEED_WORLD_UPDATE_ACCUMULATOR_H
 #define SEED_WORLD_UPDATE_ACCUMULATOR_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <vector>
 

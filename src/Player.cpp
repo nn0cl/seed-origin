@@ -15,16 +15,12 @@ Player::Player(Player* player)
     : Player(player ? *player : Player()) {}
 
 Player::Player(const Player& player)
-    : id(player.id), status(player.status), buffs(player.buffs),
+    : id(player.id), name{}, status(player.status), buffs(player.buffs),
       position(player.position) {}
 
 
-Player::Player(int64_t playerId,const Status& status,const Position& position){
-    this->id = playerId;
-    this->status = status;
-    this->position = position;
-};
-
+Player::Player(int64_t playerId, const Status& status, const Position& position)
+    : id(playerId), status(status), position(position) {}
 
 Player::~Player() = default;
 
@@ -69,8 +65,8 @@ Player::processBuffs(){
 };
 
 bool
-Player::setPosition(const Position& position){
-    this->position.setPosition(position.getX(), position.getY(), position.getZ());
+Player::setPosition(const Position& newPosition){
+    this->position.setPosition(newPosition.getX(), newPosition.getY(), newPosition.getZ());
     return true;
 };
 

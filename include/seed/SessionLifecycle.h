@@ -1,7 +1,7 @@
 #ifndef SEED_SESSION_LIFECYCLE_H
 #define SEED_SESSION_LIFECYCLE_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <map>
 #include <string>
 

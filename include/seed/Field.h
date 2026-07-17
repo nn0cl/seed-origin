@@ -11,7 +11,7 @@
 
 #include <list>
 #include <map>
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -21,7 +21,7 @@
 #include "EnvironmentEther.h"
 
 namespace server {
-struct WorldInput;
+class WorldInput;
 struct CombatIntent;
 struct SpellIntent;
 struct CombatResolution {

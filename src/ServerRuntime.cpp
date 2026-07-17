@@ -61,7 +61,8 @@ AcceptStatus ServerRuntime::acceptPendingClient(uint64_t& connectionId,
         error = "connection id allocation failed";
         return AcceptStatus::Failed;
     }
-    std::unique_ptr<ClientSession> session(new ClientSession(clientSocket));
+    std::unique_ptr<ClientSession> session =
+        std::make_unique<ClientSession>(clientSocket);
     if (!session->isOpen()) {
         error = "accepted client session could not be initialized";
         return AcceptStatus::Failed;

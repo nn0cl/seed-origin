@@ -9,7 +9,7 @@
 #ifndef seeds_Player_h
 #define seeds_Player_h
 
-#include <stdint.h>
+#include <cstdint>
 #include <list>
 #include <map>
 #include <string>
@@ -23,7 +23,7 @@
 class Player{
 private:
     int64_t id;
-    char name[64];
+    char name[64]{};
     Status status;
     std::list<Buff> buffs;
     Position position;

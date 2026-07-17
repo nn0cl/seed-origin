@@ -11,7 +11,7 @@
 
 #include <map>
 #include <list>
-#include <stdint.h>
+#include <cstdint>
 
 class Data{
     //typedef

@@ -1,7 +1,7 @@
 #ifndef SEED_SERVER_TICK_H
 #define SEED_SERVER_TICK_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 
 #include "ActionQueue.h"
@@ -13,7 +13,7 @@ struct FrameActions {
 
 class ServerTick {
 public:
-    static const uint64_t FRAME_DURATION_MILLISECONDS = 50;
+    inline static constexpr std::uint64_t FRAME_DURATION_MILLISECONDS = 50;
 
     explicit ServerTick(ActionQueue& actionQueue);
 

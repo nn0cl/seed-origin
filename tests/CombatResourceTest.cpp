@@ -12,7 +12,7 @@ void charges_spell_mp_and_publishes_cooldown() {
     assert(queue.enqueueSpell(9401, 9402, "fire", 50.0f));
     server::WorldInputTick tick(queue);
     const server::WorldFrameInputs frame = tick.advanceFrame();
-    WorldFrameApplier applier(*field);
+    server::WorldFrameApplier applier(*field);
     std::vector<network::WorldUpdate> updates;
     std::string error;
     assert(applier.apply(frame, updates, error));
@@ -37,7 +37,7 @@ void rejects_same_frame_spell_repetition_without_resource_mutation() {
     assert(queue.enqueueSpell(9411, 9412, "fire", 10.0f));
     server::WorldInputTick tick(queue);
     const server::WorldFrameInputs frame = tick.advanceFrame();
-    WorldFrameApplier applier(*field);
+    server::WorldFrameApplier applier(*field);
     std::vector<network::WorldUpdate> updates;
     std::string error;
     assert(!applier.apply(frame, updates, error));

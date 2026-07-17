@@ -1,8 +1,8 @@
 #ifndef SEED_SERVER_RUNTIME_H
 #define SEED_SERVER_RUNTIME_H
 
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 #include <deque>
 #include <map>
 #include <memory>
@@ -15,11 +15,12 @@
 #include "ServerCommandDispatcher.h"
 #include "SessionLifecycle.h"
 #include "WorldInputTick.h"
+#include "WorldUpdate.h"
 
 namespace server {
 
-static const size_t MAX_PENDING_COMMANDS = 1024;
-static const size_t MAX_ACCEPTS_PER_FRAME = 64;
+inline constexpr std::size_t MAX_PENDING_COMMANDS = 1024;
+inline constexpr std::size_t MAX_ACCEPTS_PER_FRAME = 64;
 
 struct ServerFrameResult {
     uint64_t worldTick;

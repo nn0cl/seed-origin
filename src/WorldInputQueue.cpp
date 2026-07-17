@@ -20,28 +20,28 @@ bool isValidRequestId(const std::string& requestId) {
 
 WorldInput::WorldInput(uint64_t sequence, const Action& action)
     : inputSequence(sequence), inputKind(WorldInputKind::Action), inputAction(action),
-      inputMovement({0, 0, 0.0f, 0.0f, 0.0f}), inputCombat({0, 0, 0.0f}),
-      inputSpell({0, 0, std::string(), 0.0f}), inputChat({0, std::string(), std::string()}) {}
+      inputMovement({0, 0, 0.0f, 0.0f, 0.0f}), inputCombat({0, 0, 0.0f, std::string()}),
+      inputSpell({0, 0, std::string(), 0.0f, std::string()}), inputChat({0, std::string(), std::string()}) {}
 
 WorldInput::WorldInput(uint64_t sequence, const MovementIntent& movement)
     : inputSequence(sequence), inputKind(WorldInputKind::Movement), inputAction(0, nullptr, nullptr, Status()),
-      inputMovement(movement), inputCombat({0, 0, 0.0f}),
-      inputSpell({0, 0, std::string(), 0.0f}), inputChat({0, std::string(), std::string()}) {}
+      inputMovement(movement), inputCombat({0, 0, 0.0f, std::string()}),
+      inputSpell({0, 0, std::string(), 0.0f, std::string()}), inputChat({0, std::string(), std::string()}) {}
 
 WorldInput::WorldInput(uint64_t sequence, const CombatIntent& combat)
     : inputSequence(sequence), inputKind(WorldInputKind::Combat), inputAction(0, nullptr, nullptr, Status()),
       inputMovement({0, 0, 0.0f, 0.0f, 0.0f}), inputCombat(combat),
-      inputSpell({0, 0, std::string(), 0.0f}), inputChat({0, std::string(), std::string()}) {}
+      inputSpell({0, 0, std::string(), 0.0f, std::string()}), inputChat({0, std::string(), std::string()}) {}
 
 WorldInput::WorldInput(uint64_t sequence, const ChatIntent& chat)
     : inputSequence(sequence), inputKind(WorldInputKind::Chat),
       inputAction(0, nullptr, nullptr, Status()),
-      inputMovement({0, 0, 0.0f, 0.0f, 0.0f}), inputCombat({0, 0, 0.0f}),
-      inputSpell({0, 0, std::string(), 0.0f}), inputChat(chat) {}
+      inputMovement({0, 0, 0.0f, 0.0f, 0.0f}), inputCombat({0, 0, 0.0f, std::string()}),
+      inputSpell({0, 0, std::string(), 0.0f, std::string()}), inputChat(chat) {}
 
 WorldInput::WorldInput(uint64_t sequence, const SpellIntent& spell)
     : inputSequence(sequence), inputKind(WorldInputKind::Spell), inputAction(0, nullptr, nullptr, Status()),
-      inputMovement({0, 0, 0.0f, 0.0f, 0.0f}), inputCombat({0, 0, 0.0f}),
+      inputMovement({0, 0, 0.0f, 0.0f, 0.0f}), inputCombat({0, 0, 0.0f, std::string()}),
       inputSpell(spell), inputChat({0, std::string(), std::string()}) {}
 
 uint64_t WorldInput::sequence() const { return inputSequence; }
@@ -87,7 +87,7 @@ bool WorldInputQueue::enqueueCombat(int64_t attackerId, int64_t targetId,
     if ((!requestId.empty() && !isValidRequestId(requestId)) ||
         (!requestId.empty() && acceptedCombatRequests.find(
             std::to_string(attackerId) + ":" + requestId) !=
-                              acceptedCombatRequests.end()) return false;
+                              acceptedCombatRequests.end())) return false;
     pending.push_back(WorldInput(nextSequence++,
                                  {attackerId, targetId, power, requestId}));
     if (!requestId.empty()) acceptedCombatRequests.insert(
@@ -116,7 +116,7 @@ bool WorldInputQueue::enqueueSpell(int64_t casterId, int64_t targetId,
     if ((!requestId.empty() && !isValidRequestId(requestId)) ||
         (!requestId.empty() && acceptedCombatRequests.find(
             std::to_string(casterId) + ":" + requestId) !=
-                              acceptedCombatRequests.end()) return false;
+                              acceptedCombatRequests.end())) return false;
     pending.push_back(WorldInput(nextSequence++,
                                  {casterId, targetId, element, power, requestId}));
     if (!requestId.empty()) acceptedCombatRequests.insert(

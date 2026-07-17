@@ -1,7 +1,7 @@
 #ifndef SEED_CLIENT_ENVIRONMENT_STATE_H
 #define SEED_CLIENT_ENVIRONMENT_STATE_H
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace client {
 

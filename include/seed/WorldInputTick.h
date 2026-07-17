@@ -1,7 +1,7 @@
 #ifndef SEED_WORLD_INPUT_TICK_H
 #define SEED_WORLD_INPUT_TICK_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 
 #include "WorldInputQueue.h"

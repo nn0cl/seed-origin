@@ -9,12 +9,12 @@
 
 namespace network {
 
-bool encodeLoginResponseFrame(const LoginResponse& response,
-                              std::vector<uint8_t>& frame,
-                              std::string& error);
-bool decodeLoginResponseFrame(const std::vector<uint8_t>& frame,
-                              LoginResponse& response,
-                              std::string& error);
+[[nodiscard]] bool encodeLoginResponseFrame(const LoginResponse& response,
+                                             std::vector<uint8_t>& frame,
+                                             std::string& error);
+[[nodiscard]] bool decodeLoginResponseFrame(const std::vector<uint8_t>& frame,
+                                             LoginResponse& response,
+                                             std::string& error);
 
 }
 

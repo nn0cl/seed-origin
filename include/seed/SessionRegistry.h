@@ -1,7 +1,7 @@
 #ifndef SEED_SESSION_REGISTRY_H
 #define SEED_SESSION_REGISTRY_H
 
-#include <stdint.h>
+#include <cstdint>
 #include <map>
 #include <set>
 #include <string>

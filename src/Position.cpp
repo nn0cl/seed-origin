@@ -12,7 +12,7 @@ Position::Position(int64_t playerId, float x, float y, float z)
     : x(x), y(y), z(z), mapId(0), playerId(playerId) {
 };
 
-Position::Position(Position* position)
+Position::Position(const Position* position)
     : x(0), y(0), z(0), mapId(0), playerId(0) {
     if (position == nullptr) return;
     this->playerId = position->getPlayerId();
@@ -21,22 +21,18 @@ Position::Position(Position* position)
     this->z = position->getZ();
 }
 
-Position::~Position(){
-    
+void
+Position::setPosition(const float newX, const float newY, const float newZ){
+    this->x = newX;
+    this->y = newY;
+    this->z = newZ;
 };
 
 void
-Position::setPosition(const float x, const float y, const float z){
-    this->x = x;
-    this->y = y;
-    this->z = z;
-};
-
-void
-Position::movePosition(const float x, const float y, const float z){
-    this->x += x;
-    this->y += y;
-    this->z += z;
+Position::movePosition(const float dx, const float dy, const float dz){
+    this->x += dx;
+    this->y += dy;
+    this->z += dz;
 };
 
 float

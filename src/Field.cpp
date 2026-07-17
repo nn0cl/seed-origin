@@ -410,7 +410,7 @@ bool Field::validateSpell(const server::SpellIntent& intent, std::string& error)
         }
     }
     const server::CombatIntent combat = {
-        intent.casterId, intent.targetId, intent.power};
+        intent.casterId, intent.targetId, intent.power, intent.requestId};
     return validateCombat(combat, error);
 }
 

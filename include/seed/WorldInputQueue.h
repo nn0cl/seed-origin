@@ -1,8 +1,8 @@
 #ifndef SEED_WORLD_INPUT_QUEUE_H
 #define SEED_WORLD_INPUT_QUEUE_H
 
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 #include <deque>
 #include <mutex>
 #include <string>
@@ -71,7 +71,7 @@ private:
 
 class WorldInputQueue {
 public:
-    static const size_t MAX_PENDING_INPUTS = 8192;
+    inline static constexpr std::size_t MAX_PENDING_INPUTS = 8192;
 
     WorldInputQueue();
     bool enqueueAction(const Action& action);

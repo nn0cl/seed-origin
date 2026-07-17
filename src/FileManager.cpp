@@ -9,12 +9,12 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-#include <stdint.h>
+#include <cstdint>
 
 #include <vector>
-#include <ctype.h>
-#include <stdlib.h>
-#include <limits.h>
+#include <cctype>
+#include <cstdlib>
+#include <climits>
 #include <unistd.h>
 #include "SeedBinary.h"
 #include "FileManager.h"
@@ -80,11 +80,12 @@ namespace io{
         std::streamoff begPos = fin.tellg();
         if (begPos < 0 || eofPos < begPos) return 0;
 
-        uint64_t size = eofPos - begPos;
+        const std::streamoff size = eofPos - begPos;
 
         int idx=0;
         char ch[STANDARD_BINARY_SIZE];
         for (std::streamoff offset = 0; offset < size; offset += STANDARD_BINARY_SIZE, ++idx) {
+            if (idx == std::numeric_limits<int>::max()) return 0;
             const std::streamsize readsize = static_cast<std::streamsize>(
                 std::min<std::streamoff>(STANDARD_BINARY_SIZE, size - offset));
             fin.read(ch, readsize);
