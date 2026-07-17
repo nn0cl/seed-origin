@@ -106,8 +106,30 @@ ether[a] *= 0.98
 
 これらはLISS-0126、LISS-0127、LISS-0133およびWorldGrid関連Issueで確定する。
 
+## FFXI型要素関係の移行候補
+
+先行ゲームの設計知を利用する候補として、FFXIで知られる次の関係を採用候補にする。
+
+```text
+fire → ice → wind → earth → thunder → water → fire
+light ↔ dark
+```
+
+この関係は、6属性の循環優位と光／闇の対立を持つため、現在の4属性対属性モデルよりも、弱点、耐性、環境伝播、魔法連携を整理しやすい。ただし、これはFFXIの固有コンテンツや数値を複製するものではなく、本プロジェクトの環境エーテルシミュレーションへ抽象化して取り込む候補である。
+
+移行時は次を分離して検討する。
+
+- `earth`と`wind`は現行`earth`／`air`との互換・改名方針を決める。
+- `ice`と`thunder`を新属性として追加する。
+- `light`と`dark`を通常の循環属性ではなく対立軸として扱う。
+- 優位関係を直接ダメージ倍率にするか、伝導率・耐性・環境反応へ分配する。
+- 既存Snapshotの4属性payloadをバージョン更新する。
+- 旧4属性Worldを8属性Worldへ移行する決定的な変換式を定義する。
+
+この移行候補の採用判断と実装はLISS-0134で行う。LISS-0134が完了するまでは、v1の4属性モデルを実装上の正とする。
+
 ---
 
 ## English summary
 
-The v1 deterministic profile uses four signed ether attributes: fire, water, earth, and air. Fire opposes water, and earth opposes air. Spell conductivity is `1 + min(abs(ether) / 100, 1)`. A successful spell adds `basePower * 0.1` to its attribute and subtracts 25% of that influence from the opposing attribute. All inputs are processed in sequence order, then ether decays by `0.98` once per 20 FPS world frame. Hazard is an observable environment value only; concrete effects on players, NPCs, or terrain require a separate approved specification.
+The v1 deterministic profile uses four signed ether attributes: fire, water, earth, and air. Fire opposes water, and earth opposes air. An FFXI-inspired six-element wheel plus light/dark opposition is a migration candidate tracked by LISS-0134; until it is approved, the four-element profile remains authoritative. Spell conductivity is `1 + min(abs(ether) / 100, 1)`. A successful spell adds `basePower * 0.1` to its attribute and subtracts 25% of that influence from the opposing attribute. All inputs are processed in sequence order, then ether decays by `0.98` once per 20 FPS world frame. Hazard is an observable environment value only; concrete effects on players, NPCs, or terrain require a separate approved specification.

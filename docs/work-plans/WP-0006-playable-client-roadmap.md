@@ -69,6 +69,7 @@
 | LISS-0131 | Abuse controls and rate limits | critical | LISS-0123, LISS-0124, LISS-0125, LISS-0126 | proposed |
 | LISS-0132 | Reconnect, backpressure, observability | high | LISS-0122, LISS-0128, LISS-0131 | proposed |
 | LISS-0133 | Playable client acceptance | critical | LISS-0124〜0132 | proposed |
+| LISS-0134 | FFXI-inspired element migration study | high | LISS-0114, LISS-0115, LISS-0126, LISS-0129 | proposed |
 | LISS-0082 | Client Snapshot application/interpolation | high | LISS-0063, LISS-0080 | proposed |
 | LISS-0083 | Client EffectQueue | high | LISS-0065, LISS-0080 | proposed |
 | LISS-0084 | Sync gaps/backpressure/effect backlog | high | LISS-0080, LISS-0083 | in_progress |
