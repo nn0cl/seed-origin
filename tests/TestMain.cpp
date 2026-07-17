@@ -36,6 +36,7 @@ void accepts_empty_frame();
 
 namespace connection_tests {
 void close_is_idempotent();
+void reports_no_pending_client_without_blocking();
 }
 
 void playerOwnershipCopyAssignmentTest();
@@ -110,6 +111,7 @@ int main() {
     field_state_tests::removes_players_by_full_id();
     field_state_tests::accepts_empty_frame();
     connection_tests::close_is_idempotent();
+    connection_tests::reports_no_pending_client_without_blocking();
     player_ownership_tests::playerOwnershipCopyAssignmentTest();
     player_ownership_tests::playerOwnershipContainerUpdateTest();
     seed_binary_tests::rejects_out_of_range_input();

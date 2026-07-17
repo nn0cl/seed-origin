@@ -7,6 +7,8 @@
 //
 
 #include "Connection.h"
+#include <errno.h>
+#include <fcntl.h>
 #include <unistd.h>
 
 Connection::Connection() : listenerSocket(-1) {}
@@ -50,8 +52,33 @@ Connection::open(uint16_t port) {
         return false;
     }
 
+    const int flags = fcntl(sock0, F_GETFL, 0);
+    if (flags < 0 || fcntl(sock0, F_SETFL, flags | O_NONBLOCK) != 0) {
+        ::close(sock0);
+        return false;
+    }
+
     listenerSocket = sock0;
     return true;
+}
+
+AcceptStatus Connection::acceptClient(int& clientSocket) {
+    clientSocket = -1;
+    if (listenerSocket < 0) return AcceptStatus::Failed;
+
+    struct sockaddr_storage address = {};
+    socklen_t addressLength = sizeof(address);
+    const int accepted = ::accept(listenerSocket,
+                                  reinterpret_cast<struct sockaddr*>(&address),
+                                  &addressLength);
+    if (accepted >= 0) {
+        clientSocket = accepted;
+        return AcceptStatus::Accepted;
+    }
+    if (errno == EAGAIN || errno == EWOULDBLOCK) {
+        return AcceptStatus::NoPendingClient;
+    }
+    return AcceptStatus::Failed;
 }
 
 bool

@@ -18,6 +18,12 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
+enum class AcceptStatus {
+    Accepted,
+    NoPendingClient,
+    Failed
+};
+
 class Connection {
 private:
     int listenerSocket;
@@ -25,6 +31,7 @@ public:
     Connection();
     ~Connection();
     bool open(uint16_t port);
+    AcceptStatus acceptClient(int& clientSocket);
     bool closeSocket();
     bool isOpen() const;
 };
