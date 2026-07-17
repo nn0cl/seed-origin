@@ -126,6 +126,8 @@ void applies_valid_actions_and_returns_events();
 void rejects_invalid_action_before_field_mutation();
 void applies_movement_intents_after_target_validation();
 void restores_movement_intents_when_target_is_missing();
+void applies_combat_damage_after_range_validation();
+void rejects_out_of_range_combat_without_damage();
 }
 
 namespace movement_intent_queue_tests {
@@ -222,6 +224,8 @@ int main() {
     world_frame_applier_tests::rejects_invalid_action_before_field_mutation();
     world_frame_applier_tests::applies_movement_intents_after_target_validation();
     world_frame_applier_tests::restores_movement_intents_when_target_is_missing();
+    world_frame_applier_tests::applies_combat_damage_after_range_validation();
+    world_frame_applier_tests::rejects_out_of_range_combat_without_damage();
     movement_intent_queue_tests::queues_valid_movement_without_field_mutation();
     movement_intent_queue_tests::rejects_invalid_session_without_queue_mutation();
     movement_intent_queue_tests::restores_a_cut_frame_in_original_order();

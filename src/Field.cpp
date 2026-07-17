@@ -9,6 +9,10 @@
 #include "Field.h"
 #include "WorldInputQueue.h"
 
+#include <cctype>
+#include <cmath>
+#include <limits>
+
 Field::Field() {
     
 };
@@ -70,6 +74,18 @@ Field::queueMovement(int64_t playerId, float dx, float dy, float dz){
 bool
 Field::hasPlayer(int64_t playerId) const {
     return playerList.find(playerId) != playerList.end();
+}
+
+const Player*
+Field::findPlayer(int64_t playerId) const {
+    std::map<int64_t,Player>::const_iterator found = playerList.find(playerId);
+    return found == playerList.end() ? nullptr : &found->second;
+}
+
+Player*
+Field::findPlayer(int64_t playerId) {
+    std::map<int64_t,Player>::iterator found = playerList.find(playerId);
+    return found == playerList.end() ? nullptr : &found->second;
 }
 
 void
@@ -142,6 +158,14 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs) {
             !it->action().isValid()) {
             return false;
         }
+        if (it->kind() == server::WorldInputKind::Combat) {
+            std::string error;
+            if (!validateCombat(it->combat(), error)) return false;
+        }
+        if (it->kind() == server::WorldInputKind::Spell) {
+            std::string error;
+            if (!validateSpell(it->spell(), error)) return false;
+        }
     }
     for (std::vector<server::WorldInput>::const_iterator it = inputs.begin();
          it != inputs.end(); ++it) {
@@ -153,8 +177,71 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs) {
             playerItt->second.setPosition(next);
         } else if (it->kind() == server::WorldInputKind::Action) {
             applyAction(it->action());
+        } else if (it->kind() == server::WorldInputKind::Combat) {
+            std::string error;
+            if (!applyCombat(it->combat(), error)) return false;
+        } else if (it->kind() == server::WorldInputKind::Spell) {
+            std::string error;
+            if (!applySpell(it->spell(), error)) return false;
         }
     }
+    return true;
+}
+
+bool Field::validateCombat(const server::CombatIntent& intent, std::string& error) const {
+    const Player* attacker = findPlayer(intent.attackerId);
+    const Player* target = findPlayer(intent.targetId);
+    if (attacker == nullptr || target == nullptr) {
+        error = "combat actor or target is not present";
+        return false;
+    }
+    const float dx = attacker->getPosition().getX() - target->getPosition().getX();
+    const float dy = attacker->getPosition().getY() - target->getPosition().getY();
+    const float dz = attacker->getPosition().getZ() - target->getPosition().getZ();
+    if (dx * dx + dy * dy + dz * dz > 10000.0f) {
+        error = "combat target is out of range";
+        return false;
+    }
+    if (!std::isfinite(intent.power) || intent.power <= 0.0f || intent.power > 100000.0f) {
+        error = "combat power is invalid";
+        return false;
+    }
+    error.clear();
+    return true;
+}
+
+bool Field::validateSpell(const server::SpellIntent& intent, std::string& error) const {
+    if (intent.element.empty() || intent.element.size() > 32) {
+        error = "spell element is invalid";
+        return false;
+    }
+    for (std::string::const_iterator it = intent.element.begin();
+         it != intent.element.end(); ++it) {
+        if (!std::isalnum(static_cast<unsigned char>(*it)) && *it != '_' && *it != '-') {
+            error = "spell element contains invalid characters";
+            return false;
+        }
+    }
+    const server::CombatIntent combat = {
+        intent.casterId, intent.targetId, intent.power};
+    return validateCombat(combat, error);
+}
+
+bool Field::applyCombat(const server::CombatIntent& intent, std::string& error) {
+    if (!validateCombat(intent, error)) return false;
+    Player* target = findPlayer(intent.targetId);
+    const long damage = static_cast<long>(intent.power);
+    target->getStatus().gainHp(-damage);
+    error.clear();
+    return true;
+}
+
+bool Field::applySpell(const server::SpellIntent& intent, std::string& error) {
+    if (!validateSpell(intent, error)) return false;
+    Player* target = findPlayer(intent.targetId);
+    const long damage = static_cast<long>(intent.power);
+    target->getStatus().gainHp(-damage);
+    error.clear();
     return true;
 }
 

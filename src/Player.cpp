@@ -29,7 +29,7 @@ Player::Player(int64_t playerId,const Status& status,const Position& position){
 Player::~Player() = default;
 
 int64_t
-Player::getPlayerId(){
+Player::getPlayerId() const{
     return this->id;
 }
 
@@ -79,7 +79,17 @@ Player::getStatus(){
     return this->status;
 };
 
+const Status&
+Player::getStatus() const {
+    return this->status;
+};
+
 Position&
 Player::getPosition(){
+    return this->position;
+}
+
+const Position&
+Player::getPosition() const {
     return this->position;
 }

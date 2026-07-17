@@ -68,4 +68,42 @@ void restores_movement_intents_when_target_is_missing() {
     assert(queue.pendingCount() == 1);
 }
 
+void applies_combat_damage_after_range_validation() {
+    Field* field = Field::getInstance();
+    const Position attackerPosition(9101, 0.0f, 0.0f, 0.0f);
+    const Position targetPosition(9102, 3.0f, 0.0f, 0.0f);
+    assert(field->setPlayer(Player(9101, Status(100, 10), attackerPosition)));
+    assert(field->setPlayer(Player(9102, Status(100, 10), targetPosition)));
+    server::WorldInputQueue queue;
+    assert(queue.enqueueCombat(9101, 9102, 25.0f));
+    server::WorldInputTick tick(queue);
+    const server::WorldFrameInputs frame = tick.advanceFrame();
+    server::WorldFrameApplier applier(*field);
+    std::vector<network::WorldUpdate> updates;
+    std::string error;
+    assert(applier.apply(frame, updates, error));
+    const Player* target = field->findPlayer(9102);
+    assert(target != nullptr);
+    assert(target->getStatus().getHp() == 75);
+}
+
+void rejects_out_of_range_combat_without_damage() {
+    Field* field = Field::getInstance();
+    const Position attackerPosition(9103, 0.0f, 0.0f, 0.0f);
+    const Position targetPosition(9104, 101.0f, 0.0f, 0.0f);
+    assert(field->setPlayer(Player(9103, Status(100, 10), attackerPosition)));
+    assert(field->setPlayer(Player(9104, Status(100, 10), targetPosition)));
+    server::WorldInputQueue queue;
+    assert(queue.enqueueCombat(9103, 9104, 25.0f));
+    server::WorldInputTick tick(queue);
+    const server::WorldFrameInputs frame = tick.advanceFrame();
+    server::WorldFrameApplier applier(*field);
+    std::vector<network::WorldUpdate> updates;
+    std::string error;
+    assert(!applier.apply(frame, updates, error));
+    const Player* target = field->findPlayer(9104);
+    assert(target != nullptr);
+    assert(target->getStatus().getHp() == 100);
+}
+
 } // namespace world_frame_applier_tests

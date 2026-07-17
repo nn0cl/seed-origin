@@ -29,5 +29,5 @@ Attack／CastSpell Commandを、対象ID・威力・属性を検証済みのComb
 
 ## 次のIssue
 
-Combat／Spell Intentの対象存在・距離・権限検証と、決定論的なダメージ／魔法効果計算を
-World frameへ追加する。
+LISS-0113でCombat／Spell Intentの対象存在・距離・威力検証と決定論的ダメージ適用を
+World frameへ追加した。環境エーテル効果は後続Issueで扱う。

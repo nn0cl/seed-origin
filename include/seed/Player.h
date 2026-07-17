@@ -35,7 +35,7 @@ public:
     Player(int64_t playerId,const Status& status,const Position& position);
     ~Player();
     
-    int64_t getPlayerId();
+    int64_t getPlayerId() const;
     
     bool setHp(long _hp);
     bool setMp(long _mp);
@@ -44,6 +44,8 @@ public:
     bool processBuffs();
     bool setPosition(const Position& position);
     Status& getStatus();
+    const Status& getStatus() const;
+    const Position& getPosition() const;
     Position& getPosition();
 };
 

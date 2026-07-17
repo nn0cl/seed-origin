@@ -38,6 +38,8 @@ public:
     static bool unsetPlayer(Player player);
     bool queueMovement(int64_t playerId, float dx, float dy, float dz);
     bool hasPlayer(int64_t playerId) const;
+    const Player* findPlayer(int64_t playerId) const;
+    Player* findPlayer(int64_t playerId);
     void processFrame();
     bool processInputs(const std::vector<server::WorldInput>& inputs);
     
@@ -47,6 +49,10 @@ public:
 
 private:
     void applyAction(Action action);
+    bool validateCombat(const server::CombatIntent& intent, std::string& error) const;
+    bool validateSpell(const server::SpellIntent& intent, std::string& error) const;
+    bool applyCombat(const server::CombatIntent& intent, std::string& error);
+    bool applySpell(const server::SpellIntent& intent, std::string& error);
 };
 
 #endif
