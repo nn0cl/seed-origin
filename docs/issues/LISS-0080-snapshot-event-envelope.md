@@ -1,6 +1,6 @@
 # LISS-0080: Snapshot/Event envelope契約
 
-- Status: proposed
+- Status: in_progress
 - Phase: phase-0-design
 - Type: architecture + protocol
 - Priority: critical
@@ -19,3 +19,5 @@
 - Eventだけから権威状態を復元しない。
 - 重複排除、欠落検出、Snapshot再同期要求を定義する。
 - v1 wire formatへ追加するフィールドと互換性方針を記録する。
+
+Active slice: LISS-0087（WorldUpdate Envelopeの型と検証）。

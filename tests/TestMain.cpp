@@ -14,6 +14,11 @@ namespace server_tick_tests {
 void advances_fixed_logical_frames_and_cuts_queue();
 }
 
+namespace world_update_tests {
+void accepts_snapshot_and_event_envelopes();
+void rejects_invalid_update_identity();
+}
+
 namespace field_state_tests {
 void removes_players_by_full_id();
 void accepts_empty_frame();
@@ -86,6 +91,8 @@ int main() {
     action_queue_tests::arrivals_after_frame_cutover_are_deferred();
     action_queue_tests::rejects_invalid_actions();
     server_tick_tests::advances_fixed_logical_frames_and_cuts_queue();
+    world_update_tests::accepts_snapshot_and_event_envelopes();
+    world_update_tests::rejects_invalid_update_identity();
     field_state_tests::removes_players_by_full_id();
     field_state_tests::accepts_empty_frame();
     connection_tests::close_is_idempotent();

@@ -10,6 +10,7 @@ set(SEED_CORE_SOURCES
     src/Action.cpp
     src/ActionQueue.cpp
     src/ServerTick.cpp
+    src/WorldUpdate.cpp
     src/Buff.cpp
     src/Connection.cpp
     src/Data.cpp
@@ -42,6 +43,7 @@ add_executable(seed_tests
     tests/ActionInputTest.cpp
     tests/ActionQueueTest.cpp
     tests/ServerTickTest.cpp
+    tests/WorldUpdateTest.cpp
     tests/ConnectionTest.cpp
     tests/FieldStateTest.cpp
     tests/PlayerOwnershipTest.cpp
