@@ -5,6 +5,7 @@
 
 #include "Field.h"
 #include "NetworkCommand.h"
+#include "MovementIntentQueue.h"
 
 namespace server {
 
@@ -18,10 +19,12 @@ struct MovementResult {
 class MovementCommandHandler {
 public:
     explicit MovementCommandHandler(Field& field);
+    explicit MovementCommandHandler(MovementIntentQueue& intentQueue);
     MovementResult handle(const network::NetworkCommand& command);
 
 private:
     Field& field;
+    MovementIntentQueue* intentQueue;
 };
 
 }

@@ -30,4 +30,5 @@
 
 ## 次のIssue
 
-Action種別ごとの意味論（移動、攻撃、魔法）をWorld更新器へ段階的に追加する。
+LISS-0107で移動Commandをframe入力化した。次にMovementIntentをWorldFrameApplierへ接続し、
+Action種別ごとの意味論（移動、攻撃、魔法）を段階的に追加する。

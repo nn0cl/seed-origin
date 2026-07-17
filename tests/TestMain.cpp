@@ -126,6 +126,11 @@ void applies_valid_actions_and_returns_events();
 void rejects_invalid_action_before_field_mutation();
 }
 
+namespace movement_intent_queue_tests {
+void queues_valid_movement_without_field_mutation();
+void rejects_invalid_session_without_queue_mutation();
+}
+
 namespace server_command_dispatcher_tests {
 void accepts_login();
 void rejects_unimplemented_command();
@@ -197,6 +202,8 @@ int main() {
     world_frame_update_builder_tests::emits_no_update_for_empty_frame();
     world_frame_applier_tests::applies_valid_actions_and_returns_events();
     world_frame_applier_tests::rejects_invalid_action_before_field_mutation();
+    movement_intent_queue_tests::queues_valid_movement_without_field_mutation();
+    movement_intent_queue_tests::rejects_invalid_session_without_queue_mutation();
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();

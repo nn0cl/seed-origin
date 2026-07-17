@@ -24,7 +24,11 @@ bool withinLimit(float value) {
 
 }
 
-MovementCommandHandler::MovementCommandHandler(Field& field) : field(field) {}
+MovementCommandHandler::MovementCommandHandler(Field& field)
+    : field(field), intentQueue(nullptr) {}
+
+MovementCommandHandler::MovementCommandHandler(MovementIntentQueue& intentQueue)
+    : field(*Field::getInstance()), intentQueue(&intentQueue) {}
 
 MovementResult MovementCommandHandler::handle(const network::NetworkCommand& command) {
     MovementResult result = {false, std::string()};
@@ -45,7 +49,12 @@ MovementResult MovementCommandHandler::handle(const network::NetworkCommand& com
         result.error = "move delta exceeds limit";
         return result;
     }
-    if (!field.queueMovement(command.sessionId, dx, dy, dz)) {
+    if (intentQueue != nullptr) {
+        if (!intentQueue->enqueue(command.sessionId, dx, dy, dz)) {
+            result.error = "movement intent queue is full";
+            return result;
+        }
+    } else if (!field.queueMovement(command.sessionId, dx, dy, dz)) {
         result.error = "session player is not present in the field";
         return result;
     }
