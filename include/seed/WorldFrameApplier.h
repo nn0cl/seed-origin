@@ -6,6 +6,7 @@
 
 #include "Field.h"
 #include "MovementIntentQueue.h"
+#include "WorldInputTick.h"
 #include "WorldFrameUpdateBuilder.h"
 
 namespace server {
@@ -16,6 +17,9 @@ public:
     WorldFrameApplier(Field& field, MovementIntentQueue& movementQueue);
 
     bool apply(const FrameActions& frame,
+               std::vector<network::WorldUpdate>& updates,
+               std::string& error);
+    bool apply(const WorldFrameInputs& frame,
                std::vector<network::WorldUpdate>& updates,
                std::string& error);
 

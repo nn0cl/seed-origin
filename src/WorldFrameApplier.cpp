@@ -58,4 +58,46 @@ bool WorldFrameApplier::apply(const FrameActions& frame,
     return true;
 }
 
+bool WorldFrameApplier::apply(const WorldFrameInputs& frame,
+                              std::vector<network::WorldUpdate>& updates,
+                              std::string& error) {
+    FrameActions actions = {frame.worldTick, std::vector<QueuedAction>()};
+    std::vector<MovementIntent> movements;
+    for (std::vector<WorldInput>::const_iterator it = frame.inputs.begin();
+         it != frame.inputs.end(); ++it) {
+        if (it->kind() == WorldInputKind::Action) {
+            if (!it->action().isValid()) {
+                updates.clear();
+                error = "world input contains an invalid action";
+                return false;
+            }
+            actions.actions.push_back(QueuedAction(it->sequence(), it->action()));
+        } else {
+            movements.push_back(it->movement());
+            if (!field.hasPlayer(it->movement().sessionId)) {
+                updates.clear();
+                error = "world input movement session is not present in the field";
+                return false;
+            }
+        }
+    }
+    if (!updateBuilder.build(actions, updates, error)) return false;
+    for (std::vector<WorldInput>::const_iterator it = frame.inputs.begin();
+         it != frame.inputs.end(); ++it) {
+        if (it->kind() == WorldInputKind::Action) {
+            field.putActionQueue(it->action());
+        } else if (!field.queueMovement(it->movement().sessionId,
+                                        it->movement().dx,
+                                        it->movement().dy,
+                                        it->movement().dz)) {
+            updates.clear();
+            error = "world input movement could not be queued in the field";
+            return false;
+        }
+    }
+    field.processFrame();
+    error.clear();
+    return true;
+}
+
 }

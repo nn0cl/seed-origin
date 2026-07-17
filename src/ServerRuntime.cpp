@@ -8,8 +8,8 @@
 namespace server {
 
 ServerRuntime::ServerRuntime()
-    : running(false), nextConnectionId(1), clients(), lifecycle(), actionQueue(),
-      serverTick(actionQueue) {}
+    : running(false), nextConnectionId(1), clients(), lifecycle(), inputQueue(),
+      inputTick(inputQueue) {}
 
 ServerRuntime::~ServerRuntime() {
     stop();
@@ -23,6 +23,7 @@ bool ServerRuntime::start(uint16_t port) {
 
 bool ServerRuntime::stop() {
     pendingCommands.clear();
+    inputQueue.clear();
     clients.clear();
     lifecycle.clear();
     const bool closed = listener.closeSocket();
@@ -32,6 +33,7 @@ bool ServerRuntime::stop() {
 
 bool ServerRuntime::stop(session::SessionRegistry& registry) {
     pendingCommands.clear();
+    inputQueue.clear();
     clients.clear();
     lifecycle.clear(registry);
     const bool closed = listener.closeSocket();
@@ -103,7 +105,11 @@ bool ServerRuntime::submit(const network::NetworkCommand& command) {
 }
 
 bool ServerRuntime::submitAction(const Action& action) {
-    return running && serverTick.submit(action);
+    return running && inputTick.submitAction(action);
+}
+
+bool ServerRuntime::submitMovement(int64_t sessionId, float dx, float dy, float dz) {
+    return running && inputTick.submitMovement(sessionId, dx, dy, dz);
 }
 
 ReceiveStatus ServerRuntime::ingest(ClientSession& session, std::string& error) {
@@ -216,8 +222,8 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
 
 ServerFrameResult ServerRuntime::processFrame(ServerCommandDispatcher& dispatcher,
                                               std::string& error) {
-    ServerFrameResult stopped = {serverTick.currentWorldTick(), 0,
-                                 std::vector<QueuedAction>()};
+    ServerFrameResult stopped = {inputTick.currentWorldTick(), 0,
+                                 std::vector<WorldInput>()};
     if (!running) {
         error = "server runtime is stopped";
         return stopped;
@@ -243,9 +249,9 @@ ServerFrameResult ServerRuntime::processFrame(ServerCommandDispatcher& dispatche
         if (status == SendStatus::Failed && error.empty()) error = sendError;
     }
     removeClosedClients(dispatcher.sessionRegistry());
-    const FrameActions worldFrame = serverTick.advanceFrame();
+    const WorldFrameInputs worldFrame = inputTick.advanceFrame();
     ServerFrameResult result = {worldFrame.worldTick, accepted + processed,
-                                worldFrame.actions};
+                                worldFrame.inputs};
     return result;
 }
 

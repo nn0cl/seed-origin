@@ -50,6 +50,11 @@ std::vector<WorldInput> WorldInputQueue::takeFrame() {
     return frame;
 }
 
+void WorldInputQueue::clear() {
+    std::lock_guard<std::mutex> lock(mutex);
+    pending.clear();
+}
+
 size_t WorldInputQueue::pendingCount() const {
     std::lock_guard<std::mutex> lock(mutex);
     return pending.size();

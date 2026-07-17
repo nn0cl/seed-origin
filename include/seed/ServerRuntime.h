@@ -14,7 +14,7 @@
 #include "NetworkCommand.h"
 #include "ServerCommandDispatcher.h"
 #include "SessionLifecycle.h"
-#include "ServerTick.h"
+#include "WorldInputTick.h"
 
 namespace server {
 
@@ -24,7 +24,7 @@ static const size_t MAX_ACCEPTS_PER_FRAME = 64;
 struct ServerFrameResult {
     uint64_t worldTick;
     size_t networkOperations;
-    std::vector<QueuedAction> actions;
+    std::vector<WorldInput> inputs;
 };
 
 class ServerRuntime {
@@ -44,6 +44,7 @@ public:
     ServerFrameResult processFrame(ServerCommandDispatcher& dispatcher, std::string& error);
     bool submit(const network::NetworkCommand& command);
     bool submitAction(const Action& action);
+    bool submitMovement(int64_t sessionId, float dx, float dy, float dz);
     ReceiveStatus ingest(ClientSession& session, std::string& error);
     std::vector<network::NetworkCommand> drainCommands();
     std::vector<CommandDispatchResult> dispatchPendingCommands(
@@ -65,8 +66,8 @@ private:
     uint64_t nextConnectionId;
     std::map<uint64_t, std::unique_ptr<ClientSession> > clients;
     SessionLifecycle lifecycle;
-    ActionQueue actionQueue;
-    ServerTick serverTick;
+    WorldInputQueue inputQueue;
+    WorldInputTick inputTick;
     std::deque<PendingCommand> pendingCommands;
 };
 

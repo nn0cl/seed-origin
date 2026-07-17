@@ -150,10 +150,11 @@ void advances_action_frame_after_network_processing() {
     Player player;
     const Action action(2, &player, nullptr, status);
     assert(runtime.submitAction(action));
+    assert(runtime.submitMovement(42, 1.0f, 0.0f, 0.0f));
     std::string error;
     const server::ServerFrameResult result = runtime.processFrame(dispatcher, error);
     assert(result.worldTick == 1);
-    assert(result.actions.size() == 1);
+    assert(result.inputs.size() == 2);
     assert(runtime.stop());
 }
 

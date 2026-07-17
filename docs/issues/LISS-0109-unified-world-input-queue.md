@@ -29,5 +29,5 @@ ActionQueueとMovementIntentQueueのsequence空間を統合し、異なる入力
 
 ## 次のIssue
 
-ServerRuntimeとWorldFrameApplierをWorldInputQueueへ移行し、共通sequence順に移動とActionを
-適用する。
+LISS-0110でServerRuntimeとWorldFrameApplierをWorldInputQueueへ移行し、共通sequence順に
+移動とActionを適用する（実装済み）。

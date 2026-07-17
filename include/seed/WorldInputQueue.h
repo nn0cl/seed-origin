@@ -42,6 +42,7 @@ public:
     bool enqueueAction(const Action& action);
     bool enqueueMovement(int64_t sessionId, float dx, float dy, float dz);
     std::vector<WorldInput> takeFrame();
+    void clear();
     size_t pendingCount() const;
 
 private:
