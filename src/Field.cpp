@@ -160,6 +160,13 @@ Field::processFrame(){
 };
 
 bool Field::processInputs(const std::vector<server::WorldInput>& inputs) {
+    std::vector<server::CombatResolution> ignored;
+    return processInputs(inputs, ignored);
+}
+
+bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
+                          std::vector<server::CombatResolution>& resolutions) {
+    resolutions.clear();
     for (std::vector<server::WorldInput>::const_iterator it = inputs.begin();
          it != inputs.end(); ++it) {
         if (it->kind() == server::WorldInputKind::Movement &&
@@ -209,11 +216,54 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs) {
         } else if (it->kind() == server::WorldInputKind::Action) {
             applyAction(it->action());
         } else if (it->kind() == server::WorldInputKind::Combat) {
+            const Player* targetBefore = findPlayer(it->combat().targetId);
+            const long hpBefore = targetBefore->getStatus().getHp();
             std::string error;
             if (!applyCombat(it->combat(), error)) return false;
+            const Player* targetAfter = findPlayer(it->combat().targetId);
+            server::CombatResolution resolution;
+            resolution.inputSequence = it->sequence();
+            resolution.actorId = it->combat().attackerId;
+            resolution.targetId = it->combat().targetId;
+            resolution.basePower = it->combat().power;
+            resolution.effectivePower = it->combat().power;
+            resolution.damage = hpBefore - targetAfter->getStatus().getHp();
+            resolution.remainingHp = targetAfter->getStatus().getHp();
+            resolutions.push_back(resolution);
         } else if (it->kind() == server::WorldInputKind::Spell) {
+            const Player* targetBefore = findPlayer(it->spell().targetId);
+            const long hpBefore = targetBefore->getStatus().getHp();
+            const float before[4] = {
+                fieldEther.value(world::EtherAttribute::Fire),
+                fieldEther.value(world::EtherAttribute::Water),
+                fieldEther.value(world::EtherAttribute::Earth),
+                fieldEther.value(world::EtherAttribute::Air)};
+            world::EtherAttribute spellAttribute = world::EtherAttribute::Fire;
+            fieldEther.attributeForElement(it->spell().element, spellAttribute);
+            const float effectivePower =
+                it->spell().power * fieldEther.conductivity(spellAttribute);
             std::string error;
             if (!applySpell(it->spell(), error)) return false;
+            const Player* targetAfter = findPlayer(it->spell().targetId);
+            server::CombatResolution resolution;
+            resolution.spell = true;
+            resolution.inputSequence = it->sequence();
+            resolution.actorId = it->spell().casterId;
+            resolution.targetId = it->spell().targetId;
+            resolution.element = it->spell().element;
+            resolution.basePower = it->spell().power;
+            resolution.damage = hpBefore - targetAfter->getStatus().getHp();
+            resolution.effectivePower = effectivePower;
+            resolution.remainingHp = targetAfter->getStatus().getHp();
+            const float after[4] = {
+                fieldEther.value(world::EtherAttribute::Fire),
+                fieldEther.value(world::EtherAttribute::Water),
+                fieldEther.value(world::EtherAttribute::Earth),
+                fieldEther.value(world::EtherAttribute::Air)};
+            for (size_t i = 0; i < 4; ++i) {
+                resolution.etherDelta[i] = after[i] - before[i];
+            }
+            resolutions.push_back(resolution);
         }
     }
     fieldEther.decay();

@@ -1,6 +1,6 @@
 # LISS-0137: 攻撃・魔法の確定結果と原子性
 
-- Status: proposed
+- Status: review
 - Phase: phase-1-red
 - Type: feature + security + determinism
 - Priority: critical
@@ -28,6 +28,10 @@
 - 失敗CommandをクライアントへEvent化するか応答だけにするか
 
 これらはLISS-0134、NPC、クライアント通信の仕様と矛盾しない形で確定する。
+
+## 実装資料
+
+攻撃・魔法の適用後に、実効威力、ダメージ、残HP、魔法のエーテル差分を`combatResult`／`spellResult` EventとしてWorldUpdateへ追加した。入力Eventと結果Eventを分離し、input sequenceを結果へ保持する。MP、クールダウン、NPC対象、完全なトランザクション巻き戻しは後続スライスで扱う。テスト・ビルドは実行していない。
 
 ---
 

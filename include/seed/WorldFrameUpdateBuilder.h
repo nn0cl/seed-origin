@@ -11,6 +11,8 @@
 
 namespace server {
 
+struct CombatResolution;
+
 class WorldFrameUpdateBuilder {
 public:
     WorldFrameUpdateBuilder();
@@ -24,6 +26,10 @@ public:
     bool appendHazard(uint64_t worldTick, float severity, float instability,
                       std::vector<network::WorldUpdate>& updates,
                       std::string& error);
+    bool appendCombatResolution(uint64_t worldTick,
+                                const CombatResolution& resolution,
+                                std::vector<network::WorldUpdate>& updates,
+                                std::string& error);
     uint64_t nextSequence() const;
 
 private:

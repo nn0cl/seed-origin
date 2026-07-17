@@ -88,6 +88,7 @@ add_executable(seed_tests
     tests/WorldInputTickTest.cpp
     tests/CombatCommandHandlerTest.cpp
     tests/ChatCommandHandlerTest.cpp
+    tests/CombatResolutionEventTest.cpp
     tests/EnvironmentEtherTest.cpp
     tests/WorldSnapshotBuilderTest.cpp
     tests/ClientWorldSnapshotApplierTest.cpp

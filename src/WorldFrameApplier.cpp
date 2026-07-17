@@ -100,10 +100,19 @@ bool WorldFrameApplier::apply(const WorldFrameInputs& frame,
         }
     }
     if (!updateBuilder.build(frame, updates, error)) return false;
-    if (!field.processInputs(frame.inputs)) {
+    std::vector<CombatResolution> resolutions;
+    if (!field.processInputs(frame.inputs, resolutions)) {
         updates.clear();
         error = "world input could not be applied in the field";
         return false;
+    }
+    for (std::vector<CombatResolution>::const_iterator it = resolutions.begin();
+         it != resolutions.end(); ++it) {
+        if (!updateBuilder.appendCombatResolution(frame.worldTick, *it,
+                                                   updates, error)) {
+            updates.clear();
+            return false;
+        }
     }
     if (field.environmentEther().hasAdverseEffect() &&
         !updateBuilder.appendHazard(frame.worldTick,

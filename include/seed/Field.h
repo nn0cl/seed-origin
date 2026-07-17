@@ -12,6 +12,7 @@
 #include <list>
 #include <map>
 #include <stdint.h>
+#include <string>
 #include <vector>
 
 #include "Position.h"
@@ -19,7 +20,27 @@
 #include "Action.h"
 #include "EnvironmentEther.h"
 
-namespace server { struct WorldInput; }
+namespace server {
+struct WorldInput;
+struct CombatIntent;
+struct SpellIntent;
+struct CombatResolution {
+    bool spell;
+    uint64_t inputSequence;
+    int64_t actorId;
+    int64_t targetId;
+    std::string element;
+    float basePower;
+    float effectivePower;
+    long damage;
+    long remainingHp;
+    float etherDelta[4];
+    CombatResolution()
+        : spell(false), inputSequence(0), actorId(0), targetId(0), element(),
+          basePower(0.0f), effectivePower(0.0f), damage(0), remainingHp(0),
+          etherDelta{0.0f, 0.0f, 0.0f, 0.0f} {}
+};
+}
 
 class Field {
 private:
@@ -48,6 +69,8 @@ public:
     float environmentHazard() const;
     void processFrame();
     bool processInputs(const std::vector<server::WorldInput>& inputs);
+    bool processInputs(const std::vector<server::WorldInput>& inputs,
+                       std::vector<server::CombatResolution>& resolutions);
     
     void putPositionQueue(Position position);
     void putActionQueue(Action action);

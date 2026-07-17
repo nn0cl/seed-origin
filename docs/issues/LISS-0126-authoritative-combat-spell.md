@@ -24,7 +24,7 @@
 
 ## 実装資料
 
-`ServerCommandDispatcher`へAttack／CastSpellを接続した。アクティブな匿名セッションだけがCombatCommandHandlerを通じてWorldInputQueueへ投入でき、クライアント申告の別内部IDは拒否する。結果Eventの原子性、クールダウン、MP、NPC対象は後続スライスで扱う。テスト・ビルドは実行していない。
+`ServerCommandDispatcher`へAttack／CastSpellを接続した。アクティブな匿名セッションだけがCombatCommandHandlerを通じてWorldInputQueueへ投入でき、クライアント申告の別内部IDは拒否する。結果Eventの基礎はLISS-0137で追加した。完全な原子性、クールダウン、MP、NPC対象は後続スライスで扱う。テスト・ビルドは実行していない。
 
 ## English
 

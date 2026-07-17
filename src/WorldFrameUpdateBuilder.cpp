@@ -1,4 +1,5 @@
 #include "WorldFrameUpdateBuilder.h"
+#include "Field.h"
 
 #include <cmath>
 #include <limits>
@@ -90,6 +91,33 @@ bool WorldFrameUpdateBuilder::appendHazard(
     std::ostringstream payload;
     payload << "etherHazard=severity:" << severity
             << ";instability:" << instability;
+    return appendEvent(worldTick, payload.str(), updates, error);
+}
+
+bool WorldFrameUpdateBuilder::appendCombatResolution(
+    uint64_t worldTick, const CombatResolution& resolution,
+    std::vector<network::WorldUpdate>& updates, std::string& error) {
+    std::ostringstream payload;
+    if (!resolution.spell) {
+        payload << "combatResult=attacker:" << resolution.actorId
+                << ";target:" << resolution.targetId
+                << ";damage:" << resolution.damage
+                << ";remainingHp:" << resolution.remainingHp
+                << ";inputSequence:" << resolution.inputSequence;
+    } else {
+        payload << "spellResult=caster:" << resolution.actorId
+                << ";target:" << resolution.targetId
+                << ";element:" << resolution.element
+                << ";basePower:" << resolution.basePower
+                << ";effectivePower:" << resolution.effectivePower
+                << ";damage:" << resolution.damage
+                << ";remainingHp:" << resolution.remainingHp
+                << ";etherDelta:fire=" << resolution.etherDelta[0]
+                << ",water=" << resolution.etherDelta[1]
+                << ",earth=" << resolution.etherDelta[2]
+                << ",air=" << resolution.etherDelta[3]
+                << ";inputSequence:" << resolution.inputSequence;
+    }
     return appendEvent(worldTick, payload.str(), updates, error);
 }
 
