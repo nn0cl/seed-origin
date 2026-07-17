@@ -41,4 +41,15 @@ void rejects_invalid_actions() {
     assert(queue.pendingCount() == 0);
 }
 
+void rejects_sequence_exhaustion_before_overflow() {
+    ActionQueue queue;
+    const Status status;
+    Player player;
+    const Action action(2, &player, nullptr, status);
+    for (std::size_t i = 0; i < ActionQueue::MAX_PENDING_ACTIONS; ++i) {
+        assert(queue.enqueue(action));
+    }
+    assert(!queue.enqueue(action));
+}
+
 } // namespace action_queue_tests

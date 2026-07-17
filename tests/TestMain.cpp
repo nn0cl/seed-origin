@@ -8,6 +8,7 @@ namespace action_queue_tests {
 void assigns_arrival_sequence_and_preserves_order();
 void arrivals_after_frame_cutover_are_deferred();
 void rejects_invalid_actions();
+void rejects_sequence_exhaustion_before_overflow();
 }
 
 namespace server_tick_tests {
@@ -236,6 +237,7 @@ int main() {
     action_queue_tests::assigns_arrival_sequence_and_preserves_order();
     action_queue_tests::arrivals_after_frame_cutover_are_deferred();
     action_queue_tests::rejects_invalid_actions();
+    action_queue_tests::rejects_sequence_exhaustion_before_overflow();
     server_tick_tests::advances_fixed_logical_frames_and_cuts_queue();
     world_update_tests::accepts_snapshot_and_event_envelopes();
     world_update_tests::rejects_invalid_update_identity();

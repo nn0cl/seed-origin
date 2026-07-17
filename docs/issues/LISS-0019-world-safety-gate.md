@@ -4,8 +4,8 @@
 
 - Local issue ID: LISS-0019
 - GitHub issue: 未作成
-- Status: in_progress
-- Phase: phase-0-design
+- Status: review
+- Phase: phase-3-refactor
 - Type: safety + refactor
 - Priority: critical
 - Initial planning size: L
@@ -30,7 +30,7 @@ world移行前に、既存C++の所有権、コピー・代入、ポインタ公
 
 ## Active Slice
 
-- LISS-0034: Player所有権・コピー代入安全性
+- LISS-0034: Player所有権・コピー代入安全性（review）
 
 ## Dependencies
 
@@ -74,3 +74,29 @@ world移行前に、既存C++の所有権、コピー・代入、ポインタ公
 - Estimation basis: raw owning pointers, implicit assignment, container copies, legacy binary buffers
 - Assumptions: no world implementation or tool execution before gate approval
 - Confidence: medium
+
+## Ownership contract
+
+| Type | Stored state | Ownership rule | External mutation |
+| --- | --- | --- | --- |
+| `Player` | `Status`, `list<Buff>`, `Position`, name array | value ownership; copy/assignment duplicate state | through explicit Player mutators only |
+| `Buff` | name, lifetime, start time, `Status` | value ownership | no pointer is exposed |
+| `Position` | coordinates and IDs | value type; copy constructor takes `const Position&` | no raw pointer copy API |
+| `Status` | HP and MP | value type with bounded arithmetic | through validated mutators |
+| `Action` | copied Player values and Status | constructor reads non-owning `const Player*`; action stores copies | getters return `const` references, never deletable pointers |
+| `ActionQueue` | `deque<QueuedAction>` and mutex | queue owns value entries | callers receive copied frame values |
+| `SeedBinary` | `map<int, Binary>` | map owns initialized fixed-size blocks | input/output buffers are caller-owned and size-checked |
+
+The nullable Player pointers in `Action` are input references only and are never
+stored. `Player` and `Position` no longer provide nullable pointer-copy APIs.
+`ActionQueue` rejects sequence-number exhaustion before incrementing, preventing
+wraparound that could duplicate frame ordering.
+
+## Safety slice record
+
+- Removed the nullable `Player(Player*)` copy constructor.
+- Replaced `Position(const Position*)` with `Position(const Position&)`.
+- Replaced mutable `Action` Player/Status getters with const-reference getters.
+- Added the `ActionQueue` sequence exhaustion guard and compile-only regression test.
+- C++20 warning-enabled build and `git diff --check` are the only verification;
+  tests, executables, and server runtime remain unexecuted.

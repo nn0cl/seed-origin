@@ -21,7 +21,7 @@ private:
 
 public:
     Position(int64_t playerId, float x, float y, float z);
-    Position(const Position* position);
+    Position(const Position& position);
     ~Position() = default;
     void setPosition(const float x, const float y, const float z);
     void movePosition(const float x, const float y, const float z);

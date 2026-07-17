@@ -11,9 +11,6 @@
 Player::Player()
     : id(0), status(10, 10), position(1, 0.0f, 0.0f, 0.0f) {}
 
-Player::Player(Player* player)
-    : Player(player ? *player : Player()) {}
-
 Player::Player(const Player& player)
     : id(player.id), name{}, status(player.status), buffs(player.buffs),
       position(player.position) {}

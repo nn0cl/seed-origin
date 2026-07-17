@@ -8,7 +8,8 @@
 
 #include "Action.h"
 
-Action::Action(int actionType,Player* playerFrom,Player* playerTo,const Status status)
+Action::Action(int actionType, const Player* playerFrom, const Player* playerTo,
+               const Status status)
     : actionType(actionType),
       playerFrom(playerFrom ? *playerFrom : Player()),
       playerTo(playerTo ? *playerTo : Player()),
@@ -29,17 +30,17 @@ Action::isValid() const{
     return valid;
 }
 
-Player*
-Action::getPlayerFrom(){
-    return &this->playerFrom;
-};
+const Player&
+Action::getPlayerFrom() const {
+    return this->playerFrom;
+}
 
-Player*
-Action::getPlayerTo(){
-    return &this->playerTo;
-};
+const Player&
+Action::getPlayerTo() const {
+    return this->playerTo;
+}
 
-Status&
-Action::getStatus(){
+const Status&
+Action::getStatus() const {
     return status;
-};
+}

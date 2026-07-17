@@ -233,7 +233,7 @@ void Field::processFrame(uint64_t worldTick){
             case 1:
                 {
                     std::map<int64_t,Player>::iterator playerItt =
-                        playerList.find(actionItt->getPlayerTo()->getPlayerId());
+                        playerList.find(actionItt->getPlayerTo().getPlayerId());
                     if (playerItt != playerList.end()) {
                         playerItt->second.getStatus().gainHp(actionItt->getStatus().getHp());
                         playerItt->second.getStatus().gainMp(actionItt->getStatus().getMp());
@@ -244,7 +244,7 @@ void Field::processFrame(uint64_t worldTick){
             case 3:
                 {
                     std::map<int64_t,Player>::iterator playerItt =
-                        playerList.find(actionItt->getPlayerFrom()->getPlayerId());
+                        playerList.find(actionItt->getPlayerFrom().getPlayerId());
                     if (playerItt != playerList.end()) {
                         playerItt->second.getStatus().gainHp(actionItt->getStatus().getHp());
                         playerItt->second.getStatus().gainMp(actionItt->getStatus().getMp());
@@ -543,7 +543,7 @@ void Field::applyAction(Action action) {
             break;
         case 1: {
             std::map<int64_t,Player>::iterator playerItt =
-                playerList.find(action.getPlayerTo()->getPlayerId());
+                playerList.find(action.getPlayerTo().getPlayerId());
             if (playerItt != playerList.end()) {
                 playerItt->second.getStatus().gainHp(action.getStatus().getHp());
                 playerItt->second.getStatus().gainMp(action.getStatus().getMp());
@@ -553,7 +553,7 @@ void Field::applyAction(Action action) {
         case 2:
         case 3: {
             std::map<int64_t,Player>::iterator playerItt =
-                playerList.find(action.getPlayerFrom()->getPlayerId());
+                playerList.find(action.getPlayerFrom().getPlayerId());
             if (playerItt != playerList.end()) {
                 playerItt->second.getStatus().gainHp(action.getStatus().getHp());
                 playerItt->second.getStatus().gainMp(action.getStatus().getMp());

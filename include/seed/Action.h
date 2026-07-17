@@ -20,13 +20,14 @@ private:
     Status status;
     bool valid;
 public:
-    Action(int actionType,Player* playerFrom,Player* playerTo,const Status status);
+    Action(int actionType, const Player* playerFrom, const Player* playerTo,
+           const Status status);
     ~Action();
     int getActionType() const;
     bool isValid() const;
-    Player* getPlayerFrom();
-    Player* getPlayerTo();
-    Status& getStatus();
+    const Player& getPlayerFrom() const;
+    const Player& getPlayerTo() const;
+    const Status& getStatus() const;
 };
 
 

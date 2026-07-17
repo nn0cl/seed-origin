@@ -12,14 +12,9 @@ Position::Position(int64_t playerId, float x, float y, float z)
     : x(x), y(y), z(z), mapId(0), playerId(playerId) {
 };
 
-Position::Position(const Position* position)
-    : x(0), y(0), z(0), mapId(0), playerId(0) {
-    if (position == nullptr) return;
-    this->playerId = position->getPlayerId();
-    this->x = position->getX();
-    this->y = position->getY();
-    this->z = position->getZ();
-}
+Position::Position(const Position& position)
+    : x(position.getX()), y(position.getY()), z(position.getZ()), mapId(0),
+      playerId(position.getPlayerId()) {}
 
 void
 Position::setPosition(const float newX, const float newY, const float newZ){
