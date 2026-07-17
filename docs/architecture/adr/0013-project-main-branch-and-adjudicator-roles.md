@@ -44,3 +44,4 @@ standards for humans and AI agents from unequal decision authority.
 - `docs/collaboration/branch-commit-pr-discipline.md`
 - `AGENTS.md`
 - `CONTRIBUTING.md`
+- `docs/architecture/adr/0014-adjudicator-and-developer-role-model.md`

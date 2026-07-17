@@ -101,6 +101,7 @@ through the versioned network protocol rather than depend on World internals.
 - `adr/0010-ai-failure-recovery-and-runner-cli-contract.md`
 - `adr/0011-external-resource-adoption-contract.md`
 - `adr/0013-project-main-branch-and-adjudicator-roles.md`
+- `adr/0014-adjudicator-and-developer-role-model.md`
 
 ## Remaining Technology Evaluation
 
