@@ -28,4 +28,4 @@
 
 ## 次のIssue
 
-クライアント側にSnapshot適用状態とhazard EffectQueueを追加し、WorldUpdate同期制御へ接続する。
+クライアント側のSnapshot適用状態を追加する（LISS-0118）。hazard EventのEffectQueue変換はLISS-0119で扱う。

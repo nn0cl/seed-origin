@@ -165,6 +165,11 @@ void builds_environment_snapshot();
 void rejects_negative_hazard();
 }
 
+namespace client_snapshot_tests {
+void applies_environment_snapshot_and_resets_sequence();
+void rejects_incomplete_or_invalid_environment_snapshot();
+}
+
 namespace server_command_dispatcher_tests {
 void accepts_login();
 void rejects_unimplemented_command();
@@ -257,6 +262,8 @@ int main() {
     environment_ether_tests::applies_opposing_attribute_reaction_and_reports_instability();
     world_snapshot_builder_tests::builds_environment_snapshot();
     world_snapshot_builder_tests::rejects_negative_hazard();
+    client_snapshot_tests::applies_environment_snapshot_and_resets_sequence();
+    client_snapshot_tests::rejects_incomplete_or_invalid_environment_snapshot();
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();
