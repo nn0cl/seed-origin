@@ -13,6 +13,9 @@
 Spellは現在値の伝導率で威力補正され、使用属性の環境エーテルを増加させる。各20FPS
 World frameの処理後に全属性を減衰させる。
 
+属性の意味、対属性、魔法の影響順序、v1で採用しない循環伝播については
+[`docs/architecture/ether-rules.md`](../architecture/ether-rules.md)を正とする。
+
 ## 現行仕様
 
 - 属性: fire / water / earth / air

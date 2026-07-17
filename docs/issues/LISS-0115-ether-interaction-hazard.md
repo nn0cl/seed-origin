@@ -12,6 +12,9 @@
 Spellで増加する属性エーテルが対属性へ反作用し、環境全体の偏りから不安定度と副作用
 強度を算出できるようにする。副作用の具体的な対象変更は別のWorld仕様で決める。
 
+属性の意味と未採用の循環伝播を含む全体ルールは
+[`docs/architecture/ether-rules.md`](../architecture/ether-rules.md)に集約する。
+
 ## 現行仕様
 
 - fire↔water、earth↔airを対属性とする。
