@@ -1,6 +1,7 @@
 #include "ClientSession.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -11,7 +12,14 @@ static const size_t READ_BUFFER_SIZE = 4096;
 }
 
 ClientSession::ClientSession(int clientSocket)
-    : clientSocket(clientSocket), accumulator() {}
+    : clientSocket(clientSocket), accumulator(), outboundFrames() {
+    if (this->clientSocket < 0) return;
+    const int flags = fcntl(this->clientSocket, F_GETFL, 0);
+    if (flags < 0 || fcntl(this->clientSocket, F_SETFL, flags | O_NONBLOCK) != 0) {
+        ::close(this->clientSocket);
+        this->clientSocket = -1;
+    }
+}
 
 ClientSession::~ClientSession() {
     close();
@@ -44,6 +52,39 @@ ReceiveStatus ClientSession::receive(std::vector<network::NetworkCommand>& comma
         return ReceiveStatus::Failed;
     }
     return commands.empty() ? ReceiveStatus::NoData : ReceiveStatus::Commands;
+}
+
+bool ClientSession::enqueueFrame(const std::vector<uint8_t>& frame, std::string& error) {
+    if (!isOpen()) {
+        error = "client session is closed";
+        return false;
+    }
+    return outboundFrames.enqueue(frame, error);
+}
+
+SendStatus ClientSession::flushOutbound(std::string& error) {
+    if (!isOpen()) {
+        error = "client session is closed";
+        return SendStatus::Closed;
+    }
+
+    std::vector<uint8_t> frame;
+    if (!outboundFrames.front(frame)) return SendStatus::NoData;
+    const ssize_t sent = ::send(clientSocket, frame.data(), frame.size(), 0);
+    if (sent < 0) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) return SendStatus::NoData;
+        error = "client socket write failed";
+        close();
+        return SendStatus::Failed;
+    }
+    if (sent == 0) return SendStatus::NoData;
+    if (!outboundFrames.consumeFront(static_cast<size_t>(sent))) {
+        error = "outbound frame progress is invalid";
+        close();
+        return SendStatus::Failed;
+    }
+    error.clear();
+    return SendStatus::Sent;
 }
 
 bool ClientSession::close() {

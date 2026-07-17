@@ -41,6 +41,7 @@ void reports_no_pending_client_without_blocking();
 
 namespace client_session_tests {
 void receives_complete_commands_and_closes_peer_cleanly();
+void flushes_one_queued_response_to_peer();
 }
 
 void playerOwnershipCopyAssignmentTest();
@@ -100,6 +101,7 @@ namespace outbound_frame_queue_tests {
 void preserves_fifo_order();
 void rejects_invalid_frame_without_mutation();
 void rejects_frame_after_capacity_without_mutation();
+void consumes_partial_front_without_reordering();
 }
 
 namespace server_command_dispatcher_tests {
@@ -131,6 +133,7 @@ int main() {
     connection_tests::close_is_idempotent();
     connection_tests::reports_no_pending_client_without_blocking();
     client_session_tests::receives_complete_commands_and_closes_peer_cleanly();
+    client_session_tests::flushes_one_queued_response_to_peer();
     player_ownership_tests::playerOwnershipCopyAssignmentTest();
     player_ownership_tests::playerOwnershipContainerUpdateTest();
     seed_binary_tests::rejects_out_of_range_input();
@@ -158,6 +161,7 @@ int main() {
     outbound_frame_queue_tests::preserves_fifo_order();
     outbound_frame_queue_tests::rejects_invalid_frame_without_mutation();
     outbound_frame_queue_tests::rejects_frame_after_capacity_without_mutation();
+    outbound_frame_queue_tests::consumes_partial_front_without_reordering();
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();

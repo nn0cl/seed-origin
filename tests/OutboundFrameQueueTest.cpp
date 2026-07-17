@@ -41,4 +41,19 @@ void rejects_frame_after_capacity_without_mutation() {
     assert(queue.size() == server::MAX_OUTBOUND_FRAMES);
 }
 
+void consumes_partial_front_without_reordering() {
+    server::OutboundFrameQueue queue;
+    std::string error;
+    assert(queue.enqueue(frameWithByte(3), error));
+    assert(queue.enqueue(frameWithByte(4), error));
+    assert(queue.consumeFront(2));
+    std::vector<uint8_t> remaining;
+    assert(queue.front(remaining));
+    assert(remaining.size() == network::FRAME_HEADER_SIZE - 2);
+    assert(remaining[0] == 3);
+    assert(queue.consumeFront(remaining.size()));
+    assert(queue.front(remaining));
+    assert(remaining[0] == 4);
+}
+
 } // namespace outbound_frame_queue_tests

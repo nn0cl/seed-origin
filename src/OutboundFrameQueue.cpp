@@ -18,12 +18,26 @@ bool OutboundFrameQueue::enqueue(const std::vector<uint8_t>& frame, std::string&
 }
 
 bool OutboundFrameQueue::pop(std::vector<uint8_t>& frame) {
+    if (!front(frame)) return false;
+    return consumeFront(frame.size());
+}
+
+bool OutboundFrameQueue::front(std::vector<uint8_t>& frame) const {
     if (frames.empty()) {
         frame.clear();
         return false;
     }
     frame = frames.front();
-    frames.pop_front();
+    return true;
+}
+
+bool OutboundFrameQueue::consumeFront(size_t bytes) {
+    if (frames.empty() || bytes > frames.front().size()) return false;
+    if (bytes == frames.front().size()) {
+        frames.pop_front();
+        return true;
+    }
+    frames.front().erase(frames.front().begin(), frames.front().begin() + bytes);
     return true;
 }
 

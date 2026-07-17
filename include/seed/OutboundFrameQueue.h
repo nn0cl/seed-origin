@@ -17,6 +17,8 @@ static const size_t MAX_OUTBOUND_FRAME_SIZE = network::FRAME_HEADER_SIZE + 16384
 class OutboundFrameQueue {
 public:
     bool enqueue(const std::vector<uint8_t>& frame, std::string& error);
+    bool front(std::vector<uint8_t>& frame) const;
+    bool consumeFront(size_t bytes);
     bool pop(std::vector<uint8_t>& frame);
     void clear();
     size_t size() const;
