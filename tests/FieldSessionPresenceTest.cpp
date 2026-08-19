@@ -317,6 +317,77 @@ void player_cannot_rename_operator_can() {
     clearFieldPlayers();
 }
 
+void operator_rename_releases_previous_claimed_name() {
+    clearFieldPlayers();
+    const ClaimedIdPlayerIdPort port;
+    server::FieldSessionPresence::usePlayerIdPort(&port);
+    assert(server::FieldSessionPresence::operatorSetPlayerName(9001, "Hero"));
+    assert(server::FieldSessionPresence::placeAfterLogin(21, "user-a"));
+    Field* field = Field::getInstance();
+    const Player* original = field->findPlayer(21);
+    assert(original != 0);
+    const int64_t gameplayId = original->getPlayerId();
+    const int64_t authPlayerId = original->getAuthPlayerId();
+    assert(authPlayerId == 9001);
+    assert(!server::FieldSessionPresence::playerSetPlayerName(21, "Villain"));
+    assert(original->getPlayerName() == "Hero");
+    assert(server::FieldSessionPresence::operatorSetPlayerName(9001, "Mage"));
+    assert(original->getPlayerName() == "Mage");
+    assert(original->getPlayerId() == gameplayId);
+    assert(original->getAuthPlayerId() == authPlayerId);
+    assert(!server::FieldSessionPresence::operatorSetPlayerName(9001, ""));
+    assert(!server::FieldSessionPresence::operatorSetPlayerName(9001, "   "));
+    assert(original->getPlayerName() == "Mage");
+    assert(!server::FieldSessionPresence::operatorSetPlayerName(9002, "Mage"));
+    server::LoginFieldSpawnSettings settings;
+    settings.playerName = "Hero";
+    assert(server::FieldSessionPresence::placeAfterLogin(22, "user-b", settings));
+    assert(field->findPlayer(22) != 0);
+    assert(field->findPlayer(22)->getPlayerName() == "Hero");
+    assert(field->findPlayer(21)->getPlayerName() == "Mage");
+    assert(field->findPlayer(21)->getPlayerId() == gameplayId);
+    clearFieldPlayers();
+}
+
+void operator_rename_after_logout_releases_previous_claim() {
+    clearFieldPlayers();
+    const ClaimedIdPlayerIdPort port;
+    server::FieldSessionPresence::usePlayerIdPort(&port);
+    assert(server::FieldSessionPresence::operatorSetPlayerName(9001, "Hero"));
+    assert(server::FieldSessionPresence::placeAfterLogin(21, "user-a"));
+    Field* field = Field::getInstance();
+    const int64_t gameplayId = field->findPlayer(21)->getPlayerId();
+    assert(server::FieldSessionPresence::removeAfterLogout(21));
+    assert(Field::unsetPlayer(
+        Player(gameplayId, Status(), Position(gameplayId, 0, 0, 0))));
+    assert(!field->hasPlayer(gameplayId));
+    assert(server::FieldSessionPresence::operatorSetPlayerName(9001, "Mage"));
+    server::LoginFieldSpawnSettings settings;
+    settings.playerName = "Hero";
+    assert(server::FieldSessionPresence::placeAfterLogin(22, "user-b", settings));
+    assert(field->findPlayer(22)->getPlayerName() == "Hero");
+    assert(!server::FieldSessionPresence::operatorSetPlayerName(9002, "Mage"));
+    clearFieldPlayers();
+}
+
+void failed_operator_rename_keeps_previous_claim() {
+    clearFieldPlayers();
+    const ClaimedIdPlayerIdPort port;
+    server::FieldSessionPresence::usePlayerIdPort(&port);
+    assert(server::FieldSessionPresence::operatorSetPlayerName(9001, "Hero"));
+    assert(server::FieldSessionPresence::placeAfterLogin(21, "user-a"));
+    server::LoginFieldSpawnSettings settings;
+    settings.playerName = "Mage";
+    assert(server::FieldSessionPresence::placeAfterLogin(22, "user-b", settings));
+    assert(Field::getInstance()->findPlayer(22)->getPlayerName() == "Mage");
+    assert(!server::FieldSessionPresence::operatorSetPlayerName(9001, "Mage"));
+    assert(Field::getInstance()->findPlayer(21)->getPlayerName() == "Hero");
+    assert(Field::getInstance()->findPlayer(22)->getPlayerName() == "Mage");
+    assert(!server::FieldSessionPresence::operatorSetPlayerName(9002, "Hero"));
+    assert(Field::getInstance()->findPlayer(21)->getPlayerName() == "Hero");
+    clearFieldPlayers();
+}
+
 void duplicate_player_name_is_rejected() {
     clearFieldPlayers();
     const ClaimedIdPlayerIdPort port;

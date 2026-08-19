@@ -28,6 +28,12 @@ While rendering, the client shall keep prediction (logical) state distinct
 from render state. Small pose error shall be smoothed over 100–200 ms. Large
 error or a snapshot/teleport baseline shall snap.
 
+When an operator assigns a new unique PlayerName to an auth PlayerId, the
+previous trimmed name shall be released from the claimed-name registry and
+the new trimmed name shall be exclusive to that auth PlayerId. Player-path
+rename shall remain rejected. Empty or whitespace-only names shall remain
+rejected. Auth PlayerId and gameplay id shall not change.
+
 ## Gherkin
 
 ```gherkin
@@ -193,6 +199,31 @@ Scenario: Player cannot rename
   When an operator assigns Mage
   Then the name is Mage
 
+Scenario: Operator rename releases the previous claimed name
+  Given session 21 is placed with PlayerName Hero
+  When an operator assigns Mage to the same auth PlayerId
+  Then the name is Mage
+  And gameplay id and auth PlayerId are unchanged
+  And a player-path rename still fails
+  When session 22 is placed with PlayerName Hero for a different auth PlayerId
+  Then placement succeeds
+  And Mage remains exclusive to the original auth PlayerId
+
+Scenario: Operator rename after logout still releases the previous claim
+  Given session 21 was placed with PlayerName Hero
+  And the session logs out
+  And the Field entity is unset
+  When an operator assigns Mage to that auth PlayerId
+  Then a different auth PlayerId may be placed as Hero
+  And Mage remains exclusive
+
+Scenario: Failed operator rename keeps the previous claim
+  Given session 21 is named Hero and another auth already claims Mage
+  When an operator assigns Mage to session 21's auth PlayerId
+  Then the assignment fails
+  And session 21 remains named Hero
+  And Hero stays claimed
+
 Scenario: Reconnect keeps gameplay id and auth PlayerId
   Given a placed player with auth PlayerId 9001 and gameplay id G
   When a new session logs in for the same auth PlayerId
@@ -279,7 +310,8 @@ Scenario: Snapshot after RequestSnapshot resumes Events
   session does. Login claimedId is not a display name. Whitespace-only
   names are empty after ASCII trim. Uniqueness is trim-then-exact-match
   and survives logout and Field unset via an in-memory claimed-name
-  registry. Unicode and case-fold normalization stay out of scope.
+  registry. An operator rename releases the previous claim and monopolizes
+  the new name. Unicode and case-fold normalization stay out of scope.
 
 ## Move payload
 
@@ -334,8 +366,11 @@ Login places a Field entity and binds the connection session to it.
   Operators assign names (spawn settings, test stub, or
   `operatorSetPlayerName`). No player rename command.
   Uniqueness is a claimed-name registry, not Field occupancy: logout or
-  `unsetPlayer` does not release the name. Early storage is in-memory on
-  the world server. Auth persistence is LISS-0146–0150.
+  `unsetPlayer` does not release the name. Operator rename of the same
+  auth PlayerId does: the previous trimmed name is unclaimed and the new
+  trimmed name is exclusive. Players still cannot rename themselves.
+  Early storage is in-memory on the world server. Auth persistence is
+  LISS-0146–0150.
 
 Early spawn defaults, when settings are unset: pose `(0,0,0)`, HP/MP `10,10`.
 Spawn HP/MP clamp to settings max (early `1024,1024`). `Status::gainHp` still

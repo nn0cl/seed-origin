@@ -115,6 +115,7 @@ bool FieldSessionPresence::operatorSetPlayerName(int64_t authPlayerId,
     Player* existing = field->findPlayerByAuthId(authPlayerId);
     if (nameTakenOnFieldByOther(field, trimmed, existing)) return false;
     if (existing != 0 && !existing->setPlayerName(trimmed)) return false;
+    // One claim per auth PlayerId: a successful assign releases the previous name.
     operatorNamesByAuthId[authPlayerId] = trimmed;
     return true;
 }

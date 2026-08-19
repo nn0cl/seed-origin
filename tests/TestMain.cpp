@@ -54,6 +54,9 @@ void whitespace_only_player_name_placement_is_rejected();
 void claimed_player_name_survives_logout_and_field_unset();
 void trimmed_player_name_collides_with_existing_claim();
 void player_cannot_rename_operator_can();
+void operator_rename_releases_previous_claimed_name();
+void operator_rename_after_logout_releases_previous_claim();
+void failed_operator_rename_keeps_previous_claim();
 }
 
 namespace connection_tests {
@@ -424,6 +427,9 @@ int main() {
     field_session_presence_tests::claimed_player_name_survives_logout_and_field_unset();
     field_session_presence_tests::trimmed_player_name_collides_with_existing_claim();
     field_session_presence_tests::player_cannot_rename_operator_can();
+    field_session_presence_tests::operator_rename_releases_previous_claimed_name();
+    field_session_presence_tests::operator_rename_after_logout_releases_previous_claim();
+    field_session_presence_tests::failed_operator_rename_keeps_previous_claim();
     request_snapshot_command_tests::validates_empty_payload_request_snapshot_on_protocol_v1();
     request_snapshot_command_tests::client_builds_request_after_sequence_gap_or_reconnect();
     request_snapshot_command_tests::dispatcher_accepts_logged_in_request_and_coalesces_one_snapshot();

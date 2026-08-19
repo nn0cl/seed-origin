@@ -50,6 +50,7 @@ Login 成功後の Field 配置を、設定可能な初期 pose/HP/MP と 4 役�
 - 名前の一意は Field 在籍に依存しない。ログアウトや `unsetPlayer` でも解放しない。
   早期はメモリ上の claimed-name レジストリ。auth 永続帳票は LISS-0146–0150。
 - プレイヤー経路では改名できない。運営の `operatorSetPlayerName`（または spawn 設定）だけが名前を付ける。
+- 運営が同一 auth PlayerId を改名したとき、trim 後の旧名は claimed から外れ、新名がその auth の独占になる。失敗した改名は旧名を残す。
 - ゲーム内ID と認証 PlayerId は再接続でも不変。session だけ更新する。
 - RequestSnapshot ワイヤ Command は必須範囲ではない（LISS-0154）。
 
@@ -72,14 +73,14 @@ Login 成功後の Field 配置を、設定可能な初期 pose/HP/MP と 4 役�
 - 空白のみの名前は空。trim は空判定と一意比較のため。Unicode / case fold はしない。
 - 名前の一意はログアウト後も維持。Field unset でも解放しない。早期はメモリ
   claimed-name レジストリ。
+- 運営改名は旧名をレジストリから外し、新名を独占する。プレイヤー改名は不可。
+  空・空白のみは不可。一意は trim 後完全一致。ID は不変。
 
 ## Ambiguities
 
 - PlayerName の大文字小文字折りたたみと Unicode 正規化。
 - アカウント横断の一意帳票（auth 側）。ポート契約は「名前は一意」とし、
   本物の帳票は LISS-0146–0150 後続。
-- 運営が同一 auth を改名したとき、旧名をレジストリから外すかどうか
-  （早期は現行割当だけを保持し、ログアウトでは外さない）。
 - ゾーン・ログアウト地点・衝突回避スポーン。
 - 運営 UI 全体と権限モデル（早期は関数レベルの operator setter のみ）。
 
@@ -166,6 +167,25 @@ Login 成功後の Field 配置を、設定可能な初期 pose/HP/MP と 4 役�
 - Estimation basis: presence tests, PlayerName trim helper, registry.
 - Assumptions: AIP-0153-003 already committed.
 - Confidence: medium
+
+### AIP-0153-005
+
+- Status: accepted
+- Created by:
+  - Agent/environment: Cursor Auto / Composer
+  - Model as displayed: Composer
+  - Reasoning setting: N/A
+  - N/A reason: Cursor agent display does not expose a separate reasoning slider
+- Created at: 2026-08-20
+- Planning size: M
+- Intended execution route: Feature Path AT-TDD
+- Intended scope: operator rename releases previous claimed name
+- Estimated token range: 8k–20k
+- Estimated token midpoint: 14k
+- Token metric: combined prompt+completion for one execution attempt
+- Estimation basis: presence tests, claimed-name registry, spec/LISS notes.
+- Assumptions: AIP-0153-004 already committed.
+- Confidence: high
 
 ## Work Notes
 
