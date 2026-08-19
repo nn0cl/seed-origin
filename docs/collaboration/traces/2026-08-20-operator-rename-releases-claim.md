@@ -45,6 +45,8 @@ release a current claim. Player rename remains impossible.
 cases (they execute before combat resource tests). The suite later aborted on
 the pre-existing Combat MP 5 vs 4 assert, which this slice did not change.
 
+## Open decisions
+
 - PlayerName case fold / Unicode
 - Zone / logout-location spawn
 - Auth-side name ledger
