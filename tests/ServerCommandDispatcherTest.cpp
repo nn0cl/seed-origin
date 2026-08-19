@@ -19,7 +19,7 @@ void rejects_unimplemented_command() {
     session::SessionRegistry registry;
     server::ServerCommandDispatcher dispatcher(registry);
     const network::NetworkCommand command = {
-        network::CURRENT_PROTOCOL_VERSION, network::CommandType::Move, 0, "1,0,0"};
+        network::CURRENT_PROTOCOL_VERSION, network::CommandType::Disconnect, 0, ""};
 
     const server::CommandDispatchResult result = dispatcher.dispatch(command);
     assert(!result.accepted);
