@@ -76,7 +76,7 @@ Snapshot は公開プレイヤー pose を載せる（完全取得。止まっ�
 player.count=<n>;player.<i>.session=<id>;player.<i>.x=<f>;player.<i>.y=<f>;player.<i>.z=<f>;player.<i>.id=<gameplayId>;player.<i>.name=<name>
 ```
 
-`session` は接続同期用でありゲーム内 UI には出さない。`id` は Attack/CastSpell の `targetId` と同じゲーム内ID。`name` は表示専用（空なら省略してよい）。認証 PlayerId は載せない。
+`session` は接続同期用でありゲーム内 UI には出さない。`id` は Attack/CastSpell の `targetId` と同じゲーム内ID（クライアントのリモート追跡キー）。`name` は表示専用（空なら省略してよい）。認証 PlayerId は載せない。
 
 Login 後の Field 配置（初期 pose/HP/MP、session とゲーム内ID の分離、再接続）は LISS-0153。詳細は `docs/specs/client-side-prediction-v1.md`。
 

@@ -52,6 +52,8 @@ Login 成功後の Field 配置を、設定可能な初期 pose/HP/MP と 4 役�
 - 初期座標・HP/MP は設定可能。早期 (0,0,0) / 10,10。max 未決なら 1024,1024。
 - 切断後に戻るのは元のプレイヤー実体。session は更新。認証 ID は非公開。
 - 操作はゲーム内ID。表示はネームのみ。ネームは重複不可。早期は完全一致。
+- 他クライアントのリモート追跡キーはゲーム内ID（`player.<i>.id`）。
+  session は通信。HUD は PlayerName。認証 PlayerId は公開しない。
 - seed-auth 本体は本 worktree から触らない。発行はポート。早期 stub。
 
 ## Ambiguities
@@ -61,9 +63,9 @@ Login 成功後の Field 配置を、設定可能な初期 pose/HP/MP と 4 役�
 - 空ネームの公開扱い（早期はフィールド省略。複数の無名は衝突しない）。
 - アカウント横断の一意帳票（auth 側）。ポート契約は「名前は一意」とし、
   本物の帳票は LISS-0146–0150 後続。
-- 他クライアントが再接続前後の同一人物を、新しい session の差分／Snapshot
-  の session 入れ替わりだけで見るか、表示名だけで辿るか。公開安定 ID は
-  出さない。
+- 他クライアントは再接続前後の同一人物を Snapshot `player.<i>.id`
+  （ゲーム内ID）で辿る。session は通信。HUD は PlayerName のみ。
+  公開安定 UUID は出さない。
 - ゾーン・ログアウト地点・衝突回避スポーン。
 - Login payload がセッションキーに変わったあと、claimedId を PlayerName
   初期値にできなくなる点（network-protocol-v1 の将来変更）。現状の自己申告
@@ -96,7 +98,28 @@ Login 成功後の Field 配置を、設定可能な初期 pose/HP/MP と 4 役�
 - Assumptions: LISS-0152 temporary origin already on the branch.
 - Confidence: medium
 
+### AIP-0153-002
+
+- Status: accepted
+- Created by:
+  - Agent/environment: Cursor Auto / Composer
+  - Model as displayed: Composer
+  - Reasoning setting as displayed: N/A
+  - N/A reason: Cursor agent display does not expose a separate reasoning slider
+- Created at: 2026-08-20
+- Planning size: M
+- Intended execution route: Feature Path AT-TDD
+- Intended scope: remote store keyed by gameplay id through client apply
+- Estimated token range: 15k–35k
+- Estimated token midpoint: 25k
+- Token metric: combined prompt+completion for one execution attempt
+- Estimation basis: RemotePlayerPoseStore, snapshot applier, receiver tests.
+- Assumptions: spawn/identity split from AIP-0153-001 already committed.
+- Confidence: medium
+
 ## Work Notes
 
 既存 Attack/CastSpell の `targetId` と Field `playerList` キーがゲーム内ID。
 認証 ID は `Player::authPlayerId`。session は `Field` の束縛マップ。
+クライアント `RemotePlayerPoseStore` のキーもゲーム内ID。session は
+movement 差分の引き当て。`RemotePlayerPose::name` が HUD 表示。

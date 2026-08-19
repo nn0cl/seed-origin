@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <map>
+#include <string>
 #include <vector>
 
 #include "LocalMovementPredictor.h"
@@ -12,7 +13,9 @@
 namespace client {
 
 struct RemotePlayerPose {
+    int64_t gameplayId;
     int64_t sessionId;
+    std::string name;
     PredictedPose authority;
     PredictedPose rendered;
 };
@@ -26,12 +29,13 @@ public:
     bool applyAuthoritative(int64_t sessionId, float x, float y, float z,
                             bool snapBaseline);
     void stepRender(float dtSeconds);
-    const RemotePlayerPose* find(int64_t sessionId) const;
+    const RemotePlayerPose* find(int64_t gameplayId) const;
     std::size_t count() const;
     void clear();
 
 private:
     std::map<int64_t, RemotePlayerPose> poses;
+    std::map<int64_t, int64_t> sessionToGameplayId;
     std::map<int64_t, float> correctionSeconds;
 
     void correctRender(RemotePlayerPose& pose, float& remaining,

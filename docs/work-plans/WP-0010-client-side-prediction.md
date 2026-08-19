@@ -29,7 +29,9 @@ movement without weakening the authoritative 20 Hz simulation.
 
 ## Current Next Issue
 
-- Issue: LISS-0153 (CSP spawn) or remaining LISS-0128 (timeout/ops/UI)
+- Issue: remaining LISS-0153 ambiguities (name normalization, rename,
+  empty-name publication, auth-side name ledger, zone spawn) or remaining
+  LISS-0128 (timeout/ops/UI)
 - Reason the I/O slice is unblocked: LISS-0154 RequestSnapshot is on this
   branch and the reconnect socket path now sends that Command after Login.
 - Adjudicator approval (2026-08-17): owner-only movementAck; protocol version
@@ -42,7 +44,9 @@ movement without weakening the authoritative 20 Hz simulation.
   owner's copy of that sequence. 20 Hz is tick + delta cadence, not a
   full-Snapshot rate. RequestSnapshot is LISS-0154 (type 7, empty
   payload, at most one Snapshot per tick). Login Field placement uses
-  configurable spawn and the four identity roles in LISS-0153.
+  LISS-0153 (configurable spawn, four identity roles, unique PlayerName).
+  Observers key remotes by gameplay id; session is communication; HUD uses
+  PlayerName.
   No new ADR: operational confirmation of the existing sequence column.
 
 ## Risks

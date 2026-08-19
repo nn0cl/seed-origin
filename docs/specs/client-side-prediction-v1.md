@@ -94,29 +94,44 @@ Scenario: Foreign movement ack does not drive local prediction
 
 Scenario: Foreign public pose is applied without owner ack
   Given two logged-in sessions A and B
+  And B has applied a Snapshot listing A as gameplay id 7 session 10
   And B has a pending local prediction
   When A moves and B receives B's copy of the public movement Event
   Then B's copy includes explicit public x,y,z for A
   And B's copy does not include lastProcessedInputSequence
-  And B applies A's pose to the remote store
+  And B applies A's pose to the remote store keyed by gameplay id 7
   And B's local predictor is unchanged
 
 Scenario: Snapshot rebases remote public poses
-  Given the client has remote session 99 at (1,0,0)
-  When a Snapshot reports player session 99 at (10,0,0) without local ack fields
-  Then remote 99 is rebased to (10,0,0)
+  Given the client has remote gameplay id 7 at (1,0,0)
+  When a Snapshot reports player session 99 id 7 at (10,0,0) without local ack fields
+  Then remote gameplay id 7 is rebased to (10,0,0)
   And the local predictor is unchanged
 
 Scenario: Delta-only movement does not invent remote coordinates
-  Given the client has no remote pose for session 99
-  When a public movement= Event for 99 arrives with dx,dy,dz and no x,y,z
-  Then no remote pose is created for session 99
+  Given the client has no remote pose for gameplay id 7
+  When a public movement= Event for session 99 arrives with dx,dy,dz and no x,y,z
+  Then no remote pose is created for session 99 or gameplay id 7
 
 Scenario: Full Snapshot replaces every public pose including idle players
-  Given the client has remote session 99 at (1,0,0)
-  When a Snapshot reports session 99 at (1,0,0) and session 11 at (5,0,0)
-  Then remote 99 is replaced with (1,0,0)
+  Given the client has remote gameplay id 7 at (1,0,0)
+  When a Snapshot reports session 99 id 7 at (1,0,0) and session 11 id 11 at (5,0,0)
+  Then remote 7 is replaced with (1,0,0)
   And remote 11 is placed at (5,0,0)
+
+Scenario: Reconnect Snapshot keeps one remote for the same gameplay id
+  Given the client has remote gameplay id 7 bound to session 99 named Hero
+  When a Snapshot lists session 100, id 7, name Hero
+  Then the remote store has one pose
+  And that pose is keyed by gameplay id 7
+  And its session field is 100
+  And the HUD display field is Hero
+
+Scenario: Public Snapshot auth PlayerId is not applied
+  Given a Snapshot payload includes player.0.authPlayerId
+  When the client applies it
+  Then the snapshot is rejected
+  And no remote pose is stored
 
 Scenario: Delta Event omits stationary public poses
   Given a Snapshot placed session 99 at (1,0,0)
@@ -212,7 +227,8 @@ Scenario: Snapshot after RequestSnapshot resumes Events
   20 Hz is the tick and delta Event period, not a full-Snapshot rate.
   RequestSnapshot is command type 7 with empty payload (LISS-0154).
   Login Field placement follows LISS-0153 (configurable spawn, four identity
-  roles, unique PlayerName).
+  roles, unique PlayerName). Observers key remotes by gameplay id
+  (`player.<i>.id`); session is communication; HUD uses PlayerName.
 
 ## Move payload
 
@@ -271,6 +287,14 @@ the spawn/game max).
 Reconnect binds the new session to the existing auth PlayerId entity (pose and
 Status stay). Disconnect unbinds the session and omits the entity from public
 poses until rebound; it does not `unsetPlayer`.
+
+Observers track other people by Snapshot `player.<i>.id` (gameplay id). The
+remote pose store uses that id as the key. `player.<i>.session` is communication
+only (movement Event routing). HUD/display reads `player.<i>.name` only.
+Rebinding a new session to the same gameplay id updates the existing remote
+entity; it does not duplicate it. Name may be refreshed as a display field.
+Auth PlayerId is never parsed from public Snapshot fields. Movement Events
+still carry `session:` and only update a remote that a Snapshot already keyed.
 
 The login-success tick still emits at most one join Snapshot (not a 20 Hz
 full Snapshot). Placement does not invent a `movement=` Event.

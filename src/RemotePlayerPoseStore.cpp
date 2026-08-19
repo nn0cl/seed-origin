@@ -14,7 +14,8 @@ float poseDistance(const PredictedPose& a, const PredictedPose& b) {
 
 }
 
-RemotePlayerPoseStore::RemotePlayerPoseStore() : poses(), correctionSeconds() {}
+RemotePlayerPoseStore::RemotePlayerPoseStore()
+    : poses(), sessionToGameplayId(), correctionSeconds() {}
 
 void RemotePlayerPoseStore::correctRender(RemotePlayerPose& pose,
                                           float& remaining, float errorDistance,
@@ -35,17 +36,23 @@ void RemotePlayerPoseStore::correctRender(RemotePlayerPose& pose,
 void RemotePlayerPoseStore::replaceFromSnapshot(
     const std::vector<PlayerPoseSnapshot>& publicPoses, int64_t localSessionId) {
     std::map<int64_t, RemotePlayerPose> next;
+    std::map<int64_t, int64_t> nextSessions;
     for (std::size_t i = 0; i < publicPoses.size(); ++i) {
         const PlayerPoseSnapshot& snapshot = publicPoses[i];
         if (snapshot.sessionId <= 0) continue;
+        if (snapshot.gameplayId <= 0) continue;
         if (localSessionId > 0 && snapshot.sessionId == localSessionId) continue;
         RemotePlayerPose pose;
+        pose.gameplayId = snapshot.gameplayId;
         pose.sessionId = snapshot.sessionId;
+        pose.name = snapshot.name;
         pose.authority = {snapshot.x, snapshot.y, snapshot.z};
         pose.rendered = pose.authority;
-        next[snapshot.sessionId] = pose;
+        next[snapshot.gameplayId] = pose;
+        nextSessions[snapshot.sessionId] = snapshot.gameplayId;
     }
     poses.swap(next);
+    sessionToGameplayId.swap(nextSessions);
     correctionSeconds.clear();
 }
 
@@ -56,19 +63,17 @@ bool RemotePlayerPoseStore::applyAuthoritative(int64_t sessionId, float x,
         !std::isfinite(z)) {
         return false;
     }
-    std::map<int64_t, RemotePlayerPose>::iterator found = poses.find(sessionId);
-    if (found == poses.end()) {
-        RemotePlayerPose pose;
-        pose.sessionId = sessionId;
-        pose.authority = {x, y, z};
-        pose.rendered = pose.authority;
-        poses[sessionId] = pose;
-        correctionSeconds[sessionId] = 0.0f;
-        return true;
-    }
+    std::map<int64_t, int64_t>::const_iterator mapped =
+        sessionToGameplayId.find(sessionId);
+    if (mapped == sessionToGameplayId.end()) return false;
+    std::map<int64_t, RemotePlayerPose>::iterator found =
+        poses.find(mapped->second);
+    if (found == poses.end()) return false;
     found->second.authority = {x, y, z};
-    const float error = poseDistance(found->second.rendered, found->second.authority);
-    correctRender(found->second, correctionSeconds[sessionId], error, snapBaseline);
+    const float error =
+        poseDistance(found->second.rendered, found->second.authority);
+    correctRender(found->second, correctionSeconds[found->first], error,
+                  snapBaseline);
     return true;
 }
 
@@ -95,8 +100,9 @@ void RemotePlayerPoseStore::stepRender(float dtSeconds) {
     }
 }
 
-const RemotePlayerPose* RemotePlayerPoseStore::find(int64_t sessionId) const {
-    std::map<int64_t, RemotePlayerPose>::const_iterator found = poses.find(sessionId);
+const RemotePlayerPose* RemotePlayerPoseStore::find(int64_t gameplayId) const {
+    std::map<int64_t, RemotePlayerPose>::const_iterator found =
+        poses.find(gameplayId);
     return found == poses.end() ? 0 : &found->second;
 }
 
@@ -104,6 +110,7 @@ std::size_t RemotePlayerPoseStore::count() const { return poses.size(); }
 
 void RemotePlayerPoseStore::clear() {
     poses.clear();
+    sessionToGameplayId.clear();
     correctionSeconds.clear();
 }
 

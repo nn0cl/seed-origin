@@ -229,6 +229,8 @@ void applies_environment_snapshot_and_resets_sequence();
 void rejects_incomplete_or_invalid_environment_snapshot();
 void applies_public_npc_snapshot_state();
 void applies_public_player_snapshot_poses();
+void applies_gameplay_id_and_display_name_without_auth_id();
+void rejects_auth_player_id_on_public_snapshot();
 }
 
 namespace client_hazard_effect_tests {
@@ -284,6 +286,7 @@ void reconciles_from_owner_copy_of_public_movement();
 void other_session_keeps_sequence_without_owner_ack();
 void applies_foreign_public_pose_without_owner_ack();
 void rebases_remote_pose_from_snapshot();
+void reconnect_snapshot_keeps_one_remote_for_gameplay_id();
 void idle_remote_appears_from_captured_snapshot();
 void idle_remote_appears_from_join_snapshot();
 void does_not_invent_remote_pose_from_delta_only();
@@ -311,6 +314,8 @@ void loopback_reconnect_sends_request_snapshot_and_applies_server_snapshot();
 namespace remote_player_pose_store_tests {
 void snaps_on_snapshot_replace_and_skips_local_session();
 void interpolates_small_error_and_snaps_large_error();
+void reconnect_same_gameplay_id_is_one_remote_and_updates_name();
+void unknown_session_does_not_invent_a_remote();
 }
 
 int main() {
@@ -444,6 +449,8 @@ int main() {
     client_snapshot_tests::rejects_incomplete_or_invalid_environment_snapshot();
     client_snapshot_tests::applies_public_npc_snapshot_state();
     client_snapshot_tests::applies_public_player_snapshot_poses();
+    client_snapshot_tests::applies_gameplay_id_and_display_name_without_auth_id();
+    client_snapshot_tests::rejects_auth_player_id_on_public_snapshot();
     client_hazard_effect_tests::preserves_order_and_drains_by_display_limit();
     client_hazard_effect_tests::rejects_duplicates_gaps_and_non_hazard_events();
     client_world_receiver_tests::applies_split_snapshot_and_hazard_event();
@@ -476,11 +483,14 @@ int main() {
     client_prediction_sync_tests::other_session_keeps_sequence_without_owner_ack();
     client_prediction_sync_tests::applies_foreign_public_pose_without_owner_ack();
     client_prediction_sync_tests::rebases_remote_pose_from_snapshot();
+    client_prediction_sync_tests::reconnect_snapshot_keeps_one_remote_for_gameplay_id();
     client_prediction_sync_tests::idle_remote_appears_from_captured_snapshot();
     client_prediction_sync_tests::idle_remote_appears_from_join_snapshot();
     client_prediction_sync_tests::does_not_invent_remote_pose_from_delta_only();
     remote_player_pose_store_tests::snaps_on_snapshot_replace_and_skips_local_session();
     remote_player_pose_store_tests::interpolates_small_error_and_snaps_large_error();
+    remote_player_pose_store_tests::reconnect_same_gameplay_id_is_one_remote_and_updates_name();
+    remote_player_pose_store_tests::unknown_session_does_not_invent_a_remote();
     return 0;
 }
 
