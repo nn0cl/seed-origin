@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "Action.h"
+#include "ClientInputSequence.h"
 #include "MovementIntentQueue.h"
 
 namespace server {
@@ -76,6 +77,9 @@ public:
     WorldInputQueue();
     bool enqueueAction(const Action& action);
     bool enqueueMovement(int64_t sessionId, float dx, float dy, float dz);
+    MovementEnqueueResult enqueueSequencedMovement(int64_t sessionId, float dx,
+                                                   float dy, float dz,
+                                                   uint64_t clientInputSequence);
     bool enqueueCombat(int64_t attackerId, int64_t targetId, float power);
     bool enqueueCombat(int64_t attackerId, int64_t targetId, float power,
                        const std::string& requestId);
@@ -95,6 +99,7 @@ private:
     std::deque<WorldInput> pending;
     std::set<std::string> acceptedCombatRequests;
     uint64_t nextSequence;
+    ClientInputSequenceTracker inputSequenceTracker;
 };
 
 }

@@ -51,7 +51,7 @@ void dispatches_pending_commands_in_fifo_order() {
     server::ServerRuntime runtime;
     const std::vector<network::NetworkCommand> commands = {
         {network::CURRENT_PROTOCOL_VERSION, network::CommandType::Login, 0, "first"},
-        {network::CURRENT_PROTOCOL_VERSION, network::CommandType::Move, 0, "1,0,0"}
+        {network::CURRENT_PROTOCOL_VERSION, network::CommandType::Move, 1, "1,0,0"}
     };
 
     assert(runtime.start(0));

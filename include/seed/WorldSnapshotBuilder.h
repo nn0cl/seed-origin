@@ -8,6 +8,7 @@
 #include "EnvironmentEther.h"
 #include "WorldUpdate.h"
 #include "NpcSnapshot.h"
+#include "PlayerPoseSnapshot.h"
 
 namespace server {
 
@@ -21,6 +22,14 @@ public:
     bool build(uint64_t worldTick, const world::EnvironmentEther& ether,
                float hazard, const std::vector<NpcSnapshot>& npcs,
                network::WorldUpdate& snapshot, std::string& error);
+    bool build(uint64_t worldTick, const world::EnvironmentEther& ether,
+               float hazard, const std::vector<NpcSnapshot>& npcs,
+               const std::vector<PlayerPoseSnapshot>& players,
+               network::WorldUpdate& snapshot, std::string& error);
+    bool formatPayload(const world::EnvironmentEther& ether, float hazard,
+                       const std::vector<NpcSnapshot>& npcs,
+                       const std::vector<PlayerPoseSnapshot>& players,
+                       std::string& payload, std::string& error);
     uint64_t nextSequence() const;
 
 private:

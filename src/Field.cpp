@@ -7,6 +7,7 @@
 //
 
 #include "Field.h"
+#include "MovementSimulation.h"
 #include "WorldInputQueue.h"
 
 #include <cctype>
@@ -119,7 +120,11 @@ Field::queueMovement(int64_t playerId, float dx, float dy, float dz){
     std::map<int64_t,Player>::iterator playerItt = playerList.find(playerId);
     if (playerItt == playerList.end()) return false;
     Position next = playerItt->second.getPosition();
-    next.movePosition(dx, dy, dz);
+    float x = next.getX();
+    float y = next.getY();
+    float z = next.getZ();
+    if (!server::integrateMovement(x, y, z, dx, dy, dz)) return false;
+    next.setPosition(x, y, z);
     positionQueue.push_back(next);
     return true;
 }
@@ -127,17 +132,13 @@ Field::queueMovement(int64_t playerId, float dx, float dy, float dz){
 bool
 Field::queueNpcMovement(int64_t npcId, float dx, float dy, float dz){
     Npc* npc = findNpc(npcId);
-    if (npc == nullptr || !npc->isAlive() ||
-        !server::isValidMovementDelta(dx, dy, dz)) return false;
+    if (npc == nullptr || !npc->isAlive()) return false;
     Position next = npc->getPosition();
-    next.movePosition(dx, dy, dz);
-    const float x = next.getX();
-    const float y = next.getY();
-    const float z = next.getZ();
-    if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z) ||
-        std::fabs(x) > server::MAX_WORLD_COORDINATE ||
-        std::fabs(y) > server::MAX_WORLD_COORDINATE ||
-        std::fabs(z) > server::MAX_WORLD_COORDINATE) return false;
+    float x = next.getX();
+    float y = next.getY();
+    float z = next.getZ();
+    if (!server::integrateMovement(x, y, z, dx, dy, dz)) return false;
+    next.setPosition(x, y, z);
     positionQueue.push_back(next);
     return true;
 }
@@ -193,6 +194,18 @@ std::vector<NpcSnapshot> Field::publicNpcSnapshots() const {
                              true});
     }
     return snapshots;
+}
+
+std::vector<PlayerPoseSnapshot> Field::publicPlayerPoses() const {
+    std::vector<PlayerPoseSnapshot> poses;
+    for (std::map<int64_t, Player>::const_iterator it = playerList.begin();
+         it != playerList.end(); ++it) {
+        const Player& player = it->second;
+        const Position& pose = player.getPosition();
+        poses.push_back({player.getPlayerId(), pose.getX(), pose.getY(),
+                         pose.getZ()});
+    }
+    return poses;
 }
 
 void Field::processFrame(){
@@ -293,6 +306,7 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
     std::map<int64_t, long> projectedMp;
     std::map<int64_t, uint64_t> projectedAttackTick = nextAttackTick;
     std::map<int64_t, uint64_t> projectedSpellTick = nextSpellTick;
+    std::map<int64_t, Position> projectedPosition;
     for (std::vector<server::WorldInput>::const_iterator it = inputs.begin();
          it != inputs.end(); ++it) {
         if (it->kind() == server::WorldInputKind::Movement &&
@@ -344,15 +358,24 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
         }
         if (it->kind() == server::WorldInputKind::Movement) {
             const Player* player = findPlayer(it->movement().sessionId);
-            const Position& position = player->getPosition();
-            const float x = position.getX() + it->movement().dx;
-            const float y = position.getY() + it->movement().dy;
-            const float z = position.getZ() + it->movement().dz;
-            if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z) ||
-                std::fabs(x) > server::MAX_WORLD_COORDINATE ||
-                std::fabs(y) > server::MAX_WORLD_COORDINATE ||
-                std::fabs(z) > server::MAX_WORLD_COORDINATE) {
+            std::map<int64_t, Position>::iterator projected =
+                projectedPosition.find(it->movement().sessionId);
+            float x = projected == projectedPosition.end()
+                ? player->getPosition().getX() : projected->second.getX();
+            float y = projected == projectedPosition.end()
+                ? player->getPosition().getY() : projected->second.getY();
+            float z = projected == projectedPosition.end()
+                ? player->getPosition().getZ() : projected->second.getZ();
+            if (!server::integrateMovement(x, y, z, it->movement().dx,
+                                           it->movement().dy,
+                                           it->movement().dz)) {
                 return false;
+            }
+            const Position next(it->movement().sessionId, x, y, z);
+            if (projected == projectedPosition.end()) {
+                projectedPosition.insert(std::make_pair(it->movement().sessionId, next));
+            } else {
+                projected->second = next;
             }
         }
     }
@@ -368,7 +391,22 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
             std::map<int64_t,Player>::iterator playerItt =
                 playerList.find(it->movement().sessionId);
             Position next = playerItt->second.getPosition();
-            next.movePosition(it->movement().dx, it->movement().dy, it->movement().dz);
+            float x = next.getX();
+            float y = next.getY();
+            float z = next.getZ();
+            if (!server::integrateMovement(x, y, z, it->movement().dx,
+                                           it->movement().dy,
+                                           it->movement().dz)) {
+                playerList = playersBefore;
+                npcList = npcsBefore;
+                fieldEther = etherBefore;
+                nextAttackTick = attackTicksBefore;
+                nextSpellTick = spellTicksBefore;
+                lastEtherHazard = hazardBefore;
+                resolutions.clear();
+                return false;
+            }
+            next.setPosition(x, y, z);
             playerItt->second.setPosition(next);
         } else if (it->kind() == server::WorldInputKind::Action) {
             applyAction(it->action());

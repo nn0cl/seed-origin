@@ -87,7 +87,16 @@ int main(int argc, char** argv) {
         }
 
         std::string publishError;
-        runtime.publishWorldUpdates(updates, publishError);
+        std::vector<server::MovementAck> publishAcks = applier.ownerMovementAcks();
+        std::string snapshotError;
+        if (!applier.capturePublicSnapshotIfNewSessions(
+                frame.newAuthenticatedSessions, frame.worldTick, updates,
+                publishAcks, snapshotError) &&
+            !snapshotError.empty()) {
+            std::cerr << "seed_server: snapshot error: " << snapshotError
+                      << "\n";
+        }
+        runtime.publishWorldUpdates(updates, publishAcks, publishError);
         if (!publishError.empty()) {
             std::cerr << "seed_server: publish error: " << publishError << "\n";
         }

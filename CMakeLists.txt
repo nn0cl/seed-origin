@@ -35,6 +35,11 @@ set(SEED_CORE_SOURCES
     src/WorldFrameUpdateBuilder.cpp
     src/WorldFrameApplier.cpp
     src/MovementIntentQueue.cpp
+    src/MovementSimulation.cpp
+    src/ClientInputSequence.cpp
+    src/PendingInputBuffer.cpp
+    src/LocalMovementPredictor.cpp
+    src/RemotePlayerPoseStore.cpp
     src/WorldInputQueue.cpp
     src/WorldInputTick.cpp
     src/CombatCommandHandler.cpp
@@ -154,6 +159,10 @@ add_executable(seed_tests
     tests/ServerCommandDispatcherTest.cpp
     tests/CommandRateLimiterTest.cpp
     tests/MovementCommandHandlerTest.cpp
+    tests/ClientInputSequenceTest.cpp
+    tests/LocalMovementPredictorTest.cpp
+    tests/RemotePlayerPoseStoreTest.cpp
+    tests/ClientPredictionSyncTest.cpp
     tests/NpcCombatTargetTest.cpp
     tests/NpcAiTest.cpp
     tests/StatusSaturationTest.cpp

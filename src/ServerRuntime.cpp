@@ -1,6 +1,7 @@
 #include "ServerRuntime.h"
 #include "LoginResponseCodec.h"
 #include "ServerCommandDispatcher.h"
+#include "WorldFrameUpdateBuilder.h"
 #include "WorldUpdateFrameCodec.h"
 
 #include <limits>
@@ -10,7 +11,7 @@ namespace server {
 
 ServerRuntime::ServerRuntime()
     : running(false), nextConnectionId(1), clients(), lifecycle(), inputQueue(),
-      inputTick(inputQueue) {}
+      inputTick(inputQueue), newAuthenticatedSessions(0) {}
 
 ServerRuntime::~ServerRuntime() {
     stop();
@@ -171,6 +172,7 @@ bool ServerRuntime::enqueueCommands(
 
 size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
                                           std::string& error) {
+    newAuthenticatedSessions = 0;
     if (!running) {
         error = "server runtime is stopped";
         return 0;
@@ -221,6 +223,8 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
                 result.accepted = false;
                 result.session = {0, 0, std::string(), false};
                 result.error = bindingError;
+            } else {
+                ++newAuthenticatedSessions;
             }
         }
         const network::LoginResponse response = {
@@ -272,12 +276,19 @@ ServerFrameResult ServerRuntime::processFrame(ServerCommandDispatcher& dispatche
     removeClosedClients(dispatcher.sessionRegistry(), &dispatcher);
     const WorldFrameInputs worldFrame = inputTick.advanceFrame();
     ServerFrameResult result = {worldFrame.worldTick, accepted + processed,
-                                worldFrame.inputs};
+                                worldFrame.inputs, newAuthenticatedSessions};
     return result;
 }
 
 size_t ServerRuntime::publishWorldUpdates(
     const std::vector<network::WorldUpdate>& updates, std::string& error) {
+    const std::vector<MovementAck> noAcks;
+    return publishWorldUpdates(updates, noAcks, error);
+}
+
+size_t ServerRuntime::publishWorldUpdates(
+    const std::vector<network::WorldUpdate>& updates,
+    const std::vector<MovementAck>& ownerAcks, std::string& error) {
     if (!running) {
         error = "server runtime is stopped";
         return 0;
@@ -285,11 +296,18 @@ size_t ServerRuntime::publishWorldUpdates(
     size_t published = 0;
     for (std::vector<network::WorldUpdate>::const_iterator update = updates.begin();
          update != updates.end(); ++update) {
-        std::vector<uint8_t> frame;
-        if (!network::encodeWorldUpdateFrame(*update, frame, error)) return published;
         for (std::map<uint64_t, std::unique_ptr<ClientSession> >::iterator it =
                  clients.begin(); it != clients.end(); ++it) {
             if (!lifecycle.hasSession(it->first)) continue;
+            network::WorldUpdate personalized;
+            if (!copyWorldUpdateForSession(*update, lifecycle.sessionId(it->first),
+                                           ownerAcks, personalized, error)) {
+                return published;
+            }
+            std::vector<uint8_t> frame;
+            if (!network::encodeWorldUpdateFrame(personalized, frame, error)) {
+                return published;
+            }
             std::string enqueueError;
             if (!it->second->enqueueFrame(frame, enqueueError)) {
                 error = enqueueError;

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "ServerTick.h"
+#include "ClientInputSequence.h"
 #include "WorldInputTick.h"
 #include "WorldUpdate.h"
 
@@ -30,6 +31,9 @@ public:
                                 const CombatResolution& resolution,
                                 std::vector<network::WorldUpdate>& updates,
                                 std::string& error);
+    bool appendSnapshot(uint64_t worldTick, const std::string& payload,
+                        std::vector<network::WorldUpdate>& updates,
+                        std::string& error);
     uint64_t nextSequence() const;
 
 private:
@@ -40,6 +44,15 @@ private:
                      std::vector<network::WorldUpdate>& updates,
                      std::string& error);
 };
+
+// Same WorldUpdate.sequence as the public Event. Owner copies may carry
+// lastProcessedInputSequence and colon-delimited absolute pose. Other
+// sessions may receive public x= y= z= pose and must not receive owner ack
+// fields.
+[[nodiscard]] bool copyWorldUpdateForSession(
+    const network::WorldUpdate& publicUpdate, int64_t recipientSessionId,
+    const std::vector<MovementAck>& ownerAcks,
+    network::WorldUpdate& personalized, std::string& error);
 
 }
 

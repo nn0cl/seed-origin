@@ -64,12 +64,37 @@ bool WorldInputQueue::enqueueAction(const Action& action) {
 }
 
 bool WorldInputQueue::enqueueMovement(int64_t sessionId, float dx, float dy, float dz) {
-    if (sessionId <= 0 || !isValidMovementDelta(dx, dy, dz)) return false;
+    return enqueueSequencedMovement(sessionId, dx, dy, dz, 0) ==
+           MovementEnqueueResult::Enqueued;
+}
+
+MovementEnqueueResult WorldInputQueue::enqueueSequencedMovement(
+    int64_t sessionId, float dx, float dy, float dz,
+    uint64_t clientInputSequence) {
+    if (sessionId <= 0 || !isValidMovementDelta(dx, dy, dz)) {
+        return MovementEnqueueResult::Rejected;
+    }
     std::lock_guard<std::mutex> lock(mutex);
+    if (clientInputSequence != 0) {
+        const ClientInputAdmission admission =
+            inputSequenceTracker.admit(sessionId, clientInputSequence);
+        if (admission == ClientInputAdmission::IgnoreStale) {
+            return MovementEnqueueResult::IgnoredStale;
+        }
+        if (admission != ClientInputAdmission::Accept) {
+            return MovementEnqueueResult::Rejected;
+        }
+    }
     if (pending.size() >= MAX_PENDING_INPUTS ||
-        nextSequence == std::numeric_limits<uint64_t>::max()) return false;
-    pending.push_back(WorldInput(nextSequence++, {0, sessionId, dx, dy, dz}));
-    return true;
+        nextSequence == std::numeric_limits<uint64_t>::max()) {
+        return MovementEnqueueResult::Rejected;
+    }
+    pending.push_back(WorldInput(nextSequence++,
+                                 {0, sessionId, dx, dy, dz, clientInputSequence}));
+    if (clientInputSequence != 0) {
+        inputSequenceTracker.noteAccepted(sessionId, clientInputSequence);
+    }
+    return MovementEnqueueResult::Enqueued;
 }
 
 bool WorldInputQueue::enqueueCombat(int64_t attackerId, int64_t targetId, float power) {
@@ -88,8 +113,8 @@ bool WorldInputQueue::enqueueCombat(int64_t attackerId, int64_t targetId,
         (!requestId.empty() && acceptedCombatRequests.find(
             std::to_string(attackerId) + ":" + requestId) !=
                               acceptedCombatRequests.end())) return false;
-    pending.push_back(WorldInput(nextSequence++,
-                                 {attackerId, targetId, power, requestId}));
+    const CombatIntent combat = {attackerId, targetId, power, requestId};
+    pending.push_back(WorldInput(nextSequence++, combat));
     if (!requestId.empty()) acceptedCombatRequests.insert(
         std::to_string(attackerId) + ":" + requestId);
     return true;
@@ -118,7 +143,8 @@ bool WorldInputQueue::enqueueSpell(int64_t casterId, int64_t targetId,
             std::to_string(casterId) + ":" + requestId) !=
                               acceptedCombatRequests.end())) return false;
     pending.push_back(WorldInput(nextSequence++,
-                                 {casterId, targetId, element, power, requestId}));
+                                 SpellIntent{casterId, targetId, element, power,
+                                             requestId}));
     if (!requestId.empty()) acceptedCombatRequests.insert(
         std::to_string(casterId) + ":" + requestId);
     return true;

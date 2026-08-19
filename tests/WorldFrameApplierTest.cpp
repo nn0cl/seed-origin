@@ -137,4 +137,68 @@ void emits_hazard_event_when_environment_is_unstable() {
     assert(updates[0].payload.find("etherHazard=") == 0);
 }
 
+void captures_idle_poses_only_when_new_sessions_authenticate() {
+    Field* field = Field::getInstance();
+    const Status status;
+    const int64_t idleId = 15212;
+    const int64_t observerId = 15213;
+    assert(field->setPlayer(Player(idleId, status, Position(idleId, 8.0f, 0.0f, 0.0f))));
+    assert(field->setPlayer(
+        Player(observerId, status, Position(observerId, 0.0f, 0.0f, 0.0f))));
+    server::WorldFrameApplier applier(*field);
+    std::vector<network::WorldUpdate> updates;
+    std::string error;
+    std::vector<server::MovementAck> publishAcks;
+    assert(applier.capturePublicSnapshotIfNewSessions(0, 11, updates,
+                                                      publishAcks, error));
+    assert(updates.empty());
+    assert(applier.capturePublicSnapshotIfNewSessions(1, 11, updates,
+                                                      publishAcks, error));
+    assert(updates.size() == 1);
+    assert(updates.back().kind == network::UpdateKind::Snapshot);
+    assert(updates.back().payload.find("session=15212") != std::string::npos);
+    assert(updates.back().payload.find("session=15213") != std::string::npos);
+    assert(updates[0].payload.find("lastProcessedInputSequence") ==
+           std::string::npos);
+    assert(publishAcks.size() == applier.snapshotLocalAcks().size());
+}
+
+void captures_idle_public_player_poses_on_snapshot() {
+    Field* field = Field::getInstance();
+    const Status status;
+    const int64_t idleId = 15210;
+    const int64_t observerId = 15211;
+    assert(field->setPlayer(Player(idleId, status, Position(idleId, 7.0f, 0.0f, 0.0f))));
+    assert(field->setPlayer(
+        Player(observerId, status, Position(observerId, 0.0f, 0.0f, 0.0f))));
+    server::WorldFrameApplier applier(*field);
+    std::vector<network::WorldUpdate> updates;
+    std::string error;
+    assert(applier.capturePublicSnapshot(9, updates, error));
+    assert(updates.size() == 1);
+    const network::WorldUpdate& snapshot = updates.back();
+    assert(snapshot.kind == network::UpdateKind::Snapshot);
+    assert(snapshot.eventId == 0);
+    assert(snapshot.worldTick == 9);
+    assert(snapshot.payload.find("player.") != std::string::npos);
+    assert(snapshot.payload.find("session=15210") != std::string::npos);
+    assert(snapshot.payload.find("session=15211") != std::string::npos);
+    assert(snapshot.payload.find("7") != std::string::npos);
+    assert(snapshot.payload.find("lastProcessedInputSequence") ==
+           std::string::npos);
+    assert(snapshot.payload.find("local.") == std::string::npos);
+    network::WorldUpdate observerCopy;
+    assert(server::copyWorldUpdateForSession(snapshot, observerId,
+                                             applier.snapshotLocalAcks(),
+                                             observerCopy, error));
+    assert(observerCopy.sequence == snapshot.sequence);
+    assert(observerCopy.eventId == 0);
+    assert(observerCopy.payload.find("local.x=") != std::string::npos);
+    assert(observerCopy.payload.find("local.lastProcessedInputSequence=") !=
+           std::string::npos);
+    assert(observerCopy.payload.find(";x:") == std::string::npos);
+    assert(observerCopy.payload.find("lastProcessedInputSequence:") ==
+           std::string::npos);
+}
+
 } // namespace world_frame_applier_tests

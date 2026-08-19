@@ -1,10 +1,67 @@
 #include "ClientWorldUpdateReceiver.h"
 
+#include "ClientInputSequence.h"
+
 namespace client {
 
 ClientWorldUpdateReceiver::ClientWorldUpdateReceiver()
     : accumulator(), snapshotApplier(), environmentState(), hazardQueue(),
-      needsSnapshot(false), expected(1), decision(WorldReceiveDecision::NoData) {}
+      predictor(), remotes(), localSessionId(0), needsSnapshot(false), expected(1),
+      decision(WorldReceiveDecision::NoData) {}
+
+bool ClientWorldUpdateReceiver::applyEvent(const network::WorldUpdate& update,
+                                           std::string& error) {
+    if (needsSnapshot) {
+        error = "world update cannot be applied before snapshot resync";
+        decision = WorldReceiveDecision::RequestSnapshot;
+        return false;
+    }
+    const bool hazard = update.payload.compare(0, 12, "etherHazard=") == 0;
+    const bool movementAckEvent =
+        update.payload.compare(0, 12, "movementAck=") == 0;
+    HazardIngestResult result = HazardIngestResult::Rejected;
+    if (hazard) {
+        result = hazardQueue.ingest(update, error);
+    } else {
+        result = hazardQueue.observeEvent(update, error);
+    }
+    expected = hazardQueue.synchronization().expectedSequence();
+    if (result == HazardIngestResult::RequestSnapshot) {
+        needsSnapshot = true;
+        decision = WorldReceiveDecision::RequestSnapshot;
+        return false;
+    }
+    if (result != HazardIngestResult::Applied &&
+        result != HazardIngestResult::IgnoredDuplicate) {
+        decision = WorldReceiveDecision::Rejected;
+        return false;
+    }
+    if (movementAckEvent && result == HazardIngestResult::Applied) {
+        server::MovementAck ack;
+        if (!server::parseMovementAck(update.payload, ack, error)) {
+            decision = WorldReceiveDecision::Rejected;
+            return false;
+        }
+        if (localSessionId > 0 && ack.sessionId == localSessionId) {
+            predictor.reconcile(ack.x, ack.y, ack.z, ack.worldTick,
+                                ack.lastProcessedInputSequence);
+        }
+    } else if (result == HazardIngestResult::Applied) {
+        server::MovementAck ack;
+        if (server::tryParseAttachedMovementAck(update.payload, ack) &&
+            localSessionId > 0 && ack.sessionId == localSessionId) {
+            predictor.reconcile(ack.x, ack.y, ack.z, ack.worldTick,
+                                ack.lastProcessedInputSequence);
+        }
+        server::PublicMovementPose publicPose;
+        if (server::tryParsePublicMovementPose(update.payload, publicPose) &&
+            (localSessionId <= 0 || publicPose.sessionId != localSessionId)) {
+            remotes.applyAuthoritative(publicPose.sessionId, publicPose.x,
+                                       publicPose.y, publicPose.z, false);
+        }
+    }
+    return true;
+}
 
 bool ClientWorldUpdateReceiver::receive(const std::vector<uint8_t>& bytes,
                                         size_t& applied,
@@ -28,24 +85,18 @@ bool ClientWorldUpdateReceiver::receive(const std::vector<uint8_t>& bytes,
             hazardQueue.confirmSnapshot(it->sequence);
             needsSnapshot = false;
             expected = it->sequence + 1;
+            if (environmentState.value().hasLocalPlayer) {
+                predictor.applySnapshotBaseline(
+                    environmentState.value().localX,
+                    environmentState.value().localY,
+                    environmentState.value().localZ,
+                    it->worldTick,
+                    environmentState.value().lastProcessedInputSequence);
+            }
+            remotes.replaceFromSnapshot(environmentState.value().players,
+                                        localSessionId);
         } else if (it->kind == network::UpdateKind::Event) {
-            if (needsSnapshot) {
-                error = "world update cannot be applied before snapshot resync";
-                decision = WorldReceiveDecision::RequestSnapshot;
-                return false;
-            }
-            const HazardIngestResult result = hazardQueue.ingest(*it, error);
-            expected = hazardQueue.synchronization().expectedSequence();
-            if (result == HazardIngestResult::RequestSnapshot) {
-                needsSnapshot = true;
-                decision = WorldReceiveDecision::RequestSnapshot;
-                return false;
-            }
-            if (result != HazardIngestResult::Applied &&
-                result != HazardIngestResult::IgnoredDuplicate) {
-                decision = WorldReceiveDecision::Rejected;
-                return false;
-            }
+            if (!applyEvent(*it, error)) return false;
         } else {
             error = "world update kind is unsupported";
             decision = WorldReceiveDecision::Rejected;
@@ -56,6 +107,10 @@ bool ClientWorldUpdateReceiver::receive(const std::vector<uint8_t>& bytes,
     decision = WorldReceiveDecision::Applied;
     error.clear();
     return true;
+}
+
+void ClientWorldUpdateReceiver::bindLocalSession(int64_t sessionId) {
+    localSessionId = sessionId;
 }
 
 void ClientWorldUpdateReceiver::beginReconnect() {
@@ -79,6 +134,18 @@ const ClientEnvironmentState& ClientWorldUpdateReceiver::environment() const {
 
 const ClientHazardEffectQueue& ClientWorldUpdateReceiver::hazardEffects() const {
     return hazardQueue;
+}
+
+LocalMovementPredictor& ClientWorldUpdateReceiver::localMovement() {
+    return predictor;
+}
+
+const LocalMovementPredictor& ClientWorldUpdateReceiver::localMovement() const {
+    return predictor;
+}
+
+const RemotePlayerPoseStore& ClientWorldUpdateReceiver::remotePlayers() const {
+    return remotes;
 }
 
 }

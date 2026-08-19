@@ -3,7 +3,8 @@
 namespace client {
 
 ClientEnvironmentState::ClientEnvironmentState()
-    : state{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0, {}} {}
+    : state{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0, 0, {}, {}, false, 0.0f, 0.0f, 0.0f,
+            0} {}
 
 const EnvironmentState& ClientEnvironmentState::value() const {
     return state;

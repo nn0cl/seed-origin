@@ -133,6 +133,8 @@ void clears_all_bound_sessions();
 namespace world_frame_update_builder_tests {
 void converts_actions_to_ordered_events();
 void emits_no_update_for_empty_frame();
+void personalizes_owner_copy_without_changing_sequence();
+void personalizes_snapshot_local_fields_without_changing_sequence();
 }
 
 namespace world_frame_applier_tests {
@@ -144,6 +146,8 @@ void applies_combat_damage_after_range_validation();
 void rejects_out_of_range_combat_without_damage();
 void applies_spell_with_environment_conductivity_and_decay();
 void emits_hazard_event_when_environment_is_unstable();
+void captures_idle_public_player_poses_on_snapshot();
+void captures_idle_poses_only_when_new_sessions_authenticate();
 }
 
 namespace movement_intent_queue_tests {
@@ -206,12 +210,14 @@ namespace world_snapshot_builder_tests {
 void builds_environment_snapshot();
 void rejects_negative_hazard();
 void publishes_only_public_live_npc_state();
+void publishes_public_player_poses_without_owner_ack();
 }
 
 namespace client_snapshot_tests {
 void applies_environment_snapshot_and_resets_sequence();
 void rejects_incomplete_or_invalid_environment_snapshot();
 void applies_public_npc_snapshot_state();
+void applies_public_player_snapshot_poses();
 }
 
 namespace client_hazard_effect_tests {
@@ -240,6 +246,41 @@ namespace movement_command_handler_tests {
 void rejects_malformed_or_unknown_move();
 void accepts_bounded_move_for_existing_player();
 void rejects_move_that_exceeds_frame_distance();
+}
+
+namespace client_input_sequence_tests {
+void acks_monotonic_client_input_sequences();
+void ignores_duplicate_client_input_sequence();
+void ignores_out_of_order_or_stale_client_input_sequence();
+void rejects_client_input_sequence_too_far_ahead();
+void keeps_legacy_unsequenced_move_payload();
+}
+
+namespace local_movement_predictor_tests {
+void predicts_local_move_immediately();
+void reconciles_by_replaying_unacked_inputs();
+void rebases_pending_inputs_from_snapshot();
+void reconverges_under_delay_and_packet_loss();
+void smooths_small_error_and_snaps_large_error();
+}
+
+namespace client_prediction_sync_tests {
+void does_not_treat_world_update_gap_as_input_ack();
+void applies_movement_ack_without_confusing_world_sequence();
+void rebases_prediction_when_snapshot_includes_local_pose();
+void ignores_foreign_session_movement_ack();
+void reconciles_from_owner_copy_of_public_movement();
+void other_session_keeps_sequence_without_owner_ack();
+void applies_foreign_public_pose_without_owner_ack();
+void rebases_remote_pose_from_snapshot();
+void idle_remote_appears_from_captured_snapshot();
+void idle_remote_appears_from_join_snapshot();
+void does_not_invent_remote_pose_from_delta_only();
+}
+
+namespace remote_player_pose_store_tests {
+void snaps_on_snapshot_replace_and_skips_local_session();
+void interpolates_small_error_and_snaps_large_error();
 }
 
 int main() {
@@ -309,6 +350,8 @@ int main() {
     session_lifecycle_tests::clears_all_bound_sessions();
     world_frame_update_builder_tests::converts_actions_to_ordered_events();
     world_frame_update_builder_tests::emits_no_update_for_empty_frame();
+    world_frame_update_builder_tests::personalizes_owner_copy_without_changing_sequence();
+    world_frame_update_builder_tests::personalizes_snapshot_local_fields_without_changing_sequence();
     world_frame_applier_tests::applies_valid_actions_and_returns_events();
     world_frame_applier_tests::rejects_invalid_action_before_field_mutation();
     world_frame_applier_tests::applies_movement_intents_after_target_validation();
@@ -317,6 +360,8 @@ int main() {
     world_frame_applier_tests::rejects_out_of_range_combat_without_damage();
     world_frame_applier_tests::applies_spell_with_environment_conductivity_and_decay();
     world_frame_applier_tests::emits_hazard_event_when_environment_is_unstable();
+    world_frame_applier_tests::captures_idle_public_player_poses_on_snapshot();
+    world_frame_applier_tests::captures_idle_poses_only_when_new_sessions_authenticate();
     movement_intent_queue_tests::queues_valid_movement_without_field_mutation();
     movement_intent_queue_tests::rejects_invalid_session_without_queue_mutation();
     movement_intent_queue_tests::restores_a_cut_frame_in_original_order();
@@ -346,9 +391,11 @@ int main() {
     world_snapshot_builder_tests::builds_environment_snapshot();
     world_snapshot_builder_tests::rejects_negative_hazard();
     world_snapshot_builder_tests::publishes_only_public_live_npc_state();
+    world_snapshot_builder_tests::publishes_public_player_poses_without_owner_ack();
     client_snapshot_tests::applies_environment_snapshot_and_resets_sequence();
     client_snapshot_tests::rejects_incomplete_or_invalid_environment_snapshot();
     client_snapshot_tests::applies_public_npc_snapshot_state();
+    client_snapshot_tests::applies_public_player_snapshot_poses();
     client_hazard_effect_tests::preserves_order_and_drains_by_display_limit();
     client_hazard_effect_tests::rejects_duplicates_gaps_and_non_hazard_events();
     client_world_receiver_tests::applies_split_snapshot_and_hazard_event();
@@ -363,5 +410,29 @@ int main() {
     movement_command_handler_tests::rejects_malformed_or_unknown_move();
     movement_command_handler_tests::accepts_bounded_move_for_existing_player();
     movement_command_handler_tests::rejects_move_that_exceeds_frame_distance();
+    client_input_sequence_tests::acks_monotonic_client_input_sequences();
+    client_input_sequence_tests::ignores_duplicate_client_input_sequence();
+    client_input_sequence_tests::ignores_out_of_order_or_stale_client_input_sequence();
+    client_input_sequence_tests::rejects_client_input_sequence_too_far_ahead();
+    client_input_sequence_tests::keeps_legacy_unsequenced_move_payload();
+    local_movement_predictor_tests::predicts_local_move_immediately();
+    local_movement_predictor_tests::reconciles_by_replaying_unacked_inputs();
+    local_movement_predictor_tests::rebases_pending_inputs_from_snapshot();
+    local_movement_predictor_tests::reconverges_under_delay_and_packet_loss();
+    local_movement_predictor_tests::smooths_small_error_and_snaps_large_error();
+    client_prediction_sync_tests::does_not_treat_world_update_gap_as_input_ack();
+    client_prediction_sync_tests::applies_movement_ack_without_confusing_world_sequence();
+    client_prediction_sync_tests::rebases_prediction_when_snapshot_includes_local_pose();
+    client_prediction_sync_tests::ignores_foreign_session_movement_ack();
+    client_prediction_sync_tests::reconciles_from_owner_copy_of_public_movement();
+    client_prediction_sync_tests::other_session_keeps_sequence_without_owner_ack();
+    client_prediction_sync_tests::applies_foreign_public_pose_without_owner_ack();
+    client_prediction_sync_tests::rebases_remote_pose_from_snapshot();
+    client_prediction_sync_tests::idle_remote_appears_from_captured_snapshot();
+    client_prediction_sync_tests::idle_remote_appears_from_join_snapshot();
+    client_prediction_sync_tests::does_not_invent_remote_pose_from_delta_only();
+    remote_player_pose_store_tests::snaps_on_snapshot_replace_and_skips_local_session();
+    remote_player_pose_store_tests::interpolates_small_error_and_snaps_large_error();
     return 0;
 }
+

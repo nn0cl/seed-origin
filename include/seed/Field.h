@@ -21,6 +21,7 @@
 #include "EnvironmentEther.h"
 #include "Npc.h"
 #include "NpcSnapshot.h"
+#include "PlayerPoseSnapshot.h"
 
 namespace server {
 class WorldInput;
@@ -85,6 +86,7 @@ public:
     const Npc* findNpc(int64_t npcId) const;
     Npc* findNpc(int64_t npcId);
     std::vector<NpcSnapshot> publicNpcSnapshots() const;
+    std::vector<PlayerPoseSnapshot> publicPlayerPoses() const;
     world::EnvironmentEther& environmentEther();
     const world::EnvironmentEther& environmentEther() const;
     float environmentHazard() const;

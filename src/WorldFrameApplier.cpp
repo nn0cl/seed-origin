@@ -1,28 +1,35 @@
 #include "WorldFrameApplier.h"
+#include "ClientInputSequence.h"
+#include "WorldSnapshotBuilder.h"
 
 #include <cmath>
+#include <map>
 
 namespace server {
 
 WorldFrameApplier::WorldFrameApplier(Field& field)
-    : field(field), movementQueue(nullptr), npcAiInputQueue(nullptr), updateBuilder() {}
+    : field(field), movementQueue(nullptr), npcAiInputQueue(nullptr),
+      updateBuilder(), ownerAcks(), snapshotAcks(), lastProcessedBySession() {}
 
 WorldFrameApplier::WorldFrameApplier(Field& field, MovementIntentQueue& movementQueue)
-    : field(field), movementQueue(&movementQueue), npcAiInputQueue(nullptr), updateBuilder() {}
+    : field(field), movementQueue(&movementQueue), npcAiInputQueue(nullptr),
+      updateBuilder(), ownerAcks(), snapshotAcks(), lastProcessedBySession() {}
 
 WorldFrameApplier::WorldFrameApplier(Field& field, NpcAiInputQueue& npcAiInputQueue)
     : field(field), movementQueue(nullptr), npcAiInputQueue(&npcAiInputQueue),
-      updateBuilder() {}
+      updateBuilder(), ownerAcks(), snapshotAcks(), lastProcessedBySession() {}
 
 WorldFrameApplier::WorldFrameApplier(Field& field,
                                      MovementIntentQueue& movementQueue,
                                      NpcAiInputQueue& npcAiInputQueue)
     : field(field), movementQueue(&movementQueue),
-      npcAiInputQueue(&npcAiInputQueue), updateBuilder() {}
+      npcAiInputQueue(&npcAiInputQueue), updateBuilder(), ownerAcks(),
+      snapshotAcks(), lastProcessedBySession() {}
 
 bool WorldFrameApplier::apply(const FrameActions& frame,
                               std::vector<network::WorldUpdate>& updates,
                               std::string& error) {
+    ownerAcks.clear();
     for (std::vector<QueuedAction>::const_iterator it = frame.actions.begin();
          it != frame.actions.end(); ++it) {
         if (!it->getAction().isValid()) {
@@ -98,6 +105,21 @@ bool WorldFrameApplier::apply(const FrameActions& frame,
         field.putActionQueue(it->getAction());
     }
     field.processFrame(frame.worldTick);
+    if (movementQueue != nullptr) {
+        std::map<int64_t, uint64_t> lastProcessed;
+        std::map<int64_t, bool> moved;
+        for (std::vector<MovementIntent>::const_iterator it = intents.begin();
+             it != intents.end(); ++it) {
+            moved[it->sessionId] = true;
+            if (it->clientInputSequence > lastProcessed[it->sessionId]) {
+                lastProcessed[it->sessionId] = it->clientInputSequence;
+            }
+        }
+        for (std::map<int64_t, bool>::const_iterator it = moved.begin();
+             it != moved.end(); ++it) {
+            recordOwnerAck(it->first, frame.worldTick, lastProcessed[it->first]);
+        }
+    }
     error.clear();
     return true;
 }
@@ -105,6 +127,7 @@ bool WorldFrameApplier::apply(const FrameActions& frame,
 bool WorldFrameApplier::apply(const WorldFrameInputs& frame,
                               std::vector<network::WorldUpdate>& updates,
                               std::string& error) {
+    ownerAcks.clear();
     for (std::vector<WorldInput>::const_iterator it = frame.inputs.begin();
          it != frame.inputs.end(); ++it) {
         if (it->kind() == WorldInputKind::Action) {
@@ -148,11 +171,28 @@ bool WorldFrameApplier::apply(const WorldFrameInputs& frame,
         error = "world input could not be applied in the field";
         return false;
     }
+    std::map<int64_t, uint64_t> lastProcessed;
+    std::map<int64_t, bool> moved;
+    for (std::vector<WorldInput>::const_iterator it = frame.inputs.begin();
+         it != frame.inputs.end(); ++it) {
+        if (it->kind() != WorldInputKind::Movement) continue;
+        const MovementIntent& movement = it->movement();
+        moved[movement.sessionId] = true;
+        if (movement.clientInputSequence >
+            lastProcessed[movement.sessionId]) {
+            lastProcessed[movement.sessionId] = movement.clientInputSequence;
+        }
+    }
+    for (std::map<int64_t, bool>::const_iterator it = moved.begin();
+         it != moved.end(); ++it) {
+        recordOwnerAck(it->first, frame.worldTick, lastProcessed[it->first]);
+    }
     for (std::vector<CombatResolution>::const_iterator it = resolutions.begin();
          it != resolutions.end(); ++it) {
         if (!updateBuilder.appendCombatResolution(frame.worldTick, *it,
                                                    updates, error)) {
             updates.clear();
+            ownerAcks.clear();
             return false;
         }
     }
@@ -162,10 +202,84 @@ bool WorldFrameApplier::apply(const WorldFrameInputs& frame,
                                     field.environmentEther().instability(),
                                     updates, error)) {
         updates.clear();
+        ownerAcks.clear();
         return false;
     }
     error.clear();
     return true;
+}
+
+const std::vector<MovementAck>& WorldFrameApplier::ownerMovementAcks() const {
+    return ownerAcks;
+}
+
+const std::vector<MovementAck>& WorldFrameApplier::snapshotLocalAcks() const {
+    return snapshotAcks;
+}
+
+bool WorldFrameApplier::capturePublicSnapshot(
+    uint64_t worldTick, std::vector<network::WorldUpdate>& updates,
+    std::string& error) {
+    snapshotAcks.clear();
+    WorldSnapshotBuilder builder;
+    std::string payload;
+    if (!builder.formatPayload(field.environmentEther(), field.environmentHazard(),
+                               field.publicNpcSnapshots(),
+                               field.publicPlayerPoses(), payload, error)) {
+        return false;
+    }
+    if (!updateBuilder.appendSnapshot(worldTick, payload, updates, error)) {
+        return false;
+    }
+    const std::vector<PlayerPoseSnapshot> poses = field.publicPlayerPoses();
+    for (std::size_t index = 0; index < poses.size(); ++index) {
+        const PlayerPoseSnapshot& pose = poses[index];
+        MovementAck ack;
+        ack.sessionId = pose.sessionId;
+        ack.x = pose.x;
+        ack.y = pose.y;
+        ack.z = pose.z;
+        ack.worldTick = worldTick;
+        const std::map<int64_t, uint64_t>::const_iterator found =
+            lastProcessedBySession.find(pose.sessionId);
+        ack.lastProcessedInputSequence =
+            found == lastProcessedBySession.end() ? 0 : found->second;
+        snapshotAcks.push_back(ack);
+    }
+    error.clear();
+    return true;
+}
+
+bool WorldFrameApplier::capturePublicSnapshotIfNewSessions(
+    size_t newAuthenticatedSessions, uint64_t worldTick,
+    std::vector<network::WorldUpdate>& updates,
+    std::vector<MovementAck>& publishAcks, std::string& error) {
+    if (newAuthenticatedSessions == 0) {
+        error.clear();
+        return true;
+    }
+    if (!capturePublicSnapshot(worldTick, updates, error)) return false;
+    publishAcks = snapshotAcks;
+    error.clear();
+    return true;
+}
+
+void WorldFrameApplier::recordOwnerAck(int64_t sessionId, uint64_t worldTick,
+                                       uint64_t lastProcessed) {
+    const Player* player = field.findPlayer(sessionId);
+    if (player == nullptr) return;
+    const Position& pose = player->getPosition();
+    MovementAck ack;
+    ack.sessionId = sessionId;
+    ack.x = pose.getX();
+    ack.y = pose.getY();
+    ack.z = pose.getZ();
+    ack.worldTick = worldTick;
+    ack.lastProcessedInputSequence = lastProcessed;
+    ownerAcks.push_back(ack);
+    if (lastProcessed > lastProcessedBySession[sessionId]) {
+        lastProcessedBySession[sessionId] = lastProcessed;
+    }
 }
 
 }

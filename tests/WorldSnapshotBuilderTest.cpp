@@ -38,4 +38,21 @@ void publishes_only_public_live_npc_state() {
     assert(snapshot.payload.find("npc.0.type=goblin") != std::string::npos);
 }
 
+void publishes_public_player_poses_without_owner_ack() {
+    world::EnvironmentEther ether;
+    server::WorldSnapshotBuilder builder;
+    network::WorldUpdate snapshot = {};
+    const std::vector<PlayerPoseSnapshot> players = {{10, 1.0f, 2.0f, 3.0f},
+                                                     {20, 4.0f, 5.0f, 6.0f}};
+    std::string error;
+    assert(builder.build(3, ether, 0.0f, std::vector<NpcSnapshot>(), players,
+                         snapshot, error));
+    assert(snapshot.payload.find("player.count=2") != std::string::npos);
+    assert(snapshot.payload.find("player.0.session=10") != std::string::npos);
+    assert(snapshot.payload.find("player.1.session=20") != std::string::npos);
+    assert(snapshot.payload.find("lastProcessedInputSequence") ==
+           std::string::npos);
+    assert(snapshot.payload.find("local.") == std::string::npos);
+}
+
 } // namespace world_snapshot_builder_tests
