@@ -1,5 +1,7 @@
 #include "WorldSnapshotBuilder.h"
 
+#include "PlayerName.h"
+
 #include <cmath>
 #include <limits>
 #include <sstream>
@@ -64,7 +66,8 @@ bool WorldSnapshotBuilder::formatPayload(
         const PlayerPoseSnapshot& player = players[index];
         if (player.sessionId <= 0 || !std::isfinite(player.x) ||
             !std::isfinite(player.y) || !std::isfinite(player.z) ||
-            player.name.empty() || player.name.find(';') != std::string::npos ||
+            isEmptyPlayerName(player.name) ||
+            player.name.find(';') != std::string::npos ||
             player.name.find('=') != std::string::npos) {
             error = "public player snapshot contains invalid state";
             return false;

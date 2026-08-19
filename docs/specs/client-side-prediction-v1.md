@@ -160,6 +160,25 @@ Scenario: Empty PlayerName placement is rejected
   When session 21 is placed after Login
   Then placement fails
 
+Scenario: Whitespace-only PlayerName placement is rejected
+  Given an operator PlayerName that is only padding characters
+  When session 21 is placed after Login
+  Then placement fails
+  And trim of that name is treated as empty
+
+Scenario: Claimed PlayerName survives logout and Field unset
+  Given session 21 is placed with PlayerName Hero
+  And the session logs out
+  And the Field entity is unset
+  When session 22 is placed with PlayerName Hero for a different auth PlayerId
+  Then placement fails
+
+Scenario: Trimmed PlayerName collides with an existing claim
+  Given session 21 is placed with PlayerName Hero
+  When session 22 is placed with PlayerName " Hero " for a different auth PlayerId
+  Then placement fails
+  And session 21 remains named Hero
+
 Scenario: Snapshot requires a non-empty PlayerName
   Given a Snapshot player entry with an omitted or empty name
   When the client applies it
@@ -234,8 +253,9 @@ Scenario: Snapshot after RequestSnapshot resumes Events
 - Reconnect socket I/O remainder (timeout, ops, UI) stays LISS-0128.
   The 2026-08-19 slice sends RequestSnapshot on POSIX TCP after
   beginReconnect and Login. RequestSnapshot wire Command is LISS-0154.
-- Name uniqueness normalization (case/whitespace).
-- Account-wide name ledger inside seed-auth.
+- Unicode or case-fold normalization of PlayerName.
+- Account-wide name ledger inside seed-auth (early uniqueness is an
+  in-memory claimed-name registry on the world server).
 
 ## Ambiguities
 
@@ -256,7 +276,10 @@ Scenario: Snapshot after RequestSnapshot resumes Events
   roles, unique non-empty PlayerName assigned by operators only). Observers key
   remotes by gameplay id (`player.<i>.id`); session is communication; HUD uses
   PlayerName. Auth PlayerId and gameplay id do not change on reconnect;
-  session does. Login claimedId is not a display name.
+  session does. Login claimedId is not a display name. Whitespace-only
+  names are empty after ASCII trim. Uniqueness is trim-then-exact-match
+  and survives logout and Field unset via an in-memory claimed-name
+  registry. Unicode and case-fold normalization stay out of scope.
 
 ## Move payload
 
@@ -304,10 +327,15 @@ Login places a Field entity and binds the connection session to it.
   `player.<i>.session`. Changes on reconnect. Not shown in game UI.
 - **Gameplay id**: Field `Player::getPlayerId()`, Attack/CastSpell `targetId`.
   Snapshot `player.<i>.id`. World-allocated, not the auth PK. Not shown in UI.
-- **PlayerName**: display only (`player.<i>.name`). Exact-match unique
-  on Field residents. Empty names are rejected. Login `claimedId` is not a
-  name. Operators assign names (spawn settings, test stub, or
+- **PlayerName**: display only (`player.<i>.name`). Leading and trailing
+  ASCII padding (`space`, tab, CR, LF, VT, FF) is trimmed, then the name
+  must be non-empty. Uniqueness is exact match of that trimmed value
+  (case-preserving; no Unicode fold). Login `claimedId` is not a name.
+  Operators assign names (spawn settings, test stub, or
   `operatorSetPlayerName`). No player rename command.
+  Uniqueness is a claimed-name registry, not Field occupancy: logout or
+  `unsetPlayer` does not release the name. Early storage is in-memory on
+  the world server. Auth persistence is LISS-0146–0150.
 
 Early spawn defaults, when settings are unset: pose `(0,0,0)`, HP/MP `10,10`.
 Spawn HP/MP clamp to settings max (early `1024,1024`). `Status::gainHp` still
@@ -396,8 +424,9 @@ Public Snapshot player poses (every present player, including idle; no input ack
 player.count=<n>;player.<i>.session=<id>;player.<i>.x=<f>;player.<i>.y=<f>;player.<i>.z=<f>;player.<i>.id=<gameplayId>;player.<i>.name=<name>
 ```
 
-`name` is required and must be non-empty. `id` is omitted only for pose
-fixtures that never assigned a gameplay id. Auth PlayerId is never present.
+`name` is required and must be non-empty after ASCII trim. `id` is omitted
+only for pose fixtures that never assigned a gameplay id. Auth PlayerId is
+never present.
 
 Non-owner copies of `movement=` may append public pose without owner ack:
 

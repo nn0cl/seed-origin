@@ -44,8 +44,11 @@ Login 成功後の Field 配置を、設定可能な初期 pose/HP/MP と 4 役�
   提案し、配置経路だけそれに合わせた）。
 - 再接続は新しい session を同じ認証 PlayerId の Field 実体へ結び直す。
   disconnect は session を外し、公開 pose から外す。実体は unset しない。
-- 同じ PlayerName の第二配置は失敗する（Field 上の完全一致）。
-- 空の PlayerName での配置と Snapshot 公開は失敗する。
+- 同じ PlayerName の第二配置は失敗する（trim 後の完全一致、大小文字はそのまま）。
+- 空の PlayerName での配置と Snapshot 公開は失敗する。前後 ASCII 空白だけも
+  trim 後 empty として空と同じ。
+- 名前の一意は Field 在籍に依存しない。ログアウトや `unsetPlayer` でも解放しない。
+  早期はメモリ上の claimed-name レジストリ。auth 永続帳票は LISS-0146–0150。
 - プレイヤー経路では改名できない。運営の `operatorSetPlayerName`（または spawn 設定）だけが名前を付ける。
 - ゲーム内ID と認証 PlayerId は再接続でも不変。session だけ更新する。
 - RequestSnapshot ワイヤ Command は必須範囲ではない（LISS-0154）。
@@ -66,12 +69,17 @@ Login 成功後の Field 配置を、設定可能な初期 pose/HP/MP と 4 役�
   Login claimedId を表示名に流用しない。
 - 認証 PlayerId とゲーム内ID はプレイヤーから変更不可。再接続でも不変。
   session だけ接続ごとに更新。
+- 空白のみの名前は空。trim は空判定と一意比較のため。Unicode / case fold はしない。
+- 名前の一意はログアウト後も維持。Field unset でも解放しない。早期はメモリ
+  claimed-name レジストリ。
 
 ## Ambiguities
 
-- PlayerName の大文字小文字・空白の正規化。
+- PlayerName の大文字小文字折りたたみと Unicode 正規化。
 - アカウント横断の一意帳票（auth 側）。ポート契約は「名前は一意」とし、
   本物の帳票は LISS-0146–0150 後続。
+- 運営が同一 auth を改名したとき、旧名をレジストリから外すかどうか
+  （早期は現行割当だけを保持し、ログアウトでは外さない）。
 - ゾーン・ログアウト地点・衝突回避スポーン。
 - 運営 UI 全体と権限モデル（早期は関数レベルの operator setter のみ）。
 
@@ -138,6 +146,25 @@ Login 成功後の Field 配置を、設定可能な初期 pose/HP/MP と 4 役�
 - Token metric: combined prompt+completion for one execution attempt
 - Estimation basis: presence, snapshot builder/applier, identity tests.
 - Assumptions: AIP-0153-001 and AIP-0153-002 already committed.
+- Confidence: medium
+
+### AIP-0153-004
+
+- Status: accepted
+- Created by:
+  - Agent/environment: Cursor Auto / Composer
+  - Model as displayed: Composer
+  - Reasoning setting as displayed: N/A
+  - N/A reason: Cursor agent display does not expose a separate reasoning slider
+- Created at: 2026-08-20
+- Planning size: M
+- Intended execution route: Feature Path AT-TDD
+- Intended scope: trim-empty names; claimed-name registry survives unset
+- Estimated token range: 10k–25k
+- Estimated token midpoint: 18k
+- Token metric: combined prompt+completion for one execution attempt
+- Estimation basis: presence tests, PlayerName trim helper, registry.
+- Assumptions: AIP-0153-003 already committed.
 - Confidence: medium
 
 ## Work Notes

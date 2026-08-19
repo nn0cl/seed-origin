@@ -7,6 +7,7 @@
 //
 
 #include "Player.h"
+#include "PlayerName.h"
 
 #include <cstring>
 
@@ -48,13 +49,14 @@ Player::getPlayerName() const {
 
 bool
 Player::setPlayerName(const std::string& displayName) {
-    if (displayName.empty() || displayName.size() >= sizeof(name)) return false;
-    if (displayName.find(';') != std::string::npos ||
-        displayName.find('=') != std::string::npos) {
+    const std::string trimmed = trimPlayerName(displayName);
+    if (trimmed.empty() || trimmed.size() >= sizeof(name)) return false;
+    if (trimmed.find(';') != std::string::npos ||
+        trimmed.find('=') != std::string::npos) {
         return false;
     }
     std::memset(name, 0, sizeof(name));
-    std::memcpy(name, displayName.c_str(), displayName.size());
+    std::memcpy(name, trimmed.c_str(), trimmed.size());
     return true;
 }
 

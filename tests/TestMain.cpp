@@ -50,6 +50,9 @@ void login_placement_clamps_hp_mp_to_spawn_max();
 void reconnect_rebinds_new_session_to_the_same_entity();
 void duplicate_player_name_is_rejected();
 void empty_player_name_placement_is_rejected();
+void whitespace_only_player_name_placement_is_rejected();
+void claimed_player_name_survives_logout_and_field_unset();
+void trimmed_player_name_collides_with_existing_claim();
 void player_cannot_rename_operator_can();
 }
 
@@ -417,6 +420,9 @@ int main() {
     field_session_presence_tests::reconnect_rebinds_new_session_to_the_same_entity();
     field_session_presence_tests::duplicate_player_name_is_rejected();
     field_session_presence_tests::empty_player_name_placement_is_rejected();
+    field_session_presence_tests::whitespace_only_player_name_placement_is_rejected();
+    field_session_presence_tests::claimed_player_name_survives_logout_and_field_unset();
+    field_session_presence_tests::trimmed_player_name_collides_with_existing_claim();
     field_session_presence_tests::player_cannot_rename_operator_can();
     request_snapshot_command_tests::validates_empty_payload_request_snapshot_on_protocol_v1();
     request_snapshot_command_tests::client_builds_request_after_sequence_gap_or_reconnect();

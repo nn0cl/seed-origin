@@ -8,6 +8,7 @@
 
 #include "Field.h"
 #include "MovementSimulation.h"
+#include "PlayerName.h"
 #include "WorldInputQueue.h"
 
 #include <cctype>
@@ -306,10 +307,11 @@ Player* Field::findPlayerByAuthId(int64_t authPlayerId) {
 }
 
 bool Field::hasPlayerName(const std::string& displayName) const {
-    if (displayName.empty()) return false;
+    const std::string trimmed = trimPlayerName(displayName);
+    if (trimmed.empty()) return false;
     for (std::map<int64_t, Player>::const_iterator it = playerList.begin();
          it != playerList.end(); ++it) {
-        if (it->second.getPlayerName() == displayName) return true;
+        if (it->second.getPlayerName() == trimmed) return true;
     }
     return false;
 }

@@ -5,6 +5,7 @@
 #include "Field.h"
 #include "InMemoryAuthenticatedPlayerIdStub.h"
 #include "Player.h"
+#include "PlayerName.h"
 #include "Position.h"
 #include "Status.h"
 
@@ -19,6 +20,21 @@ std::map<int64_t, std::string> operatorNamesByAuthId;
 const AuthenticatedPlayerIdPort& activePlayerIdPort() {
     if (playerIdPort != 0) return *playerIdPort;
     return defaultPlayerIdStub;
+}
+
+bool nameClaimedByOtherAuth(const std::string& trimmedName, int64_t authPlayerId) {
+    for (std::map<int64_t, std::string>::const_iterator it =
+             operatorNamesByAuthId.begin();
+         it != operatorNamesByAuthId.end(); ++it) {
+        if (it->first != authPlayerId && it->second == trimmedName) return true;
+    }
+    return false;
+}
+
+bool nameTakenOnFieldByOther(Field* field, const std::string& trimmedName,
+                             const Player* existing) {
+    if (existing != 0 && existing->getPlayerName() == trimmedName) return false;
+    return field->hasPlayerName(trimmedName);
 }
 
 }
@@ -67,9 +83,13 @@ bool FieldSessionPresence::placeAfterLogin(
     if (assigned != operatorNamesByAuthId.end()) {
         displayName = assigned->second;
     } else {
-        displayName = settings.playerName;
+        displayName = trimPlayerName(settings.playerName);
     }
-    if (displayName.empty() || field->hasPlayerName(displayName)) return false;
+    if (displayName.empty() ||
+        nameClaimedByOtherAuth(displayName, authPlayerId) ||
+        field->hasPlayerName(displayName)) {
+        return false;
+    }
 
     const int64_t gameplayId = field->allocateGameplayId();
     if (gameplayId <= 0) return false;
@@ -87,21 +107,15 @@ bool FieldSessionPresence::placeAfterLogin(
 bool FieldSessionPresence::operatorSetPlayerName(int64_t authPlayerId,
                                                  const std::string& displayName) {
     if (authPlayerId <= 0) return false;
+    const std::string trimmed = trimPlayerName(displayName);
+    Player probe;
+    if (!probe.setPlayerName(trimmed)) return false;
+    if (nameClaimedByOtherAuth(trimmed, authPlayerId)) return false;
     Field* field = Field::getInstance();
     Player* existing = field->findPlayerByAuthId(authPlayerId);
-    if (existing != 0) {
-        if (existing->getPlayerName() != displayName &&
-            field->hasPlayerName(displayName)) {
-            return false;
-        }
-        if (!existing->setPlayerName(displayName)) return false;
-    } else if (field->hasPlayerName(displayName)) {
-        return false;
-    } else {
-        Player probe;
-        if (!probe.setPlayerName(displayName)) return false;
-    }
-    operatorNamesByAuthId[authPlayerId] = displayName;
+    if (nameTakenOnFieldByOther(field, trimmed, existing)) return false;
+    if (existing != 0 && !existing->setPlayerName(trimmed)) return false;
+    operatorNamesByAuthId[authPlayerId] = trimmed;
     return true;
 }
 

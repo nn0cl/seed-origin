@@ -80,6 +80,10 @@ void rejects_empty_player_name_on_snapshot() {
     assert(!builder.build(3, ether, 0.0f, std::vector<NpcSnapshot>(),
                           std::vector<PlayerPoseSnapshot>{unnamed}, snapshot,
                           error));
+    unnamed.name = "   ";
+    assert(!builder.build(3, ether, 0.0f, std::vector<NpcSnapshot>(),
+                          std::vector<PlayerPoseSnapshot>{unnamed}, snapshot,
+                          error));
 }
 
 } // namespace world_snapshot_builder_tests

@@ -29,9 +29,9 @@ movement without weakening the authoritative 20 Hz simulation.
 
 ## Current Next Issue
 
-- Issue: remaining LISS-0153 ambiguities (name normalization, auth-side
-  name ledger, zone spawn, operator UI/permissions) or remaining
-  LISS-0128 (timeout/ops/UI)
+- Issue: remaining LISS-0153 ambiguities (case/Unicode name fold,
+  auth-side name ledger, operator rename of a previous claim, zone spawn,
+  operator UI/permissions) or remaining LISS-0128 (timeout/ops/UI)
 - Reason the I/O slice is unblocked: LISS-0154 RequestSnapshot is on this
   branch and the reconnect socket path now sends that Command after Login.
 - Adjudicator approval (2026-08-17): owner-only movementAck; protocol version
