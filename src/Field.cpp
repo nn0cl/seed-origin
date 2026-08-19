@@ -529,8 +529,7 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
         } else if (it->kind() == server::WorldInputKind::Action) {
             applyAction(it->action());
         } else if (it->kind() == server::WorldInputKind::Combat) {
-            const Player* targetBefore = findPlayer(it->combat().targetId);
-            const long hpBefore = targetBefore->getStatus().getHp();
+            const long hpBefore = targetHp(it->combat().targetId);
             std::string error;
             if (!applyCombat(it->combat(), error)) {
                 playerList = playersBefore;
@@ -542,7 +541,7 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
                 resolutions.clear();
                 return false;
             }
-            const Player* targetAfter = findPlayer(it->combat().targetId);
+            const long hpAfter = targetHp(it->combat().targetId);
             server::CombatResolution resolution;
             resolution.inputSequence = it->sequence();
             resolution.actorId = it->combat().attackerId;
@@ -550,15 +549,14 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
             resolution.basePower = it->combat().power;
             resolution.requestId = it->combat().requestId;
             resolution.effectivePower = it->combat().power;
-            resolution.damage = hpBefore - targetAfter->getStatus().getHp();
-            resolution.remainingHp = targetAfter->getStatus().getHp();
+            resolution.damage = hpBefore - hpAfter;
+            resolution.remainingHp = hpAfter;
             resolution.mpSpent = 0;
             tickAfter(worldTick, kAttackCooldownTicks, resolution.cooldownUntil);
             nextAttackTick[it->combat().attackerId] = resolution.cooldownUntil;
             resolutions.push_back(resolution);
         } else if (it->kind() == server::WorldInputKind::Spell) {
-            const Player* targetBefore = findPlayer(it->spell().targetId);
-            const long hpBefore = targetBefore->getStatus().getHp();
+            const long hpBefore = targetHp(it->spell().targetId);
             const float before[4] = {
                 fieldEther.value(world::EtherAttribute::Fire),
                 fieldEther.value(world::EtherAttribute::Water),
@@ -592,7 +590,7 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
             }
             Player* caster = findPlayer(it->spell().casterId);
             caster->getStatus().gainMp(-mpCost);
-            const Player* targetAfter = findPlayer(it->spell().targetId);
+            const long hpAfter = targetHp(it->spell().targetId);
             server::CombatResolution resolution;
             resolution.spell = true;
             resolution.inputSequence = it->sequence();
@@ -601,9 +599,9 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
             resolution.element = it->spell().element;
             resolution.requestId = it->spell().requestId;
             resolution.basePower = it->spell().power;
-            resolution.damage = hpBefore - targetAfter->getStatus().getHp();
+            resolution.damage = hpBefore - hpAfter;
             resolution.effectivePower = effectivePower;
-            resolution.remainingHp = targetAfter->getStatus().getHp();
+            resolution.remainingHp = hpAfter;
             resolution.mpSpent = mpCost;
             tickAfter(worldTick, kSpellCooldownTicks, resolution.cooldownUntil);
             nextSpellTick[it->spell().casterId] = resolution.cooldownUntil;
@@ -759,6 +757,13 @@ bool Field::targetIsAlive(int64_t targetId) const {
     if (player != nullptr) return player->getStatus().getHp() > 0;
     const Npc* npc = findNpc(targetId);
     return npc != nullptr && npc->isAlive();
+}
+
+long Field::targetHp(int64_t targetId) const {
+    const Player* player = findPlayer(targetId);
+    if (player != nullptr) return player->getStatus().getHp();
+    const Npc* npc = findNpc(targetId);
+    return npc == nullptr ? 0 : npc->getStatus().getHp();
 }
 
 bool Field::applyDamageToTarget(int64_t targetId, long damage) {

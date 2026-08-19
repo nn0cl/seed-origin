@@ -121,6 +121,7 @@ private:
     bool applySpell(const server::SpellIntent& intent, std::string& error);
     const Position* findTargetPosition(int64_t targetId) const;
     bool targetIsAlive(int64_t targetId) const;
+    long targetHp(int64_t targetId) const;
     bool applyDamageToTarget(int64_t targetId, long damage);
     int64_t resolvePlayerId(int64_t id) const;
     void forgetBindingsForPlayer(int64_t gameplayId);
