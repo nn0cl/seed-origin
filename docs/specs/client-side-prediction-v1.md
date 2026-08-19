@@ -111,6 +111,19 @@ Scenario: Delta-only movement does not invent remote coordinates
   Given the client has no remote pose for session 99
   When a public movement= Event for 99 arrives with dx,dy,dz and no x,y,z
   Then no remote pose is created for session 99
+
+Scenario: Full Snapshot replaces every public pose including idle players
+  Given the client has remote session 99 at (1,0,0)
+  When a Snapshot reports session 99 at (1,0,0) and session 11 at (5,0,0)
+  Then remote 99 is replaced with (1,0,0)
+  And remote 11 is placed at (5,0,0)
+
+Scenario: Delta Event omits stationary public poses
+  Given a Snapshot placed session 99 at (1,0,0)
+  When only the local player moves on the next 20 Hz tick
+  Then the Event carries public pose for the mover
+  And the Event does not re-send session 99
+  And session 99 remains at (1,0,0) on the receiver
 ```
 
 ## External Dependencies
@@ -125,15 +138,27 @@ Scenario: Delta-only movement does not invent remote coordinates
 - Wire serialization format replacement.
 - Per-connection WorldUpdate.sequence (global monotonic sequence is unchanged).
 - Auth work in LISS-0146–0150.
+- RequestSnapshot as a wire Command (follow-up Issue; LISS-0122 already
+  leaves the actual request Command to later work).
+- Login-to-spawn via `Field::setPlayer` after Login (follow-up Issue; this
+  document does not define it).
 
 ## Ambiguities
 
-- None remaining for this issue. Adjudicator (2026-08-17): movement ack is
-  owner-session only; protocol version stays 1; public movement stays the
-  existing `movement=` Event broadcast. Adjudicator (2026-08-18): remote
-  interpolation is the CSP-minimum slice of LISS-0082; public player pose
-  belongs on Snapshot and as explicit `x= y= z=` on non-owner copies; do not
-  invent coordinates by integrating `dx,dy,dz`.
+- None remaining for the full vs delta WorldUpdate contract in this issue.
+  Adjudicator (2026-08-17): movement ack is owner-session only; protocol
+  version stays 1; public movement stays the existing `movement=` Event
+  broadcast. Adjudicator (2026-08-18): remote interpolation is the
+  CSP-minimum slice of LISS-0082; public player pose belongs on Snapshot
+  and as explicit `x= y= z=` on non-owner copies; do not invent coordinates
+  by integrating `dx,dy,dz`. Adjudicator (2026-08-19): full fetch and delta
+  fetch share the same WorldUpdate sequence column (not a second channel);
+  Snapshot is the full replace (join, sequence gap, reconnect), including
+  stationary public poses; 20 Hz Event is the delta (movers only);
+  `lastProcessedInputSequence` stays on the owner's copy of that sequence;
+  20 Hz is the tick and delta Event period, not a full-Snapshot rate.
+  RequestSnapshot wire Command and post-Login `Field::setPlayer` remain
+  follow-up Issues.
 
 ## Move payload
 
@@ -143,6 +168,33 @@ Scenario: Delta-only movement does not invent remote coordinates
 
 `clientInputSequence` is owned by the client, starts at 1, and is independent
 of `MovementIntent.sequence` and `WorldUpdate.sequence`.
+
+## Full vs delta on one WorldUpdate sequence
+
+Join, sequence gap, and reconnect use the same global
+`WorldUpdate.sequence` column as the 20 Hz movement Event. Do not split
+full fetch and delta fetch onto another channel or another sequence
+space. Protocol version stays 1.
+
+**Full (Snapshot):** replace every present player's public pose, including
+players who did not move. Emit on join, when a sequence number is missing,
+and on reconnect. A gap is never filled by guessing from Events; the
+receiver takes another full fetch.
+
+**Delta (Event):** the 20 Hz tick period. Only movers appear as a public
+`movement=` Event. Non-owner copies of those Events may carry the
+post-tick authoritative pose as `;x=;y=;z=`. Stationary players are not
+resent on that tick.
+
+Owner ack (`lastProcessedInputSequence` and colon-delimited pose fields)
+is attached only to the owner's copy of that same sequence. The 20 Hz
+period is the simulation tick and the delta Event cadence. The server
+does not emit a full Snapshot every 20 Hz tick.
+
+How the client asks for a Snapshot on the wire (`RequestSnapshot`
+Command) and how Login becomes a `Field::setPlayer` spawn are follow-up
+Issues. This document records that they exist as later work and does not
+define their payloads.
 
 ## Public movement vs owner ack
 
@@ -157,7 +209,8 @@ those deltas into another player's absolute coordinates.
 
 Other players' authoritative pose is explicit public state:
 
-- Snapshot `player.<i>.session` / `player.<i>.x,y,z` for every present player.
+- Snapshot `player.<i>.session` / `player.<i>.x,y,z` for every present player
+  (full replace, including idle).
 - The non-owner copy of a sequenced `movement=` Event may also carry public
   `x=<f>;y=<f>;z=<f>` copied from the same post-tick pose used for the owner
   ack. That copy still uses the same `WorldUpdate.sequence`.
@@ -204,7 +257,7 @@ public remote pose):
 local.x=<f>;local.y=<f>;local.z=<f>;local.lastProcessedInputSequence=<u64>
 ```
 
-Public Snapshot player poses (all present players; no input ack):
+Public Snapshot player poses (every present player, including idle; no input ack):
 
 ```text
 player.count=<n>;player.<i>.session=<id>;player.<i>.x=<f>;player.<i>.y=<f>;player.<i>.z=<f>

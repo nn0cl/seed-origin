@@ -27,6 +27,13 @@
   `lastProcessedInputSequence` と権威 `x,y,z` / `worldTick` を
   **本人セッション限定**で返す。公開移動は既存 `movement=` delta の
   全接続 fan-out。WorldUpdate.sequence にギャップを作らない。
+- 完全取得（Snapshot）と差分取得（Event）は同じ WorldUpdate 列。
+  完全は join / sequence 欠番 / 再接続で、止まっている人も含む公開
+  pose を置き換える。差分は 20 Hz Event で動いた人だけ（非本人
+  `movement=` の `;x=;y=;z=`）。欠番は Event から推測しない。
+- 20 Hz はティックと差分 Event の周期。フル Snapshot を 20 Hz では
+  出さない。RequestSnapshot のワイヤ Command と Login 後の
+  `Field::setPlayer` スポーンは後続 Issue。
 - クライアントは pending ring buffer を保持し、ack 後に権威状態へ戻して
   未 ack 入力を replay する。
 - 予測 state と render state を分離する。小さい誤差は 100–200 ms で平滑化、
@@ -48,6 +55,18 @@
   の broadcast。ack を別の sequenced WorldUpdate として他人に省略しては
   ならない。
 - Decided 2026-08-17: protocol version は 1 のまま。
+- Decided 2026-08-19: 完全取得と差分取得は同じ WorldUpdate sequence
+  列（別チャンネル／別 sequence にしない）。完全は Snapshot
+  （join / 欠番 / 再接続、静止者含む公開 pose の置き換え）。差分は
+  20 Hz Event（動いた人だけ、非本人 `;x=;y=;z=`）。欠番は Event から
+  推測せず再完全取得。本人 ack は同じ sequence の本人コピーだけ。
+  20 Hz はティックと差分周期でありフル Snapshot 周期ではない。
+  RequestSnapshot ワイヤ Command と Login 後 `Field::setPlayer`
+  スポーンは未決／後続 Issue（本 Issue では仕様化しない）。独立 ADR
+  は切らない（既存のグローバル sequence 運用の確認であり、ADR 0001
+  系の新規技術選定ではない。記録は本 Issue と
+  `docs/specs/client-side-prediction-v1.md` /
+  `docs/specs/network-protocol-v1.md`）。
 
 ## Context
 
@@ -101,6 +120,12 @@ Owner-only ack (2026-08-17): public `movement=` stays a global sequenced
 fan-out. Authoritative pose + `lastProcessedInputSequence` are attached only
 to the owner's copy of that same sequence. `ClientWorldUpdateReceiver` binds
 the local session and ignores foreign acks.
+
+Full vs delta (2026-08-19): Snapshot and Event stay one sequence column.
+Idle remotes are replaced on Snapshot and omitted from 20 Hz movement
+Events. Sequence gaps take another Snapshot; they are not reconstructed
+from Events. RequestSnapshot Command and post-Login `Field::setPlayer`
+are recorded as follow-up only.
 
 Work lives on branch `feature/liss-0152-client-side-prediction` in worktree
 `/Users/nn0cl/Documents/git/seed-origin-prediction` so uncommitted auth files

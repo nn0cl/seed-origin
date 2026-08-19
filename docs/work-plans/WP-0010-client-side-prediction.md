@@ -27,10 +27,21 @@ movement without weakening the authoritative 20 Hz simulation.
 - Reason it is unblocked: LISS-0121 and LISS-0125 already landed on main.
 - Adjudicator approval (2026-08-17): owner-only movementAck; protocol version
   stays 1; public movement remains the existing `movement=` broadcast.
+- Adjudicator approval (2026-08-19): full Snapshot and delta Event share
+  the same WorldUpdate sequence (not a second channel). Snapshot replaces
+  all public poses including idle players (join / gap / reconnect). 20 Hz
+  Events publish movers only (`;x=;y=;z=` on non-owner copies). Gaps
+  trigger another full fetch, not Event inference. Owner ack stays on the
+  owner's copy of that sequence. 20 Hz is tick + delta cadence, not a
+  full-Snapshot rate. RequestSnapshot wire Command and post-Login
+  `Field::setPlayer` spawn are follow-up Issues (not specified here). No
+  new ADR: operational confirmation of the existing sequence column.
 
 ## Risks
 
 - Mixing WorldUpdate sequence with client input ack.
+- Treating Snapshot and Event as separate sequence channels, or emitting
+  a full Snapshot every 20 Hz tick.
 - Divergent client/server integration rules.
 - Accidentally editing in-flight auth files on the original worktree.
 

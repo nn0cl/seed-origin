@@ -42,7 +42,7 @@ Move の payload は入力だけを運ぶ。クライアントは座標・時刻
 
 `clientInputSequence` はプレイヤーごとにクライアントが発行する単調増加番号（1, 2, 3, …）であり、サーバー内部の `MovementIntent.sequence` や `WorldUpdate.sequence` とは別空間である。legacy 形式は互換のため残し、予測 ack 追跡には入れない。
 
-サーバーは当該プレイヤーについて最後に処理した `clientInputSequence` と権威座標を、**本人セッションの送信コピーにだけ**付ける。公開 `movement=` Event はログイン済み全接続へ同じ `WorldUpdate.sequence` で fan-out する。`dx,dy,dz` は発生記録であり、クライアントはそれを積分して他人の絶対座標を捏造してはならない。他人の権威 pose は Snapshot の `player.*`、および非本人コピーに付ける明示的な `x= y= z=` として届く。`movementAck` / `lastProcessedInputSequence` を別の sequenced WorldUpdate として他人にだけ省略してはならない（欠番が Snapshot 再要求になる）。protocol version は 1 のまま。
+サーバーは当該プレイヤーについて最後に処理した `clientInputSequence` と権威座標を、**本人セッションの送信コピーにだけ**付ける。公開 `movement=` Event はログイン済み全接続へ同じ `WorldUpdate.sequence` で fan-out する。完全取得（Snapshot）と差分取得（Event）もその同じ sequence 列であり、別チャンネルにしない。`dx,dy,dz` は発生記録であり、クライアントはそれを積分して他人の絶対座標を捏造してはならない。他人の権威 pose は、完全取得では Snapshot の `player.*`（止まっている人も含む公開 pose の置き換え）、差分取得では動いた人だけの非本人 `movement=` に付ける `;x=;y=;z=` として届く。止まっている人は 20 Hz Event では再送しない。欠番は Event から推測せず、もう一度完全取得する。`movementAck` / `lastProcessedInputSequence` を別の sequenced WorldUpdate として他人にだけ省略してはならない。20 Hz はティックと差分 Event の周期であり、フル Snapshot を 20 Hz では出さない。protocol version は 1 のまま。
 
 公開 Event:
 
@@ -70,7 +70,7 @@ Snapshot 再同期時は任意で次を含めてよい（本人予測の rebase 
 local.x=<f>;local.y=<f>;local.z=<f>;local.lastProcessedInputSequence=<u64>
 ```
 
-Snapshot は公開プレイヤー pose を載せる:
+Snapshot は公開プレイヤー pose を載せる（完全取得。止まっている人も含む置き換え）:
 
 ```text
 player.count=<n>;player.<i>.session=<id>;player.<i>.x=<f>;player.<i>.y=<f>;player.<i>.z=<f>
@@ -84,6 +84,29 @@ player.count=<n>;player.<i>.session=<id>;player.<i>.x=<f>;player.<i>.y=<f>;playe
 - Commands received before a frame boundary are assigned a monotonic receive sequence and are processed in that order.
 - Commands received while a frame is being processed are deferred to the next frame.
 - A server update contains a `worldTick` and a monotonically increasing `sequence`.
-- A Snapshot represents authoritative state. An Event represents an occurrence for presentation or audit; clients must not infer authoritative state from an Event alone.
-- Clients may render at a different rate and interpolate Snapshot state. Client-side effect playback must not delay or overwrite authoritative state.
-- Snapshot/Event identifiers are used to discard duplicates and detect gaps. A gap requests a new Snapshot rather than guessing missing state.
+- Snapshot and Event share that same `sequence` column. They are the full
+  and delta modes of one WorldUpdate stream, not separate channels or
+  sequence spaces. Protocol version stays 1.
+- A Snapshot is the full fetch: join, sequence gap, and reconnect. It
+  replaces public poses for every present player, including players who
+  did not move.
+- An Event is an occurrence for presentation or audit, and (for movement)
+  the 20 Hz delta: only movers are published. Non-owner copies of
+  `movement=` may carry that mover's post-tick public pose as
+  `;x=;y=;z=`. Stationary players are not resent on the Event.
+- Clients must not infer omitted players, missing sequences, or absolute
+  coordinates from an Event occurrence record (`dx,dy,dz`) alone. A gap
+  requests another Snapshot (full fetch) rather than reconstructing state
+  from Events. Explicit public `x= y= z=` on a movement Event is the
+  delta pose for that mover only.
+- Clients may render at a different rate and interpolate public poses
+  received from Snapshot (full) or from those explicit Event poses
+  (delta). Client-side effect playback must not delay or overwrite
+  authoritative state.
+- Snapshot/Event identifiers are used to discard duplicates and detect gaps.
+- `lastProcessedInputSequence` (owner ack) is attached only to the owner's
+  copy of the same `sequence`.
+- 20 Hz is the world tick and the delta Event period. The server does not
+  emit a full Snapshot at 20 Hz.
+- RequestSnapshot as a wire Command, and spawning via `Field::setPlayer`
+  after Login, are follow-up Issues; this document does not define them.
