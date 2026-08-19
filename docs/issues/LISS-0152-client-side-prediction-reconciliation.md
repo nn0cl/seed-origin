@@ -32,8 +32,8 @@
   pose を置き換える。差分は 20 Hz Event で動いた人だけ（非本人
   `movement=` の `;x=;y=;z=`）。欠番は Event から推測しない。
 - 20 Hz はティックと差分 Event の周期。フル Snapshot を 20 Hz では
-  出さない。RequestSnapshot のワイヤ Command と Login 後の
-  `Field::setPlayer` スポーンは後続 Issue。
+  出さない。RequestSnapshot のワイヤ Command は後続 Issue。Login 後の
+  Field 配置は仮の origin（LISS-0153 で恒久規則に置き換え）。
 - クライアントは pending ring buffer を保持し、ack 後に権威状態へ戻して
   未 ack 入力を replay する。
 - 予測 state と render state を分離する。小さい誤差は 100–200 ms で平滑化、
@@ -61,9 +61,10 @@
   20 Hz Event（動いた人だけ、非本人 `;x=;y=;z=`）。欠番は Event から
   推測せず再完全取得。本人 ack は同じ sequence の本人コピーだけ。
   20 Hz はティックと差分周期でありフル Snapshot 周期ではない。
-  RequestSnapshot ワイヤ Command と Login 後 `Field::setPlayer`
-  スポーンは未決／後続 Issue（本 Issue では仕様化しない）。独立 ADR
-  は切らない（既存のグローバル sequence 運用の確認であり、ADR 0001
+  RequestSnapshot ワイヤ Command は未決／後続 Issue。Login 後の Field
+  配置は仮の origin（`PlayerId == session.internalId`、`(0,0,0)`、
+  `Status()`）。恒久スポーンは LISS-0153。独立 ADR は切らない（既存の
+  グローバル sequence 運用の確認であり、ADR 0001
   系の新規技術選定ではない。記録は本 Issue と
   `docs/specs/client-side-prediction-v1.md` /
   `docs/specs/network-protocol-v1.md`）。
@@ -124,8 +125,9 @@ the local session and ignores foreign acks.
 Full vs delta (2026-08-19): Snapshot and Event stay one sequence column.
 Idle remotes are replaced on Snapshot and omitted from 20 Hz movement
 Events. Sequence gaps take another Snapshot; they are not reconstructed
-from Events. RequestSnapshot Command and post-Login `Field::setPlayer`
-are recorded as follow-up only.
+from Events. RequestSnapshot Command remains follow-up. Post-Login Field
+placement uses the temporary origin convention; durable spawn is
+LISS-0153.
 
 Work lives on branch `feature/liss-0152-client-side-prediction` in worktree
 `/Users/nn0cl/Documents/git/seed-origin-prediction` so uncommitted auth files
@@ -139,6 +141,11 @@ on `feature/ue-client-mockup-delivery-brief` were not touched.
   `ignores_foreign_session_movement_ack`,
   `reconciles_from_owner_copy_of_public_movement`,
   `other_session_keeps_sequence_without_owner_ack`, plus prior CSP tests).
-- Full `seed_tests` still hits the pre-existing main failure
-  `dispatches_pending_commands_in_fifo_order` (Move with sessionId 0) before
-  later cases. Not introduced by this change.
+- Full vs delta subset plus login Field placement: new
+  `field_session_presence_tests` cases pass (join Snapshot lists self at
+  origin and idle others; login does not emit `movement=`; logout unsets).
+- Full `seed_tests` still aborts later on pre-existing
+  `queues_attack_and_spell_intents` (`spell-1|20,fire,120` parse). Not
+  introduced by this change. Earlier note about
+  `dispatches_pending_commands_in_fifo_order` no longer the first abort on
+  this branch.

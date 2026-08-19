@@ -1,4 +1,5 @@
 #include "ServerRuntime.h"
+#include "FieldSessionPresence.h"
 #include "LoginResponseCodec.h"
 #include "ServerCommandDispatcher.h"
 #include "WorldFrameUpdateBuilder.h"
@@ -26,6 +27,11 @@ bool ServerRuntime::start(uint16_t port) {
 bool ServerRuntime::stop() {
     pendingCommands.clear();
     inputQueue.clear();
+    for (std::map<uint64_t, std::unique_ptr<ClientSession> >::iterator it =
+             clients.begin();
+         it != clients.end(); ++it) {
+        FieldSessionPresence::removeAfterLogout(lifecycle.sessionId(it->first));
+    }
     clients.clear();
     lifecycle.clear();
     const bool closed = listener.closeSocket();
@@ -36,6 +42,11 @@ bool ServerRuntime::stop() {
 bool ServerRuntime::stop(session::SessionRegistry& registry) {
     pendingCommands.clear();
     inputQueue.clear();
+    for (std::map<uint64_t, std::unique_ptr<ClientSession> >::iterator it =
+             clients.begin();
+         it != clients.end(); ++it) {
+        FieldSessionPresence::removeAfterLogout(lifecycle.sessionId(it->first));
+    }
     clients.clear();
     lifecycle.clear(registry);
     const bool closed = listener.closeSocket();
@@ -94,6 +105,7 @@ size_t ServerRuntime::removeClosedClients(session::SessionRegistry& registry,
             continue;
         }
         const int64_t sessionId = lifecycle.sessionId(it->first);
+        FieldSessionPresence::removeAfterLogout(sessionId);
         lifecycle.disconnect(it->first, registry);
         if (dispatcher != nullptr) {
             dispatcher->forgetSession(sessionId);
@@ -223,6 +235,13 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
                 result.accepted = false;
                 result.session = {0, 0, std::string(), false};
                 result.error = bindingError;
+            } else if (!FieldSessionPresence::placeAfterLogin(
+                           result.session.internalId)) {
+                lifecycle.disconnect(pending.connectionId,
+                                     dispatcher.sessionRegistry());
+                result.accepted = false;
+                result.session = {0, 0, std::string(), false};
+                result.error = "authenticated session could not be placed on the field";
             } else {
                 ++newAuthenticatedSessions;
             }

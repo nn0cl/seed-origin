@@ -15,11 +15,13 @@ movement without weakening the authoritative 20 Hz simulation.
 
 | Issue | Status | Initial size | Current size | Planning record | Depends on | Blocks | Branch |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| LISS-0152 | in_progress | L | L | AIP-0152-001 | LISS-0121, LISS-0125 | - | feature/liss-0152-client-side-prediction |
+| LISS-0152 | in_progress | L | L | AIP-0152-001 | LISS-0121, LISS-0125 | LISS-0153 | feature/liss-0152-client-side-prediction |
+| LISS-0153 | proposed | M | M | AIP-0153-001 | LISS-0152 | - | |
 
 ## Recommended Order
 
-1. LISS-0152
+1. LISS-0152 (temporary origin Field placement on Login)
+2. LISS-0153 (durable spawn policy)
 
 ## Current Next Issue
 
@@ -33,9 +35,9 @@ movement without weakening the authoritative 20 Hz simulation.
   Events publish movers only (`;x=;y=;z=` on non-owner copies). Gaps
   trigger another full fetch, not Event inference. Owner ack stays on the
   owner's copy of that sequence. 20 Hz is tick + delta cadence, not a
-  full-Snapshot rate. RequestSnapshot wire Command and post-Login
-  `Field::setPlayer` spawn are follow-up Issues (not specified here). No
-  new ADR: operational confirmation of the existing sequence column.
+  full-Snapshot rate. RequestSnapshot wire Command remains a follow-up
+  Issue. Login Field placement uses a temporary origin until LISS-0153.
+  No new ADR: operational confirmation of the existing sequence column.
 
 ## Risks
 

@@ -124,6 +124,26 @@ Scenario: Delta Event omits stationary public poses
   Then the Event carries public pose for the mover
   And the Event does not re-send session 99
   And session 99 remains at (1,0,0) on the receiver
+
+Scenario: Join Snapshot includes the logging-in session at the temporary origin
+  Given the Field has no players
+  When session 21 is placed after Login
+  And the login-success tick captures a join Snapshot
+  Then the Snapshot payload contains player.count=1
+  And the Snapshot lists session 21 at (0,0,0)
+
+Scenario: Join Snapshot includes idle others already on the Field
+  Given session 99 is already on the Field at (6,0,0)
+  When session 21 is placed after Login
+  And the login-success tick captures a join Snapshot
+  Then player.count=2
+  And the Snapshot lists session 99 at (6,0,0)
+  And the Snapshot lists session 21 at (0,0,0)
+
+Scenario: Login placement does not emit a movement Event
+  Given session 21 was placed after Login
+  When a world frame applies with no movement inputs
+  Then no movement= Event is published
 ```
 
 ## External Dependencies
@@ -140,8 +160,9 @@ Scenario: Delta Event omits stationary public poses
 - Auth work in LISS-0146–0150.
 - RequestSnapshot as a wire Command (follow-up Issue; LISS-0122 already
   leaves the actual request Command to later work).
-- Login-to-spawn via `Field::setPlayer` after Login (follow-up Issue; this
-  document does not define it).
+- Durable spawn policy (initial zone, HP/MP, PlayerId vs sessionId split,
+  reconnect restore). Temporary Login placement is specified below and
+  replaced by LISS-0153.
 
 ## Ambiguities
 
@@ -157,8 +178,8 @@ Scenario: Delta Event omits stationary public poses
   stationary public poses; 20 Hz Event is the delta (movers only);
   `lastProcessedInputSequence` stays on the owner's copy of that sequence;
   20 Hz is the tick and delta Event period, not a full-Snapshot rate.
-  RequestSnapshot wire Command and post-Login `Field::setPlayer` remain
-  follow-up Issues.
+  RequestSnapshot remains a follow-up Issue. Post-Login Field placement
+  uses the temporary origin convention below until LISS-0153.
 
 ## Move payload
 
@@ -192,9 +213,28 @@ period is the simulation tick and the delta Event cadence. The server
 does not emit a full Snapshot every 20 Hz tick.
 
 How the client asks for a Snapshot on the wire (`RequestSnapshot`
-Command) and how Login becomes a `Field::setPlayer` spawn are follow-up
-Issues. This document records that they exist as later work and does not
-define their payloads.
+Command) remains a follow-up Issue. This document does not define that
+payload.
+
+## Temporary Login Field placement (until LISS-0153)
+
+Login currently binds `session.internalId` without putting a Player on
+the Field, so join Snapshots were empty (`player.count=0`). Until LISS-0153
+defines durable spawn, Login success places the session with the existing
+test convention:
+
+- `PlayerId` equals `session.internalId` (Snapshot `player.<i>.session`
+  already uses `Player::getPlayerId()`).
+- Pose is origin `(0, 0, 0)` via `Position(sessionId, 0, 0, 0)`, matching
+  idle-observer tests.
+- `Status()` is the default constructor (HP 0, MP 0), matching existing
+  Snapshot Field tests. This is not a combat spawn table.
+- Placement uses `Field::setPlayer`. Logout/disconnect uses
+  `Field::unsetPlayer` so departed sessions leave the public pose list.
+- This is a temporary initial pose. LISS-0153 replaces it.
+
+The login-success tick still emits at most one join Snapshot (not a 20 Hz
+full Snapshot). Placement does not invent a `movement=` Event.
 
 ## Public movement vs owner ack
 

@@ -46,6 +46,7 @@ set(SEED_CORE_SOURCES
     src/ChatCommandHandler.cpp
     src/EnvironmentEther.cpp
     src/WorldSnapshotBuilder.cpp
+    src/FieldSessionPresence.cpp
     src/ClientEnvironmentState.cpp
     src/ClientWorldSnapshotApplier.cpp
     src/ClientHazardEffectQueue.cpp
@@ -130,6 +131,7 @@ add_executable(seed_tests
     tests/ConnectionTest.cpp
     tests/ClientSessionTest.cpp
     tests/FieldStateTest.cpp
+    tests/FieldSessionPresenceTest.cpp
     tests/PlayerOwnershipTest.cpp
     tests/SeedBinaryTest.cpp
     tests/SessionRegistryTest.cpp

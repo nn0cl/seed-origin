@@ -40,6 +40,13 @@ void removes_players_by_full_id();
 void accepts_empty_frame();
 }
 
+namespace field_session_presence_tests {
+void join_snapshot_includes_logging_in_session_at_temporary_origin();
+void join_snapshot_includes_idle_others_already_on_the_field();
+void login_placement_does_not_emit_a_movement_event();
+void logout_removes_the_session_from_the_field();
+}
+
 namespace connection_tests {
 void close_is_idempotent();
 void reports_no_pending_client_without_blocking();
@@ -369,6 +376,10 @@ int main() {
     world_input_queue_tests::rejects_invalid_inputs_without_queue_mutation();
     world_input_tick_tests::advances_world_tick_and_cuts_unified_inputs();
     world_input_tick_tests::emits_inputs_in_common_sequence_order();
+    field_session_presence_tests::join_snapshot_includes_logging_in_session_at_temporary_origin();
+    field_session_presence_tests::join_snapshot_includes_idle_others_already_on_the_field();
+    field_session_presence_tests::login_placement_does_not_emit_a_movement_event();
+    field_session_presence_tests::logout_removes_the_session_from_the_field();
     combat_command_handler_tests::queues_attack_and_spell_intents();
     combat_command_handler_tests::rejects_malformed_or_oversized_power();
     combat_command_handler_tests::rejects_duplicate_request_id();

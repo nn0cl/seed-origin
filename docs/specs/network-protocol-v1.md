@@ -108,5 +108,9 @@ player.count=<n>;player.<i>.session=<id>;player.<i>.x=<f>;player.<i>.y=<f>;playe
   copy of the same `sequence`.
 - 20 Hz is the world tick and the delta Event period. The server does not
   emit a full Snapshot at 20 Hz.
-- RequestSnapshot as a wire Command, and spawning via `Field::setPlayer`
-  after Login, are follow-up Issues; this document does not define them.
+- RequestSnapshot as a wire Command remains a follow-up Issue; this
+  document does not define it.
+- Login success places the session on the Field with a **temporary**
+  origin pose `(0,0,0)` and `PlayerId == session.internalId` so the join
+  Snapshot can list public poses. Durable spawn (zone, HP/MP, reconnect
+  restore) is LISS-0153. See `docs/specs/client-side-prediction-v1.md`.
