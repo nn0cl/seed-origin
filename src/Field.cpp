@@ -18,10 +18,11 @@
 namespace {
 const uint64_t kAttackCooldownTicks = 1;
 const uint64_t kSpellCooldownTicks = 2;
-const float kSpellMpCostRatio = 0.1f;
+// ceil(basePower * 0.1): divide by 10 (IEEE-exact) so 50 costs 5, not 6.
+const double kSpellMpCostDivisor = 10.0;
 
 bool spellMpCost(float power, long& cost) {
-    const double raw = std::ceil(static_cast<double>(power) * kSpellMpCostRatio);
+    const double raw = std::ceil(static_cast<double>(power) / kSpellMpCostDivisor);
     if (!std::isfinite(raw) || raw < 1.0 ||
         raw > static_cast<double>(std::numeric_limits<long>::max())) {
         return false;
