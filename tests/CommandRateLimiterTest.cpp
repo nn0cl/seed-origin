@@ -14,6 +14,8 @@ void limits_commands_per_session_and_kind_per_world_frame() {
     assert(limiter.allow(19701, network::CommandType::Attack));
     limiter.beginFrame(2);
     assert(limiter.allow(19701, network::CommandType::Chat));
+    assert(limiter.allow(19701, network::CommandType::RequestSnapshot));
+    assert(!limiter.allow(19701, network::CommandType::RequestSnapshot));
 }
 
 void keeps_sessions_isolated_and_releases_counters() {

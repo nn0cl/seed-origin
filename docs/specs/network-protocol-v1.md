@@ -14,7 +14,7 @@
 | 12 | 4 | payload length | unsigned, big endian |
 | 16 | N | payload | opaque command-specific bytes |
 
-`N`は`MAX_COMMAND_PAYLOAD`以下でなければならない。Version 1のCommand typeはLogin、Move、Chat、Attack、CastSpell、Disconnectである。
+`N`は`MAX_COMMAND_PAYLOAD`以下でなければならない。Version 1のCommand typeはLogin、Move、Chat、Attack、CastSpell、Disconnect、RequestSnapshotである。RequestSnapshotのpayloadは空。session IDは接続が持つ正の内部ID（Login以外と同じ）。protocol versionは1のまま（Command型追加はv2に上げない）。
 
 Loginだけsession ID 0を許可し、それ以外はサーバーが発行した正の内部IDを要求する。クライアントは攻撃結果、魔法結果、座標、時刻を権威値として送信しない。
 
@@ -108,8 +108,16 @@ player.count=<n>;player.<i>.session=<id>;player.<i>.x=<f>;player.<i>.y=<f>;playe
   copy of the same `sequence`.
 - 20 Hz is the world tick and the delta Event period. The server does not
   emit a full Snapshot at 20 Hz.
-- RequestSnapshot as a wire Command remains a follow-up Issue; this
-  document does not define it.
+- RequestSnapshot (command type 7) is the wire Command for another full
+  fetch after a sequence gap or reconnect. Payload is empty; session ID
+  comes from the connection. The server accepts it only for an active
+  session, coalesces pending requests with join Snapshot needs, and
+  appends at most one Snapshot on the shared WorldUpdate.sequence that
+  tick (`capturePublicSnapshot` / `appendSnapshot`). Public `player.*`
+  matches join. Owner `local.*` uses existing `copyWorldUpdateForSession`.
+  Unauthenticated connections are not published to. Per-session limiter
+  admits one RequestSnapshot per world tick. Reconnect socket I/O remains
+  LISS-0128.
 - Login success places the session on the Field with a **temporary**
   origin pose `(0,0,0)` and `PlayerId == session.internalId` so the join
   Snapshot can list public poses. Durable spawn (zone, HP/MP, reconnect

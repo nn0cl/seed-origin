@@ -12,6 +12,7 @@
 #include "RemotePlayerPoseStore.h"
 #include "WorldUpdateAccumulator.h"
 #include "ClientWorldSnapshotApplier.h"
+#include "NetworkCommand.h"
 
 namespace client {
 
@@ -29,6 +30,7 @@ public:
                  std::string& error);
     void bindLocalSession(int64_t sessionId);
     void beginReconnect();
+    bool tryBuildRequestSnapshotCommand(network::NetworkCommand& command) const;
     bool snapshotRequested() const;
     uint64_t expectedSequence() const;
     WorldReceiveDecision lastDecision() const;

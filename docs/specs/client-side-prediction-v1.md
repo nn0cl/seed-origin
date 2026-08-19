@@ -144,6 +144,30 @@ Scenario: Login placement does not emit a movement Event
   Given session 21 was placed after Login
   When a world frame applies with no movement inputs
   Then no movement= Event is published
+
+Scenario: Sequence gap builds a RequestSnapshot Command
+  Given the client expected WorldUpdate sequence 1
+  And the local session id is 21
+  When an Event with WorldUpdate sequence 5 arrives
+  Then the receiver requests a snapshot
+  And the client builds CommandType RequestSnapshot with empty payload
+  And protocol version remains 1
+  And the command session id is 21
+
+Scenario: RequestSnapshot fans out one Snapshot on the shared sequence
+  Given two authenticated sessions send RequestSnapshot in the same tick
+  When the tick captures snapshots for pending requests
+  Then exactly one Snapshot is appended on the global WorldUpdate.sequence
+  And public player.* matches the join Snapshot form
+  And owner copies may add local.* without changing sequence
+  And no movement= Event is published solely because of the request
+
+Scenario: Snapshot after RequestSnapshot resumes Events
+  Given the client requested a Snapshot after reconnect
+  When a Snapshot is applied after skipped Events
+  Then snapshotRequested is false
+  And expected sequence is snapshot.sequence + 1
+  And a later Event at that sequence is applied
 ```
 
 ## External Dependencies
@@ -158,8 +182,8 @@ Scenario: Login placement does not emit a movement Event
 - Wire serialization format replacement.
 - Per-connection WorldUpdate.sequence (global monotonic sequence is unchanged).
 - Auth work in LISS-0146–0150.
-- RequestSnapshot as a wire Command (follow-up Issue; LISS-0122 already
-  leaves the actual request Command to later work).
+- Reconnect socket I/O (LISS-0128). RequestSnapshot wire Command is
+  LISS-0154.
 - Durable spawn policy (initial zone, HP/MP, PlayerId vs sessionId split,
   reconnect restore). Temporary Login placement is specified below and
   replaced by LISS-0153.
@@ -178,8 +202,9 @@ Scenario: Login placement does not emit a movement Event
   stationary public poses; 20 Hz Event is the delta (movers only);
   `lastProcessedInputSequence` stays on the owner's copy of that sequence;
   20 Hz is the tick and delta Event period, not a full-Snapshot rate.
-  RequestSnapshot remains a follow-up Issue. Post-Login Field placement
-  uses the temporary origin convention below until LISS-0153.
+  RequestSnapshot is command type 7 with empty payload (LISS-0154).
+  Post-Login Field placement uses the temporary origin convention below
+  until LISS-0153.
 
 ## Move payload
 
@@ -212,9 +237,10 @@ is attached only to the owner's copy of that same sequence. The 20 Hz
 period is the simulation tick and the delta Event cadence. The server
 does not emit a full Snapshot every 20 Hz tick.
 
-How the client asks for a Snapshot on the wire (`RequestSnapshot`
-Command) remains a follow-up Issue. This document does not define that
-payload.
+The client asks for another full fetch with `RequestSnapshot` (type 7,
+empty payload, protocol version 1). The session id is the connection's
+internal id. The server coalesces requests and join needs into at most
+one Snapshot on that tick, on the same WorldUpdate.sequence column.
 
 ## Temporary Login Field placement (until LISS-0153)
 

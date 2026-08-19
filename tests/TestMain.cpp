@@ -285,6 +285,13 @@ void idle_remote_appears_from_join_snapshot();
 void does_not_invent_remote_pose_from_delta_only();
 }
 
+namespace request_snapshot_command_tests {
+void validates_empty_payload_request_snapshot_on_protocol_v1();
+void client_builds_request_after_sequence_gap_or_reconnect();
+void dispatcher_accepts_logged_in_request_and_coalesces_one_snapshot();
+void snapshot_after_request_resumes_events_without_treating_movement_as_snapshot();
+}
+
 namespace remote_player_pose_store_tests {
 void snaps_on_snapshot_replace_and_skips_local_session();
 void interpolates_small_error_and_snaps_large_error();
@@ -380,6 +387,10 @@ int main() {
     field_session_presence_tests::join_snapshot_includes_idle_others_already_on_the_field();
     field_session_presence_tests::login_placement_does_not_emit_a_movement_event();
     field_session_presence_tests::logout_removes_the_session_from_the_field();
+    request_snapshot_command_tests::validates_empty_payload_request_snapshot_on_protocol_v1();
+    request_snapshot_command_tests::client_builds_request_after_sequence_gap_or_reconnect();
+    request_snapshot_command_tests::dispatcher_accepts_logged_in_request_and_coalesces_one_snapshot();
+    request_snapshot_command_tests::snapshot_after_request_resumes_events_without_treating_movement_as_snapshot();
     combat_command_handler_tests::queues_attack_and_spell_intents();
     combat_command_handler_tests::rejects_malformed_or_oversized_power();
     combat_command_handler_tests::rejects_duplicate_request_id();

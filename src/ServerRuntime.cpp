@@ -267,7 +267,7 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
 ServerFrameResult ServerRuntime::processFrame(ServerCommandDispatcher& dispatcher,
                                               std::string& error) {
     ServerFrameResult stopped = {inputTick.currentWorldTick(), 0,
-                                 std::vector<WorldInput>()};
+                                 std::vector<WorldInput>(), 0, 0};
     if (!running) {
         error = "server runtime is stopped";
         return stopped;
@@ -295,7 +295,8 @@ ServerFrameResult ServerRuntime::processFrame(ServerCommandDispatcher& dispatche
     removeClosedClients(dispatcher.sessionRegistry(), &dispatcher);
     const WorldFrameInputs worldFrame = inputTick.advanceFrame();
     ServerFrameResult result = {worldFrame.worldTick, accepted + processed,
-                                worldFrame.inputs, newAuthenticatedSessions};
+                                worldFrame.inputs, newAuthenticatedSessions,
+                                dispatcher.snapshotRequestCount()};
     return result;
 }
 

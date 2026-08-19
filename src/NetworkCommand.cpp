@@ -11,6 +11,7 @@ bool isKnownCommandType(CommandType type) {
         case CommandType::Attack:
         case CommandType::CastSpell:
         case CommandType::Disconnect:
+        case CommandType::RequestSnapshot:
             return true;
     }
     return false;
@@ -41,6 +42,14 @@ bool validateCommand(const NetworkCommand& command, std::string& error) {
     }
     error.clear();
     return true;
+}
+
+NetworkCommand makeRequestSnapshotCommand(int64_t sessionId) {
+    NetworkCommand command = {};
+    command.version = CURRENT_PROTOCOL_VERSION;
+    command.type = CommandType::RequestSnapshot;
+    command.sessionId = sessionId;
+    return command;
 }
 
 }

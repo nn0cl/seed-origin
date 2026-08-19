@@ -165,6 +165,7 @@ add_executable(seed_tests
     tests/LocalMovementPredictorTest.cpp
     tests/RemotePlayerPoseStoreTest.cpp
     tests/ClientPredictionSyncTest.cpp
+    tests/RequestSnapshotCommandTest.cpp
     tests/NpcCombatTargetTest.cpp
     tests/NpcAiTest.cpp
     tests/StatusSaturationTest.cpp

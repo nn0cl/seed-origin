@@ -17,16 +17,19 @@ movement without weakening the authoritative 20 Hz simulation.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | LISS-0152 | in_progress | L | L | AIP-0152-001 | LISS-0121, LISS-0125 | LISS-0153 | feature/liss-0152-client-side-prediction |
 | LISS-0153 | proposed | M | M | AIP-0153-001 | LISS-0152 | - | |
+| LISS-0154 | review | M | M | AIP-0154-001 | LISS-0121, LISS-0122, LISS-0152 | LISS-0128 | feature/liss-0152-client-side-prediction |
 
 ## Recommended Order
 
 1. LISS-0152 (temporary origin Field placement on Login)
-2. LISS-0153 (durable spawn policy)
+2. LISS-0154 (RequestSnapshot wire Command)
+3. LISS-0153 (durable spawn policy)
 
 ## Current Next Issue
 
-- Issue: LISS-0152
-- Reason it is unblocked: LISS-0121 and LISS-0125 already landed on main.
+- Issue: LISS-0153
+- Reason it is unblocked: LISS-0154 RequestSnapshot wire Command is on this
+  branch; durable spawn remains open.
 - Adjudicator approval (2026-08-17): owner-only movementAck; protocol version
   stays 1; public movement remains the existing `movement=` broadcast.
 - Adjudicator approval (2026-08-19): full Snapshot and delta Event share
@@ -35,8 +38,9 @@ movement without weakening the authoritative 20 Hz simulation.
   Events publish movers only (`;x=;y=;z=` on non-owner copies). Gaps
   trigger another full fetch, not Event inference. Owner ack stays on the
   owner's copy of that sequence. 20 Hz is tick + delta cadence, not a
-  full-Snapshot rate. RequestSnapshot wire Command remains a follow-up
-  Issue. Login Field placement uses a temporary origin until LISS-0153.
+  full-Snapshot rate. RequestSnapshot is LISS-0154 (type 7, empty
+  payload, at most one Snapshot per tick). Login Field placement uses a
+  temporary origin until LISS-0153.
   No new ADR: operational confirmation of the existing sequence column.
 
 ## Risks

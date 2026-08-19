@@ -29,8 +29,7 @@ map、PlayerId と sessionId の将来的な分離、切断時の退出、再接
 - Login の `session.internalId` と Field の `PlayerId` / Snapshot
   `player.<i>.session` の対応が明示される。
 - 切断・logout 時の Field 退出、再接続時の復元または再スポーンが明示される。
-- RequestSnapshot ワイヤ Command は本 Issue の必須範囲ではない（LISS-0122
-  後続）。
+- RequestSnapshot ワイヤ Command は本 Issue の必須範囲ではない（LISS-0154）。
 
 ## Adjudicator Decision Points
 
@@ -43,7 +42,7 @@ map、PlayerId と sessionId の将来的な分離、切断時の退出、再接
 
 - Included: Field 配置、join Snapshot の公開 pose、session 束縛との対応。
 - Omitted: auth（LISS-0146–0150）、20 Hz フル Snapshot、RequestSnapshot
-  Command、クライアント予測本体。
+  Command（LISS-0154）、クライアント予測本体。
 - Assumptions: protocol version 1。完全/差分は同一 WorldUpdate 列。
 
 ## AI Planning Records

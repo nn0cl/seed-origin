@@ -16,8 +16,9 @@
 - Snapshot前のEventを拒否し、既存状態を変更しない。
 - Snapshot適用後にEventを再開し、sequence期待値を更新する。
 - Snapshot要求状態と期待sequenceを上位の通信層から参照できる。
-- 再送・接続確立・実際のSnapshot要求Commandは後続Issueで実装する。
+- 再送・接続確立は後続Issue（LISS-0128）。実際の Snapshot 要求 Command は
+  LISS-0154。
 
 ## English
 
-After reconnect or a sequence gap, the client must refuse Events until a Snapshot is applied. Expose the pending request and expected sequence to the transport layer; actual reconnect I/O remains follow-up work.
+After reconnect or a sequence gap, the client must refuse Events until a Snapshot is applied. Expose the pending request and expected sequence to the transport layer. The RequestSnapshot wire Command is LISS-0154; reconnect socket I/O remains LISS-0128.

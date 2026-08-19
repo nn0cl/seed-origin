@@ -89,8 +89,10 @@ int main(int argc, char** argv) {
         std::string publishError;
         std::vector<server::MovementAck> publishAcks = applier.ownerMovementAcks();
         std::string snapshotError;
+        const size_t snapshotTriggers =
+            frame.newAuthenticatedSessions + frame.snapshotRequests;
         if (!applier.capturePublicSnapshotIfNewSessions(
-                frame.newAuthenticatedSessions, frame.worldTick, updates,
+                snapshotTriggers, frame.worldTick, updates,
                 publishAcks, snapshotError) &&
             !snapshotError.empty()) {
             std::cerr << "seed_server: snapshot error: " << snapshotError

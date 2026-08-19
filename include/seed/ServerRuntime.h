@@ -29,6 +29,7 @@ struct ServerFrameResult {
     size_t networkOperations;
     std::vector<WorldInput> inputs;
     size_t newAuthenticatedSessions;
+    size_t snapshotRequests;
 };
 
 class ServerRuntime {

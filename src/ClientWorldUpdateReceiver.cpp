@@ -96,6 +96,9 @@ bool ClientWorldUpdateReceiver::receive(const std::vector<uint8_t>& bytes,
             remotes.replaceFromSnapshot(environmentState.value().players,
                                         localSessionId);
         } else if (it->kind == network::UpdateKind::Event) {
+            if (needsSnapshot) {
+                continue;
+            }
             if (!applyEvent(*it, error)) return false;
         } else {
             error = "world update kind is unsupported";
@@ -103,6 +106,11 @@ bool ClientWorldUpdateReceiver::receive(const std::vector<uint8_t>& bytes,
             return false;
         }
         ++applied;
+    }
+    if (needsSnapshot) {
+        error = "world update cannot be applied before snapshot resync";
+        decision = WorldReceiveDecision::RequestSnapshot;
+        return false;
     }
     decision = WorldReceiveDecision::Applied;
     error.clear();
@@ -118,6 +126,13 @@ void ClientWorldUpdateReceiver::beginReconnect() {
     needsSnapshot = true;
     expected = 1;
     decision = WorldReceiveDecision::RequestSnapshot;
+}
+
+bool ClientWorldUpdateReceiver::tryBuildRequestSnapshotCommand(
+    network::NetworkCommand& command) const {
+    if (!needsSnapshot || localSessionId <= 0) return false;
+    command = network::makeRequestSnapshotCommand(localSessionId);
+    return true;
 }
 
 bool ClientWorldUpdateReceiver::snapshotRequested() const { return needsSnapshot; }

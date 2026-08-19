@@ -20,7 +20,8 @@
 ## Implementation slice
 
 - `CommandRateLimiter`はWorldTickごとにセッション・Command種別の受付数を
-  リセットする。Moveは20、Chat/Attack/CastSpellは各4、Disconnectは2を上限とする。
+  リセットする。Moveは20、Chat/Attack/CastSpellは各4、Disconnectは2、
+  RequestSnapshotは1を上限とする。
 - `ServerCommandDispatcher`はrate limit超過をWorldInputQueue投入前に拒否し、
   active sessionごとに独立したカウンタを持つ。
 - `ServerRuntime`は接続ごとの未処理Commandを128件に制限し、全体上限1024件と
