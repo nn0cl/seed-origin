@@ -62,6 +62,16 @@ bool parsePlayerField(const std::string& key, const std::string& value,
         if (field == "x") player.x = parsed;
         if (field == "y") player.y = parsed;
         if (field == "z") player.z = parsed;
+    } else if (field == "id") {
+        if (!parseInt64(value, player.gameplayId) || player.gameplayId <= 0) {
+            error = "snapshot player gameplay id is invalid";
+        }
+    } else if (field == "name") {
+        if (value.find(';') != std::string::npos) {
+            error = "snapshot player name is invalid";
+        } else {
+            player.name = value;
+        }
     } else {
         error = "snapshot contains an unknown player field";
     }

@@ -30,7 +30,7 @@ bool ServerRuntime::stop() {
     for (std::map<uint64_t, std::unique_ptr<ClientSession> >::iterator it =
              clients.begin();
          it != clients.end(); ++it) {
-        FieldSessionPresence::removeAfterLogout(lifecycle.sessionId(it->first));
+        FieldSessionPresence::releaseAfterStop(lifecycle.sessionId(it->first));
     }
     clients.clear();
     lifecycle.clear();
@@ -45,7 +45,7 @@ bool ServerRuntime::stop(session::SessionRegistry& registry) {
     for (std::map<uint64_t, std::unique_ptr<ClientSession> >::iterator it =
              clients.begin();
          it != clients.end(); ++it) {
-        FieldSessionPresence::removeAfterLogout(lifecycle.sessionId(it->first));
+        FieldSessionPresence::releaseAfterStop(lifecycle.sessionId(it->first));
     }
     clients.clear();
     lifecycle.clear(registry);
@@ -240,7 +240,8 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
                 result.session = {0, 0, std::string(), false};
                 result.error = bindingError;
             } else if (!FieldSessionPresence::placeAfterLogin(
-                           result.session.internalId)) {
+                           result.session.internalId,
+                           result.session.claimedId)) {
                 lifecycle.disconnect(pending.connectionId,
                                      dispatcher.sessionRegistry());
                 result.accepted = false;

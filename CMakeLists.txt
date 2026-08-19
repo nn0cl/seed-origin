@@ -47,6 +47,7 @@ set(SEED_CORE_SOURCES
     src/EnvironmentEther.cpp
     src/WorldSnapshotBuilder.cpp
     src/FieldSessionPresence.cpp
+    src/InMemoryAuthenticatedPlayerIdStub.cpp
     src/ClientEnvironmentState.cpp
     src/ClientWorldSnapshotApplier.cpp
     src/ClientHazardEffectQueue.cpp

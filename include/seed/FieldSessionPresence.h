@@ -2,16 +2,25 @@
 #define SEED_FIELD_SESSION_PRESENCE_H
 
 #include <cstdint>
+#include <string>
+
+#include "AuthenticatedPlayerIdPort.h"
+#include "LoginFieldSpawnSettings.h"
 
 namespace server {
 
-// Temporary Login presence on Field until LISS-0153 defines durable spawn.
-// PlayerId equals session.internalId. Pose is origin (0,0,0). Status() is
-// the default constructor used by existing Snapshot Field tests.
 class FieldSessionPresence {
 public:
+    static void usePlayerIdPort(const AuthenticatedPlayerIdPort* port);
+    static void useSpawnSettings(const LoginFieldSpawnSettings& settings);
+    static LoginFieldSpawnSettings spawnSettings();
+
     static bool placeAfterLogin(int64_t sessionId);
+    static bool placeAfterLogin(int64_t sessionId, const std::string& claimedId);
+    static bool placeAfterLogin(int64_t sessionId, const std::string& claimedId,
+                                const LoginFieldSpawnSettings& settings);
     static bool removeAfterLogout(int64_t sessionId);
+    static bool releaseAfterStop(int64_t sessionId);
 };
 
 }

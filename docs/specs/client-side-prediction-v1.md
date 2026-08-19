@@ -125,12 +125,20 @@ Scenario: Delta Event omits stationary public poses
   And the Event does not re-send session 99
   And session 99 remains at (1,0,0) on the receiver
 
-Scenario: Join Snapshot includes the logging-in session at the temporary origin
+Scenario: Join Snapshot includes the logging-in session at the early spawn
   Given the Field has no players
   When session 21 is placed after Login
   And the login-success tick captures a join Snapshot
   Then the Snapshot payload contains player.count=1
   And the Snapshot lists session 21 at (0,0,0)
+  And the Snapshot lists a gameplay id distinct from session 21
+  And the Snapshot does not list the auth PlayerId
+
+Scenario: Duplicate PlayerName is rejected
+  Given session 21 is already placed with PlayerName Hero
+  When session 22 is placed with the same PlayerName Hero
+  Then placement fails
+  And session 21 remains on the Field
 
 Scenario: Join Snapshot includes idle others already on the Field
   Given session 99 is already on the Field at (6,0,0)
@@ -181,13 +189,12 @@ Scenario: Snapshot after RequestSnapshot resumes Events
 - Client renderer / UI framework (LISS-0064).
 - Wire serialization format replacement.
 - Per-connection WorldUpdate.sequence (global monotonic sequence is unchanged).
-- Auth work in LISS-0146–0150.
+- Auth work in LISS-0146–0150 (this worktree consumes a PlayerId port stub).
 - Reconnect socket I/O remainder (timeout, ops, UI) stays LISS-0128.
   The 2026-08-19 slice sends RequestSnapshot on POSIX TCP after
   beginReconnect and Login. RequestSnapshot wire Command is LISS-0154.
-- Durable spawn policy (initial zone, HP/MP, PlayerId vs sessionId split,
-  reconnect restore). Temporary Login placement is specified below and
-  replaced by LISS-0153.
+- Name uniqueness normalization (case/whitespace) and rename.
+- Account-wide name ledger inside seed-auth.
 
 ## Ambiguities
 
@@ -204,8 +211,8 @@ Scenario: Snapshot after RequestSnapshot resumes Events
   `lastProcessedInputSequence` stays on the owner's copy of that sequence;
   20 Hz is the tick and delta Event period, not a full-Snapshot rate.
   RequestSnapshot is command type 7 with empty payload (LISS-0154).
-  Post-Login Field placement uses the temporary origin convention below
-  until LISS-0153.
+  Login Field placement follows LISS-0153 (configurable spawn, four identity
+  roles, unique PlayerName).
 
 ## Move payload
 
@@ -243,22 +250,27 @@ empty payload, protocol version 1). The session id is the connection's
 internal id. The server coalesces requests and join needs into at most
 one Snapshot on that tick, on the same WorldUpdate.sequence column.
 
-## Temporary Login Field placement (until LISS-0153)
+## Login Field placement (LISS-0153)
 
-Login currently binds `session.internalId` without putting a Player on
-the Field, so join Snapshots were empty (`player.count=0`). Until LISS-0153
-defines durable spawn, Login success places the session with the existing
-test convention:
+Login places a Field entity and binds the connection session to it.
 
-- `PlayerId` equals `session.internalId` (Snapshot `player.<i>.session`
-  already uses `Player::getPlayerId()`).
-- Pose is origin `(0, 0, 0)` via `Position(sessionId, 0, 0, 0)`, matching
-  idle-observer tests.
-- `Status()` is the default constructor (HP 0, MP 0), matching existing
-  Snapshot Field tests. This is not a combat spawn table.
-- Placement uses `Field::setPlayer`. Logout/disconnect uses
-  `Field::unsetPlayer` so departed sessions leave the public pose list.
-- This is a temporary initial pose. LISS-0153 replaces it.
+- **Auth PlayerId**: opaque, from `AuthenticatedPlayerIdPort` (early stub).
+  Persistent across reconnect. Not on Snapshot, movement, or UI.
+- **session ID**: `session.internalId`. Connection header and Snapshot
+  `player.<i>.session`. Changes on reconnect. Not shown in game UI.
+- **Gameplay id**: Field `Player::getPlayerId()`, Attack/CastSpell `targetId`.
+  Snapshot `player.<i>.id`. World-allocated, not the auth PK. Not shown in UI.
+- **PlayerName**: display only (`player.<i>.name` when set). Exact-match unique
+  on Field residents. No rename in this slice.
+
+Early spawn defaults, when settings are unset: pose `(0,0,0)`, HP/MP `10,10`.
+Spawn HP/MP clamp to settings max (early `1024,1024`). `Status::gainHp` still
+saturates at `long` max (existing overflow cap; Adjudicator proposed 1024 as
+the spawn/game max).
+
+Reconnect binds the new session to the existing auth PlayerId entity (pose and
+Status stay). Disconnect unbinds the session and omits the entity from public
+poses until rebound; it does not `unsetPlayer`.
 
 The login-success tick still emits at most one join Snapshot (not a 20 Hz
 full Snapshot). Placement does not invent a `movement=` Event.
@@ -327,8 +339,11 @@ local.x=<f>;local.y=<f>;local.z=<f>;local.lastProcessedInputSequence=<u64>
 Public Snapshot player poses (every present player, including idle; no input ack):
 
 ```text
-player.count=<n>;player.<i>.session=<id>;player.<i>.x=<f>;player.<i>.y=<f>;player.<i>.z=<f>
+player.count=<n>;player.<i>.session=<id>;player.<i>.x=<f>;player.<i>.y=<f>;player.<i>.z=<f>;player.<i>.id=<gameplayId>;player.<i>.name=<name>
 ```
+
+`name` is omitted when unset. `id` is omitted only for pose fixtures that
+never assigned a gameplay id. Auth PlayerId is never present.
 
 Non-owner copies of `movement=` may append public pose without owner ack:
 

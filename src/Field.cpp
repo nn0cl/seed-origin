@@ -36,7 +36,7 @@ bool tickAfter(uint64_t tick, uint64_t duration, uint64_t& result) {
 }
 }
 
-Field::Field() : lastEtherHazard(0.0f) {
+Field::Field() : lastEtherHazard(0.0f), nextGameplayId(1) {
     
 };
 
@@ -80,7 +80,9 @@ Field::setPlayer(Player player){
 bool
 Field::unsetPlayer(Player player){
     Field* instance = Field::getInstance();
-    const int64_t playerId = player.getPlayerId();
+    const int64_t playerId = instance->resolvePlayerId(player.getPlayerId());
+    if (playerId <= 0) return false;
+    instance->forgetBindingsForPlayer(playerId);
     instance->nextAttackTick.erase(playerId);
     instance->nextSpellTick.erase(playerId);
     return instance->playerList.erase(playerId) > 0;
@@ -117,7 +119,8 @@ bool Field::scheduleNpcRespawn(int64_t npcId, uint64_t respawnTick,
 
 bool
 Field::queueMovement(int64_t playerId, float dx, float dy, float dz){
-    std::map<int64_t,Player>::iterator playerItt = playerList.find(playerId);
+    const int64_t gameplayId = resolvePlayerId(playerId);
+    std::map<int64_t,Player>::iterator playerItt = playerList.find(gameplayId);
     if (playerItt == playerList.end()) return false;
     Position next = playerItt->second.getPosition();
     float x = next.getX();
@@ -145,12 +148,13 @@ Field::queueNpcMovement(int64_t npcId, float dx, float dy, float dz){
 
 bool
 Field::hasPlayer(int64_t playerId) const {
-    return playerList.find(playerId) != playerList.end();
+    return resolvePlayerId(playerId) > 0;
 }
 
 const Player*
 Field::findPlayer(int64_t playerId) const {
-    std::map<int64_t,Player>::const_iterator found = playerList.find(playerId);
+    const int64_t gameplayId = resolvePlayerId(playerId);
+    std::map<int64_t,Player>::const_iterator found = playerList.find(gameplayId);
     return found == playerList.end() ? nullptr : &found->second;
 }
 
@@ -168,7 +172,8 @@ float Field::environmentHazard() const {
 
 Player*
 Field::findPlayer(int64_t playerId) {
-    std::map<int64_t,Player>::iterator found = playerList.find(playerId);
+    const int64_t gameplayId = resolvePlayerId(playerId);
+    std::map<int64_t,Player>::iterator found = playerList.find(gameplayId);
     return found == playerList.end() ? nullptr : &found->second;
 }
 
@@ -201,11 +206,121 @@ std::vector<PlayerPoseSnapshot> Field::publicPlayerPoses() const {
     for (std::map<int64_t, Player>::const_iterator it = playerList.begin();
          it != playerList.end(); ++it) {
         const Player& player = it->second;
+        const int64_t boundSession = sessionIdForPlayer(player.getPlayerId());
+        if (player.getAuthPlayerId() > 0 && boundSession <= 0) continue;
         const Position& pose = player.getPosition();
-        poses.push_back({player.getPlayerId(), pose.getX(), pose.getY(),
-                         pose.getZ()});
+        PlayerPoseSnapshot snapshot;
+        snapshot.sessionId = boundSession > 0 ? boundSession : player.getPlayerId();
+        snapshot.x = pose.getX();
+        snapshot.y = pose.getY();
+        snapshot.z = pose.getZ();
+        snapshot.gameplayId = player.getPlayerId();
+        snapshot.name = player.getPlayerName();
+        poses.push_back(snapshot);
     }
     return poses;
+}
+
+int64_t Field::resolvePlayerId(int64_t id) const {
+    if (id <= 0) return 0;
+    if (playerList.find(id) != playerList.end()) return id;
+    const std::map<int64_t, int64_t>::const_iterator found =
+        sessionToPlayerId.find(id);
+    if (found == sessionToPlayerId.end()) return 0;
+    return found->second;
+}
+
+void Field::forgetBindingsForPlayer(int64_t gameplayId) {
+    const std::map<int64_t, int64_t>::iterator bound =
+        playerToSessionId.find(gameplayId);
+    if (bound != playerToSessionId.end()) {
+        sessionToPlayerId.erase(bound->second);
+        playerToSessionId.erase(bound);
+    }
+}
+
+bool Field::bindSession(int64_t sessionId, int64_t gameplayId) {
+    if (sessionId <= 0 || gameplayId <= 0) return false;
+    if (playerList.find(gameplayId) == playerList.end()) return false;
+    unbindSession(sessionId);
+    const std::map<int64_t, int64_t>::iterator previous =
+        playerToSessionId.find(gameplayId);
+    if (previous != playerToSessionId.end()) {
+        sessionToPlayerId.erase(previous->second);
+        playerToSessionId.erase(previous);
+    }
+    sessionToPlayerId[sessionId] = gameplayId;
+    playerToSessionId[gameplayId] = sessionId;
+    return true;
+}
+
+bool Field::unbindSession(int64_t sessionId) {
+    if (sessionId <= 0) return false;
+    const std::map<int64_t, int64_t>::iterator found =
+        sessionToPlayerId.find(sessionId);
+    if (found == sessionToPlayerId.end()) return false;
+    playerToSessionId.erase(found->second);
+    sessionToPlayerId.erase(found);
+    return true;
+}
+
+int64_t Field::playerIdForSession(int64_t sessionId) const {
+    const std::map<int64_t, int64_t>::const_iterator found =
+        sessionToPlayerId.find(sessionId);
+    return found == sessionToPlayerId.end() ? 0 : found->second;
+}
+
+int64_t Field::sessionIdForPlayer(int64_t gameplayId) const {
+    const std::map<int64_t, int64_t>::const_iterator found =
+        playerToSessionId.find(gameplayId);
+    return found == playerToSessionId.end() ? 0 : found->second;
+}
+
+int64_t Field::allocateGameplayId() {
+    while (nextGameplayId < std::numeric_limits<int64_t>::max()) {
+        const int64_t candidate = nextGameplayId++;
+        if (playerList.find(candidate) != playerList.end()) continue;
+        if (findNpc(candidate) != nullptr) continue;
+        if (sessionToPlayerId.find(candidate) != sessionToPlayerId.end()) continue;
+        return candidate;
+    }
+    return 0;
+}
+
+const Player* Field::findPlayerByAuthId(int64_t authPlayerId) const {
+    if (authPlayerId <= 0) return nullptr;
+    for (std::map<int64_t, Player>::const_iterator it = playerList.begin();
+         it != playerList.end(); ++it) {
+        if (it->second.getAuthPlayerId() == authPlayerId) return &it->second;
+    }
+    return nullptr;
+}
+
+Player* Field::findPlayerByAuthId(int64_t authPlayerId) {
+    if (authPlayerId <= 0) return nullptr;
+    for (std::map<int64_t, Player>::iterator it = playerList.begin();
+         it != playerList.end(); ++it) {
+        if (it->second.getAuthPlayerId() == authPlayerId) return &it->second;
+    }
+    return nullptr;
+}
+
+bool Field::hasPlayerName(const std::string& displayName) const {
+    if (displayName.empty()) return false;
+    for (std::map<int64_t, Player>::const_iterator it = playerList.begin();
+         it != playerList.end(); ++it) {
+        if (it->second.getPlayerName() == displayName) return true;
+    }
+    return false;
+}
+
+std::vector<int64_t> Field::residentPlayerIds() const {
+    std::vector<int64_t> ids;
+    for (std::map<int64_t, Player>::const_iterator it = playerList.begin();
+         it != playerList.end(); ++it) {
+        ids.push_back(it->first);
+    }
+    return ids;
 }
 
 void Field::processFrame(){
@@ -389,7 +504,7 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
          it != inputs.end(); ++it) {
         if (it->kind() == server::WorldInputKind::Movement) {
             std::map<int64_t,Player>::iterator playerItt =
-                playerList.find(it->movement().sessionId);
+                playerList.find(resolvePlayerId(it->movement().sessionId));
             Position next = playerItt->second.getPosition();
             float x = next.getX();
             float y = next.getY();

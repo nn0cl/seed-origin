@@ -71,6 +71,12 @@ bool WorldSnapshotBuilder::formatPayload(
              << ";player." << index << ".x=" << player.x
              << ";player." << index << ".y=" << player.y
              << ";player." << index << ".z=" << player.z;
+        if (player.gameplayId > 0) {
+            text << ";player." << index << ".id=" << player.gameplayId;
+        }
+        if (!player.name.empty()) {
+            text << ";player." << index << ".name=" << player.name;
+        }
     }
     payload = text.str();
     error.clear();

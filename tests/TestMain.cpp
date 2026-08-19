@@ -45,6 +45,10 @@ void join_snapshot_includes_logging_in_session_at_temporary_origin();
 void join_snapshot_includes_idle_others_already_on_the_field();
 void login_placement_does_not_emit_a_movement_event();
 void logout_removes_the_session_from_the_field();
+void login_placement_uses_configured_pose_and_status();
+void login_placement_clamps_hp_mp_to_spawn_max();
+void reconnect_rebinds_new_session_to_the_same_entity();
+void duplicate_player_name_is_rejected();
 }
 
 namespace connection_tests {
@@ -399,6 +403,10 @@ int main() {
     field_session_presence_tests::join_snapshot_includes_idle_others_already_on_the_field();
     field_session_presence_tests::login_placement_does_not_emit_a_movement_event();
     field_session_presence_tests::logout_removes_the_session_from_the_field();
+    field_session_presence_tests::login_placement_uses_configured_pose_and_status();
+    field_session_presence_tests::login_placement_clamps_hp_mp_to_spawn_max();
+    field_session_presence_tests::reconnect_rebinds_new_session_to_the_same_entity();
+    field_session_presence_tests::duplicate_player_name_is_rejected();
     request_snapshot_command_tests::validates_empty_payload_request_snapshot_on_protocol_v1();
     request_snapshot_command_tests::client_builds_request_after_sequence_gap_or_reconnect();
     request_snapshot_command_tests::dispatcher_accepts_logged_in_request_and_coalesces_one_snapshot();

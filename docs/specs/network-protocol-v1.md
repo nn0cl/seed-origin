@@ -73,10 +73,12 @@ local.x=<f>;local.y=<f>;local.z=<f>;local.lastProcessedInputSequence=<u64>
 Snapshot は公開プレイヤー pose を載せる（完全取得。止まっている人も含む置き換え）:
 
 ```text
-player.count=<n>;player.<i>.session=<id>;player.<i>.x=<f>;player.<i>.y=<f>;player.<i>.z=<f>
+player.count=<n>;player.<i>.session=<id>;player.<i>.x=<f>;player.<i>.y=<f>;player.<i>.z=<f>;player.<i>.id=<gameplayId>;player.<i>.name=<name>
 ```
 
-詳細と受入シナリオは `docs/specs/client-side-prediction-v1.md`。
+`session` は接続同期用でありゲーム内 UI には出さない。`id` は Attack/CastSpell の `targetId` と同じゲーム内ID。`name` は表示専用（空なら省略してよい）。認証 PlayerId は載せない。
+
+Login 後の Field 配置（初期 pose/HP/MP、session とゲーム内ID の分離、再接続）は LISS-0153。詳細は `docs/specs/client-side-prediction-v1.md`。
 
 ## Server frame and client presentation contract
 
@@ -120,7 +122,8 @@ player.count=<n>;player.<i>.session=<id>;player.<i>.x=<f>;player.<i>.y=<f>;playe
   slice of LISS-0128) sends that Command on the existing POSIX TCP
   connection after `beginReconnect` and an accepted Login. It does not
   add UDP, a second sequence, or a 20 Hz full-Snapshot stream.
-- Login success places the session on the Field with a **temporary**
-  origin pose `(0,0,0)` and `PlayerId == session.internalId` so the join
-  Snapshot can list public poses. Durable spawn (zone, HP/MP, reconnect
-  restore) is LISS-0153. See `docs/specs/client-side-prediction-v1.md`.
+- Login success places the session on the Field using configurable spawn
+  (early default pose `(0,0,0)`, HP/MP `10,10`, spawn max `1024,1024`).
+  Snapshot lists connection `session`, gameplay `id` (Attack `targetId`),
+  and display `name`. Auth PlayerId is not on the public wire. See
+  LISS-0153 and `docs/specs/client-side-prediction-v1.md`.

@@ -16,7 +16,7 @@ movement without weakening the authoritative 20 Hz simulation.
 | Issue | Status | Initial size | Current size | Planning record | Depends on | Blocks | Branch |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | LISS-0152 | in_progress | L | L | AIP-0152-001 | LISS-0121, LISS-0125 | LISS-0153 | feature/liss-0152-client-side-prediction |
-| LISS-0153 | proposed | M | M | AIP-0153-001 | LISS-0152 | - | |
+| LISS-0153 | in_progress | M | M | AIP-0153-001 | LISS-0152 | - | feature/liss-0152-client-side-prediction |
 | LISS-0154 | review | M | M | AIP-0154-001 | LISS-0121, LISS-0122, LISS-0152 | LISS-0128 | feature/liss-0152-client-side-prediction |
 | LISS-0128 | in_progress | L | M (I/O slice) | AIP-0128-001 | LISS-0121, LISS-0122, LISS-0154 | LISS-0129 | feature/liss-0152-client-side-prediction |
 
@@ -41,8 +41,8 @@ movement without weakening the authoritative 20 Hz simulation.
   trigger another full fetch, not Event inference. Owner ack stays on the
   owner's copy of that sequence. 20 Hz is tick + delta cadence, not a
   full-Snapshot rate. RequestSnapshot is LISS-0154 (type 7, empty
-  payload, at most one Snapshot per tick). Login Field placement uses a
-  temporary origin until LISS-0153.
+  payload, at most one Snapshot per tick). Login Field placement uses
+  configurable spawn and the four identity roles in LISS-0153.
   No new ADR: operational confirmation of the existing sequence column.
 
 ## Risks
