@@ -23,6 +23,20 @@ bool parseAttack(const std::string& payload, std::string& requestId,
            power > 0.0f && power <= MAX_COMBAT_POWER;
 }
 
+bool parseExactInt64(const std::string& text, int64_t& value) {
+    std::istringstream input(text);
+    if (!(input >> value)) return false;
+    input >> std::ws;
+    return input.eof();
+}
+
+bool parseExactFloat(const std::string& text, float& value) {
+    std::istringstream input(text);
+    if (!(input >> value)) return false;
+    input >> std::ws;
+    return input.eof();
+}
+
 bool parseSpell(const std::string& payload, std::string& requestId,
                 int64_t& targetId,
                 std::string& element, float& power) {
@@ -30,15 +44,25 @@ bool parseSpell(const std::string& payload, std::string& requestId,
     if (requestSeparator == std::string::npos) return false;
     requestId = payload.substr(0, requestSeparator);
     if (requestId.empty() || requestId.size() > 64) return false;
-    char separator = 0;
-    std::istringstream input(payload.substr(requestSeparator + 1));
-    if (!(input >> targetId >> separator) || separator != ',' ||
-        !(input >> element >> separator) || separator != ',' || !(input >> power)) {
+
+    // Element is comma-delimited. operator>> would consume "fire,120" as one
+    // token because comma is not whitespace (LISS-0112 / LISS-0138).
+    const std::string rest = payload.substr(requestSeparator + 1);
+    const std::string::size_type firstComma = rest.find(',');
+    const std::string::size_type secondComma =
+        firstComma == std::string::npos ? std::string::npos
+                                        : rest.find(',', firstComma + 1);
+    if (firstComma == std::string::npos || secondComma == std::string::npos ||
+        rest.find(',', secondComma + 1) != std::string::npos) {
         return false;
     }
-    input >> std::ws;
-    return input.eof() && targetId > 0 && !element.empty() &&
-           std::isfinite(power) && power > 0.0f && power <= MAX_COMBAT_POWER;
+    element = rest.substr(firstComma + 1, secondComma - firstComma - 1);
+    if (!parseExactInt64(rest.substr(0, firstComma), targetId) ||
+        !parseExactFloat(rest.substr(secondComma + 1), power)) {
+        return false;
+    }
+    return targetId > 0 && !element.empty() && std::isfinite(power) &&
+           power > 0.0f && power <= MAX_COMBAT_POWER;
 }
 
 }
