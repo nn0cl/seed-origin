@@ -40,6 +40,7 @@ public:
     bool start(uint16_t port);
     bool stop();
     bool isRunning() const;
+    uint16_t listeningPort() const;
     AcceptStatus acceptPendingClient(uint64_t& connectionId, std::string& error);
     ClientSession* clientSession(uint64_t connectionId);
     size_t connectedClientCount() const;

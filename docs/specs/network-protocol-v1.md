@@ -116,8 +116,10 @@ player.count=<n>;player.<i>.session=<id>;player.<i>.x=<f>;player.<i>.y=<f>;playe
   tick (`capturePublicSnapshot` / `appendSnapshot`). Public `player.*`
   matches join. Owner `local.*` uses existing `copyWorldUpdateForSession`.
   Unauthenticated connections are not published to. Per-session limiter
-  admits one RequestSnapshot per world tick. Reconnect socket I/O remains
-  LISS-0128.
+  admits one RequestSnapshot per world tick. Reconnect socket I/O (this
+  slice of LISS-0128) sends that Command on the existing POSIX TCP
+  connection after `beginReconnect` and an accepted Login. It does not
+  add UDP, a second sequence, or a 20 Hz full-Snapshot stream.
 - Login success places the session on the Field with a **temporary**
   origin pose `(0,0,0)` and `PlayerId == session.internalId` so the join
   Snapshot can list public poses. Durable spawn (zone, HP/MP, reconnect

@@ -182,8 +182,9 @@ Scenario: Snapshot after RequestSnapshot resumes Events
 - Wire serialization format replacement.
 - Per-connection WorldUpdate.sequence (global monotonic sequence is unchanged).
 - Auth work in LISS-0146–0150.
-- Reconnect socket I/O (LISS-0128). RequestSnapshot wire Command is
-  LISS-0154.
+- Reconnect socket I/O remainder (timeout, ops, UI) stays LISS-0128.
+  The 2026-08-19 slice sends RequestSnapshot on POSIX TCP after
+  beginReconnect and Login. RequestSnapshot wire Command is LISS-0154.
 - Durable spawn policy (initial zone, HP/MP, PlayerId vs sessionId split,
   reconnect restore). Temporary Login placement is specified below and
   replaced by LISS-0153.

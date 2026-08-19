@@ -40,7 +40,13 @@ ReceiveStatus ClientSession::receive(std::vector<network::NetworkCommand>& comma
         return ReceiveStatus::Closed;
     }
     if (received < 0) {
-        if (errno == EAGAIN || errno == EWOULDBLOCK) return ReceiveStatus::NoData;
+        if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
+            return ReceiveStatus::NoData;
+        }
+        if (errno == ECONNRESET || errno == EPIPE) {
+            close();
+            return ReceiveStatus::Closed;
+        }
         error = "client socket read failed";
         close();
         return ReceiveStatus::Failed;
@@ -72,7 +78,13 @@ SendStatus ClientSession::flushOutbound(std::string& error) {
     if (!outboundFrames.front(frame)) return SendStatus::NoData;
     const ssize_t sent = ::send(clientSocket, frame.data(), frame.size(), 0);
     if (sent < 0) {
-        if (errno == EAGAIN || errno == EWOULDBLOCK) return SendStatus::NoData;
+        if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
+            return SendStatus::NoData;
+        }
+        if (errno == ECONNRESET || errno == EPIPE) {
+            close();
+            return SendStatus::Closed;
+        }
         error = "client socket write failed";
         close();
         return SendStatus::Failed;

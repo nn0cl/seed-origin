@@ -18,18 +18,20 @@ movement without weakening the authoritative 20 Hz simulation.
 | LISS-0152 | in_progress | L | L | AIP-0152-001 | LISS-0121, LISS-0125 | LISS-0153 | feature/liss-0152-client-side-prediction |
 | LISS-0153 | proposed | M | M | AIP-0153-001 | LISS-0152 | - | |
 | LISS-0154 | review | M | M | AIP-0154-001 | LISS-0121, LISS-0122, LISS-0152 | LISS-0128 | feature/liss-0152-client-side-prediction |
+| LISS-0128 | in_progress | L | M (I/O slice) | AIP-0128-001 | LISS-0121, LISS-0122, LISS-0154 | LISS-0129 | feature/liss-0152-client-side-prediction |
 
 ## Recommended Order
 
 1. LISS-0152 (temporary origin Field placement on Login)
 2. LISS-0154 (RequestSnapshot wire Command)
-3. LISS-0153 (durable spawn policy)
+3. LISS-0128 reconnect I/O slice (RequestSnapshot on POSIX TCP)
+4. LISS-0153 (durable spawn policy)
 
 ## Current Next Issue
 
-- Issue: LISS-0153
-- Reason it is unblocked: LISS-0154 RequestSnapshot wire Command is on this
-  branch; durable spawn remains open.
+- Issue: LISS-0153 (CSP spawn) or remaining LISS-0128 (timeout/ops/UI)
+- Reason the I/O slice is unblocked: LISS-0154 RequestSnapshot is on this
+  branch and the reconnect socket path now sends that Command after Login.
 - Adjudicator approval (2026-08-17): owner-only movementAck; protocol version
   stays 1; public movement remains the existing `movement=` broadcast.
 - Adjudicator approval (2026-08-19): full Snapshot and delta Event share

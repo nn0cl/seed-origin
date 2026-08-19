@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <arpa/inet.h>
 
 Connection::Connection() : listenerSocket(-1) {}
 
@@ -97,4 +98,15 @@ Connection::closeSocket() {
 bool
 Connection::isOpen() const {
     return listenerSocket >= 0;
+}
+
+uint16_t Connection::boundPort() const {
+    if (listenerSocket < 0) return 0;
+    struct sockaddr_in addr = {};
+    socklen_t length = sizeof(addr);
+    if (getsockname(listenerSocket, reinterpret_cast<struct sockaddr*>(&addr),
+                    &length) != 0) {
+        return 0;
+    }
+    return ntohs(addr.sin_port);
 }

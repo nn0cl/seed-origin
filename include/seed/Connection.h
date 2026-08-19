@@ -34,6 +34,7 @@ public:
     AcceptStatus acceptClient(int& clientSocket);
     bool closeSocket();
     bool isOpen() const;
+    uint16_t boundPort() const;
 };
 
 #endif /* defined(__seeds__Connection__) */

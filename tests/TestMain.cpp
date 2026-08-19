@@ -292,6 +292,18 @@ void dispatcher_accepts_logged_in_request_and_coalesces_one_snapshot();
 void snapshot_after_request_resumes_events_without_treating_movement_as_snapshot();
 }
 
+namespace client_inbound_demux_tests {
+void splits_login_response_and_world_update_from_one_buffer();
+void joins_partial_inbound_frames_without_dispatch();
+}
+
+namespace client_transport_shell_tests {
+void after_reconnect_and_login_writes_request_snapshot_on_the_socket();
+void unauthenticated_reconnect_does_not_write_request_snapshot();
+void snapshot_from_peer_clears_request_after_skipped_events();
+void loopback_reconnect_sends_request_snapshot_and_applies_server_snapshot();
+}
+
 namespace remote_player_pose_store_tests {
 void snaps_on_snapshot_replace_and_skips_local_session();
 void interpolates_small_error_and_snaps_large_error();
@@ -391,6 +403,12 @@ int main() {
     request_snapshot_command_tests::client_builds_request_after_sequence_gap_or_reconnect();
     request_snapshot_command_tests::dispatcher_accepts_logged_in_request_and_coalesces_one_snapshot();
     request_snapshot_command_tests::snapshot_after_request_resumes_events_without_treating_movement_as_snapshot();
+    client_inbound_demux_tests::splits_login_response_and_world_update_from_one_buffer();
+    client_inbound_demux_tests::joins_partial_inbound_frames_without_dispatch();
+    client_transport_shell_tests::after_reconnect_and_login_writes_request_snapshot_on_the_socket();
+    client_transport_shell_tests::unauthenticated_reconnect_does_not_write_request_snapshot();
+    client_transport_shell_tests::snapshot_from_peer_clears_request_after_skipped_events();
+    client_transport_shell_tests::loopback_reconnect_sends_request_snapshot_and_applies_server_snapshot();
     combat_command_handler_tests::queues_attack_and_spell_intents();
     combat_command_handler_tests::rejects_malformed_or_oversized_power();
     combat_command_handler_tests::rejects_duplicate_request_id();

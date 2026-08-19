@@ -16,8 +16,9 @@
 - Snapshot前のEventを拒否し、既存状態を変更しない。
 - Snapshot適用後にEventを再開し、sequence期待値を更新する。
 - Snapshot要求状態と期待sequenceを上位の通信層から参照できる。
-- 再送・接続確立は後続Issue（LISS-0128）。実際の Snapshot 要求 Command は
-  LISS-0154。
+- 再送・接続確立の最小 I/O（POSIX TCP 上の RequestSnapshot）は
+  2026-08-19 スライスで接続。タイムアウト・監視・UI は LISS-0128 残。
+  実際の Snapshot 要求 Command は LISS-0154。
 
 ## English
 

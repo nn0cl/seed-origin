@@ -52,6 +52,8 @@ set(SEED_CORE_SOURCES
     src/ClientHazardEffectQueue.cpp
     src/WorldUpdateAccumulator.cpp
     src/ClientWorldUpdateReceiver.cpp
+    src/ClientInboundDemux.cpp
+    src/ClientTransportShell.cpp
     src/MovementCommandHandler.cpp
     src/Npc.cpp
     src/NpcAi.cpp
@@ -166,6 +168,8 @@ add_executable(seed_tests
     tests/RemotePlayerPoseStoreTest.cpp
     tests/ClientPredictionSyncTest.cpp
     tests/RequestSnapshotCommandTest.cpp
+    tests/ClientInboundDemuxTest.cpp
+    tests/ClientTransportShellTest.cpp
     tests/NpcCombatTargetTest.cpp
     tests/NpcAiTest.cpp
     tests/StatusSaturationTest.cpp

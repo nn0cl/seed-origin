@@ -58,6 +58,10 @@ bool ServerRuntime::isRunning() const {
     return running;
 }
 
+uint16_t ServerRuntime::listeningPort() const {
+    return running ? listener.boundPort() : 0;
+}
+
 AcceptStatus ServerRuntime::acceptPendingClient(uint64_t& connectionId,
                                                 std::string& error) {
     connectionId = 0;
