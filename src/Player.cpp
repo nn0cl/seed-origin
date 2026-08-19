@@ -37,6 +37,7 @@ Player::getAuthPlayerId() const {
 
 void
 Player::setAuthPlayerId(int64_t issuedId) {
+    if (authPlayerId > 0) return;
     authPlayerId = issuedId < 0 ? 0 : issuedId;
 }
 
@@ -47,7 +48,7 @@ Player::getPlayerName() const {
 
 bool
 Player::setPlayerName(const std::string& displayName) {
-    if (displayName.size() >= sizeof(name)) return false;
+    if (displayName.empty() || displayName.size() >= sizeof(name)) return false;
     if (displayName.find(';') != std::string::npos ||
         displayName.find('=') != std::string::npos) {
         return false;

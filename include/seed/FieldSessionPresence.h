@@ -19,6 +19,10 @@ public:
     static bool placeAfterLogin(int64_t sessionId, const std::string& claimedId);
     static bool placeAfterLogin(int64_t sessionId, const std::string& claimedId,
                                 const LoginFieldSpawnSettings& settings);
+    static bool operatorSetPlayerName(int64_t authPlayerId,
+                                      const std::string& displayName);
+    static bool playerSetPlayerName(int64_t sessionId,
+                                    const std::string& displayName);
     static bool removeAfterLogout(int64_t sessionId);
     static bool releaseAfterStop(int64_t sessionId);
 };

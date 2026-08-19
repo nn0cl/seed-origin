@@ -67,7 +67,7 @@ bool parsePlayerField(const std::string& key, const std::string& value,
             error = "snapshot player gameplay id is invalid";
         }
     } else if (field == "name") {
-        if (value.find(';') != std::string::npos) {
+        if (value.empty() || value.find(';') != std::string::npos) {
             error = "snapshot player name is invalid";
         } else {
             player.name = value;
@@ -259,7 +259,7 @@ bool parsePayload(const std::string& payload, EnvironmentState& state,
             if (found == parsedPlayers.end() || found->second.sessionId <= 0 ||
                 !std::isfinite(found->second.x) ||
                 !std::isfinite(found->second.y) ||
-                !std::isfinite(found->second.z)) {
+                !std::isfinite(found->second.z) || found->second.name.empty()) {
                 error = "snapshot player fields are incomplete";
                 return false;
             }

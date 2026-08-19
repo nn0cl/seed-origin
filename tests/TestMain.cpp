@@ -49,6 +49,8 @@ void login_placement_uses_configured_pose_and_status();
 void login_placement_clamps_hp_mp_to_spawn_max();
 void reconnect_rebinds_new_session_to_the_same_entity();
 void duplicate_player_name_is_rejected();
+void empty_player_name_placement_is_rejected();
+void player_cannot_rename_operator_can();
 }
 
 namespace connection_tests {
@@ -222,6 +224,7 @@ void builds_environment_snapshot();
 void rejects_negative_hazard();
 void publishes_only_public_live_npc_state();
 void publishes_public_player_poses_without_owner_ack();
+void rejects_empty_player_name_on_snapshot();
 }
 
 namespace client_snapshot_tests {
@@ -231,6 +234,7 @@ void applies_public_npc_snapshot_state();
 void applies_public_player_snapshot_poses();
 void applies_gameplay_id_and_display_name_without_auth_id();
 void rejects_auth_player_id_on_public_snapshot();
+void rejects_missing_or_empty_player_name_on_snapshot();
 }
 
 namespace client_hazard_effect_tests {
@@ -412,6 +416,8 @@ int main() {
     field_session_presence_tests::login_placement_clamps_hp_mp_to_spawn_max();
     field_session_presence_tests::reconnect_rebinds_new_session_to_the_same_entity();
     field_session_presence_tests::duplicate_player_name_is_rejected();
+    field_session_presence_tests::empty_player_name_placement_is_rejected();
+    field_session_presence_tests::player_cannot_rename_operator_can();
     request_snapshot_command_tests::validates_empty_payload_request_snapshot_on_protocol_v1();
     request_snapshot_command_tests::client_builds_request_after_sequence_gap_or_reconnect();
     request_snapshot_command_tests::dispatcher_accepts_logged_in_request_and_coalesces_one_snapshot();
@@ -445,12 +451,14 @@ int main() {
     world_snapshot_builder_tests::rejects_negative_hazard();
     world_snapshot_builder_tests::publishes_only_public_live_npc_state();
     world_snapshot_builder_tests::publishes_public_player_poses_without_owner_ack();
+    world_snapshot_builder_tests::rejects_empty_player_name_on_snapshot();
     client_snapshot_tests::applies_environment_snapshot_and_resets_sequence();
     client_snapshot_tests::rejects_incomplete_or_invalid_environment_snapshot();
     client_snapshot_tests::applies_public_npc_snapshot_state();
     client_snapshot_tests::applies_public_player_snapshot_poses();
     client_snapshot_tests::applies_gameplay_id_and_display_name_without_auth_id();
     client_snapshot_tests::rejects_auth_player_id_on_public_snapshot();
+    client_snapshot_tests::rejects_missing_or_empty_player_name_on_snapshot();
     client_hazard_effect_tests::preserves_order_and_drains_by_display_limit();
     client_hazard_effect_tests::rejects_duplicates_gaps_and_non_hazard_events();
     client_world_receiver_tests::applies_split_snapshot_and_hazard_event();

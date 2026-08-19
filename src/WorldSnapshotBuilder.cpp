@@ -63,7 +63,9 @@ bool WorldSnapshotBuilder::formatPayload(
     for (std::size_t index = 0; index < players.size(); ++index) {
         const PlayerPoseSnapshot& player = players[index];
         if (player.sessionId <= 0 || !std::isfinite(player.x) ||
-            !std::isfinite(player.y) || !std::isfinite(player.z)) {
+            !std::isfinite(player.y) || !std::isfinite(player.z) ||
+            player.name.empty() || player.name.find(';') != std::string::npos ||
+            player.name.find('=') != std::string::npos) {
             error = "public player snapshot contains invalid state";
             return false;
         }
@@ -74,9 +76,7 @@ bool WorldSnapshotBuilder::formatPayload(
         if (player.gameplayId > 0) {
             text << ";player." << index << ".id=" << player.gameplayId;
         }
-        if (!player.name.empty()) {
-            text << ";player." << index << ".name=" << player.name;
-        }
+        text << ";player." << index << ".name=" << player.name;
     }
     payload = text.str();
     error.clear();

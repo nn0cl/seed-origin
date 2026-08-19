@@ -27,6 +27,12 @@ void clearFieldPlayers() {
     }
 }
 
+Player namedResident(int64_t playerId, float x, const char* name) {
+    Player player(playerId, Status(), Position(playerId, x, 0.0f, 0.0f));
+    assert(player.setPlayerName(name));
+    return player;
+}
+
 bool encodeUpdate(const network::WorldUpdate& update, std::vector<uint8_t>& bytes) {
     std::string error;
     return network::encodeWorldUpdateFrame(update, bytes, error);
@@ -97,9 +103,8 @@ void client_builds_request_after_sequence_gap_or_reconnect() {
 void dispatcher_accepts_logged_in_request_and_coalesces_one_snapshot() {
     clearFieldPlayers();
     Field* field = Field::getInstance();
-    const Status status;
-    assert(field->setPlayer(Player(21, status, Position(21, 0.0f, 0.0f, 0.0f))));
-    assert(field->setPlayer(Player(22, status, Position(22, 4.0f, 0.0f, 0.0f))));
+    assert(field->setPlayer(namedResident(21, 0.0f, "Alpha")));
+    assert(field->setPlayer(namedResident(22, 4.0f, "Beta")));
 
     session::SessionRegistry registry;
     server::WorldInputQueue queue;
@@ -147,8 +152,8 @@ void dispatcher_accepts_logged_in_request_and_coalesces_one_snapshot() {
     assert(ownerCopy.sequence == updates[0].sequence);
     assert(ownerCopy.payload.find("local.x=") != std::string::npos);
 
-    assert(Field::unsetPlayer(Player(21, status, Position(21, 0, 0, 0))));
-    assert(Field::unsetPlayer(Player(22, status, Position(22, 0, 0, 0))));
+    assert(Field::unsetPlayer(Player(21, Status(), Position(21, 0, 0, 0))));
+    assert(Field::unsetPlayer(Player(22, Status(), Position(22, 0, 0, 0))));
 }
 
 void snapshot_after_request_resumes_events_without_treating_movement_as_snapshot() {
@@ -163,7 +168,8 @@ void snapshot_after_request_resumes_events_without_treating_movement_as_snapshot
     const network::WorldUpdate snapshot = {
         1, network::UpdateKind::Snapshot, 4, 2, 0,
         "ether.fire=0;ether.water=0;ether.earth=0;ether.air=0;ether.hazard=0;"
-        "player.count=1;player.0.session=21;player.0.x=0;player.0.y=0;player.0.z=0"};
+        "player.count=1;player.0.session=21;player.0.x=0;player.0.y=0;player.0.z=0;"
+        "player.0.name=Hero"};
     std::vector<uint8_t> mixed;
     assert(encodeUpdate(movement, mixed));
     std::vector<uint8_t> snapshotBytes;

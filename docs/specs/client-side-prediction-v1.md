@@ -155,6 +155,32 @@ Scenario: Duplicate PlayerName is rejected
   Then placement fails
   And session 21 remains on the Field
 
+Scenario: Empty PlayerName placement is rejected
+  Given no operator PlayerName is assigned for the authenticating player
+  When session 21 is placed after Login
+  Then placement fails
+
+Scenario: Snapshot requires a non-empty PlayerName
+  Given a Snapshot player entry with an omitted or empty name
+  When the client applies it
+  Then the snapshot is rejected
+  And no remote pose is stored
+
+Scenario: Player cannot rename
+  Given a placed player named Hero
+  When the player path requests a name change
+  Then the request fails
+  And the name remains Hero
+  When an operator assigns Mage
+  Then the name is Mage
+
+Scenario: Reconnect keeps gameplay id and auth PlayerId
+  Given a placed player with auth PlayerId 9001 and gameplay id G
+  When a new session logs in for the same auth PlayerId
+  Then gameplay id is G
+  And auth PlayerId is 9001
+  And the session id is the new session
+
 Scenario: Join Snapshot includes idle others already on the Field
   Given session 99 is already on the Field at (6,0,0)
   When session 21 is placed after Login
@@ -208,7 +234,7 @@ Scenario: Snapshot after RequestSnapshot resumes Events
 - Reconnect socket I/O remainder (timeout, ops, UI) stays LISS-0128.
   The 2026-08-19 slice sends RequestSnapshot on POSIX TCP after
   beginReconnect and Login. RequestSnapshot wire Command is LISS-0154.
-- Name uniqueness normalization (case/whitespace) and rename.
+- Name uniqueness normalization (case/whitespace).
 - Account-wide name ledger inside seed-auth.
 
 ## Ambiguities
@@ -227,8 +253,10 @@ Scenario: Snapshot after RequestSnapshot resumes Events
   20 Hz is the tick and delta Event period, not a full-Snapshot rate.
   RequestSnapshot is command type 7 with empty payload (LISS-0154).
   Login Field placement follows LISS-0153 (configurable spawn, four identity
-  roles, unique PlayerName). Observers key remotes by gameplay id
-  (`player.<i>.id`); session is communication; HUD uses PlayerName.
+  roles, unique non-empty PlayerName assigned by operators only). Observers key
+  remotes by gameplay id (`player.<i>.id`); session is communication; HUD uses
+  PlayerName. Auth PlayerId and gameplay id do not change on reconnect;
+  session does. Login claimedId is not a display name.
 
 ## Move payload
 
@@ -276,8 +304,10 @@ Login places a Field entity and binds the connection session to it.
   `player.<i>.session`. Changes on reconnect. Not shown in game UI.
 - **Gameplay id**: Field `Player::getPlayerId()`, Attack/CastSpell `targetId`.
   Snapshot `player.<i>.id`. World-allocated, not the auth PK. Not shown in UI.
-- **PlayerName**: display only (`player.<i>.name` when set). Exact-match unique
-  on Field residents. No rename in this slice.
+- **PlayerName**: display only (`player.<i>.name`). Exact-match unique
+  on Field residents. Empty names are rejected. Login `claimedId` is not a
+  name. Operators assign names (spawn settings, test stub, or
+  `operatorSetPlayerName`). No player rename command.
 
 Early spawn defaults, when settings are unset: pose `(0,0,0)`, HP/MP `10,10`.
 Spawn HP/MP clamp to settings max (early `1024,1024`). `Status::gainHp` still
@@ -366,8 +396,8 @@ Public Snapshot player poses (every present player, including idle; no input ack
 player.count=<n>;player.<i>.session=<id>;player.<i>.x=<f>;player.<i>.y=<f>;player.<i>.z=<f>;player.<i>.id=<gameplayId>;player.<i>.name=<name>
 ```
 
-`name` is omitted when unset. `id` is omitted only for pose fixtures that
-never assigned a gameplay id. Auth PlayerId is never present.
+`name` is required and must be non-empty. `id` is omitted only for pose
+fixtures that never assigned a gameplay id. Auth PlayerId is never present.
 
 Non-owner copies of `movement=` may append public pose without owner ack:
 

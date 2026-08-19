@@ -42,17 +42,44 @@ void publishes_public_player_poses_without_owner_ack() {
     world::EnvironmentEther ether;
     server::WorldSnapshotBuilder builder;
     network::WorldUpdate snapshot = {};
-    const std::vector<PlayerPoseSnapshot> players = {{10, 1.0f, 2.0f, 3.0f},
-                                                     {20, 4.0f, 5.0f, 6.0f}};
+    PlayerPoseSnapshot first;
+    first.sessionId = 10;
+    first.x = 1.0f;
+    first.y = 2.0f;
+    first.z = 3.0f;
+    first.name = "Alpha";
+    PlayerPoseSnapshot second;
+    second.sessionId = 20;
+    second.x = 4.0f;
+    second.y = 5.0f;
+    second.z = 6.0f;
+    second.name = "Beta";
+    const std::vector<PlayerPoseSnapshot> players = {first, second};
     std::string error;
     assert(builder.build(3, ether, 0.0f, std::vector<NpcSnapshot>(), players,
                          snapshot, error));
     assert(snapshot.payload.find("player.count=2") != std::string::npos);
     assert(snapshot.payload.find("player.0.session=10") != std::string::npos);
+    assert(snapshot.payload.find("player.0.name=Alpha") != std::string::npos);
     assert(snapshot.payload.find("player.1.session=20") != std::string::npos);
+    assert(snapshot.payload.find("player.1.name=Beta") != std::string::npos);
     assert(snapshot.payload.find("lastProcessedInputSequence") ==
            std::string::npos);
     assert(snapshot.payload.find("local.") == std::string::npos);
+}
+
+void rejects_empty_player_name_on_snapshot() {
+    world::EnvironmentEther ether;
+    server::WorldSnapshotBuilder builder;
+    network::WorldUpdate snapshot = {};
+    PlayerPoseSnapshot unnamed;
+    unnamed.sessionId = 10;
+    unnamed.x = 1.0f;
+    unnamed.name = "";
+    std::string error;
+    assert(!builder.build(3, ether, 0.0f, std::vector<NpcSnapshot>(),
+                          std::vector<PlayerPoseSnapshot>{unnamed}, snapshot,
+                          error));
 }
 
 } // namespace world_snapshot_builder_tests

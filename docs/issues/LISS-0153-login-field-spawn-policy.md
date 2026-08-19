@@ -29,7 +29,7 @@ Login 成功後の Field 配置を、設定可能な初期 pose/HP/MP と 4 役�
 | 認証 PlayerId | 認証サーバー（早期はポート stub）。再接続で不変 | 出さない | 出さない |
 | session ID | `session.internalId`。再接続のたびに更新 | ヘッダ / Snapshot `player.<i>.session` / `movement=session:` | 出さない |
 | ゲーム内ID | Field `Player::getPlayerId()`。Attack/CastSpell `targetId` | Snapshot `player.<i>.id` | 出さない |
-| PlayerName | 表示専用。早期は claimedId または spawn 設定 | Snapshot `player.<i>.name`（空なら省略） | これだけ見せる |
+| PlayerName | 表示専用。運営が付与（早期は spawn 設定 / テストスタブ / operator setter）。Login claimedId ではない | Snapshot `player.<i>.name`（必須・非空） | これだけ見せる |
 
 ゲーム内ID は既存の Field キー / `targetId` を寄せたワールド側の正の int64
 であり、認証 PK でも session でもない。公開安定 UUID は発行しない。
@@ -45,6 +45,9 @@ Login 成功後の Field 配置を、設定可能な初期 pose/HP/MP と 4 役�
 - 再接続は新しい session を同じ認証 PlayerId の Field 実体へ結び直す。
   disconnect は session を外し、公開 pose から外す。実体は unset しない。
 - 同じ PlayerName の第二配置は失敗する（Field 上の完全一致）。
+- 空の PlayerName での配置と Snapshot 公開は失敗する。
+- プレイヤー経路では改名できない。運営の `operatorSetPlayerName`（または spawn 設定）だけが名前を付ける。
+- ゲーム内ID と認証 PlayerId は再接続でも不変。session だけ更新する。
 - RequestSnapshot ワイヤ Command は必須範囲ではない（LISS-0154）。
 
 ## Adjudicator decisions (2026-08-19)
@@ -56,20 +59,21 @@ Login 成功後の Field 配置を、設定可能な初期 pose/HP/MP と 4 役�
   session は通信。HUD は PlayerName。認証 PlayerId は公開しない。
 - seed-auth 本体は本 worktree から触らない。発行はポート。早期 stub。
 
+## Adjudicator decisions (2026-08-20)
+
+- 空ネームは配置も公開も不可。
+- キャラクターネームは運営のみ。プレイヤー改名コマンドは作らない。
+  Login claimedId を表示名に流用しない。
+- 認証 PlayerId とゲーム内ID はプレイヤーから変更不可。再接続でも不変。
+  session だけ接続ごとに更新。
+
 ## Ambiguities
 
 - PlayerName の大文字小文字・空白の正規化。
-- 改名。
-- 空ネームの公開扱い（早期はフィールド省略。複数の無名は衝突しない）。
 - アカウント横断の一意帳票（auth 側）。ポート契約は「名前は一意」とし、
   本物の帳票は LISS-0146–0150 後続。
-- 他クライアントは再接続前後の同一人物を Snapshot `player.<i>.id`
-  （ゲーム内ID）で辿る。session は通信。HUD は PlayerName のみ。
-  公開安定 UUID は出さない。
 - ゾーン・ログアウト地点・衝突回避スポーン。
-- Login payload がセッションキーに変わったあと、claimedId を PlayerName
-  初期値にできなくなる点（network-protocol-v1 の将来変更）。現状の自己申告
-  ニックネーム実装を正とし、それを早期 PlayerName にする。
+- 運営 UI 全体と権限モデル（早期は関数レベルの operator setter のみ）。
 
 ## Context
 
@@ -115,6 +119,25 @@ Login 成功後の Field 配置を、設定可能な初期 pose/HP/MP と 4 役�
 - Token metric: combined prompt+completion for one execution attempt
 - Estimation basis: RemotePlayerPoseStore, snapshot applier, receiver tests.
 - Assumptions: spawn/identity split from AIP-0153-001 already committed.
+- Confidence: medium
+
+### AIP-0153-003
+
+- Status: accepted
+- Created by:
+  - Agent/environment: Cursor Auto / Composer
+  - Model as displayed: Composer
+  - Reasoning setting as displayed: N/A
+  - N/A reason: Cursor agent display does not expose a separate reasoning slider
+- Created at: 2026-08-20
+- Planning size: M
+- Intended execution route: Feature Path AT-TDD
+- Intended scope: operator-only non-empty PlayerName; immutable ids except session
+- Estimated token range: 15k–35k
+- Estimated token midpoint: 25k
+- Token metric: combined prompt+completion for one execution attempt
+- Estimation basis: presence, snapshot builder/applier, identity tests.
+- Assumptions: AIP-0153-001 and AIP-0153-002 already committed.
 - Confidence: medium
 
 ## Work Notes

@@ -6,6 +6,8 @@
 
 #include "ClientTransportShell.h"
 #include "Field.h"
+#include "FieldSessionPresence.h"
+#include "LoginFieldSpawnSettings.h"
 #include "LoginResponseCodec.h"
 #include "NetworkFrameCodec.h"
 #include "Player.h"
@@ -140,7 +142,8 @@ void snapshot_from_peer_clears_request_after_skipped_events() {
     const network::WorldUpdate snapshot = {
         1, network::UpdateKind::Snapshot, 4, 2, 0,
         "ether.fire=0;ether.water=0;ether.earth=0;ether.air=0;ether.hazard=0;"
-        "player.count=1;player.0.session=21;player.0.x=0;player.0.y=0;player.0.z=0"};
+        "player.count=1;player.0.session=21;player.0.x=0;player.0.y=0;player.0.z=0;"
+        "player.0.name=Hero"};
     std::vector<uint8_t> mixed;
     assert(encodeUpdate(movement, mixed));
     std::vector<uint8_t> snapshotBytes;
@@ -162,6 +165,9 @@ void loopback_reconnect_sends_request_snapshot_and_applies_server_snapshot() {
     server::ServerRuntime runtime;
     server::WorldFrameApplier applier(*Field::getInstance());
     assert(runtime.start(0));
+    server::LoginFieldSpawnSettings spawn;
+    spawn.playerName = "Hero";
+    server::FieldSessionPresence::useSpawnSettings(spawn);
     const uint16_t port = runtime.listeningPort();
     assert(port != 0);
 
@@ -206,6 +212,8 @@ void loopback_reconnect_sends_request_snapshot_and_applies_server_snapshot() {
     assert(transport.worldReceiver().environment().value().hasLocalPlayer ||
            !transport.worldReceiver().environment().value().players.empty());
     assert(runtime.stop());
+    server::FieldSessionPresence::useSpawnSettings(server::LoginFieldSpawnSettings());
+    server::FieldSessionPresence::usePlayerIdPort(0);
     clearFieldPlayers();
 }
 

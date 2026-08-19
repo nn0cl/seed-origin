@@ -3,6 +3,23 @@
 #include "WorldFrameApplier.h"
 
 namespace world_frame_applier_tests {
+namespace {
+
+Player namedResident(int64_t playerId, float x, const char* name) {
+    Player player(playerId, Status(), Position(playerId, x, 0.0f, 0.0f));
+    assert(player.setPlayerName(name));
+    return player;
+}
+
+void clearResidents() {
+    Field* field = Field::getInstance();
+    const std::vector<int64_t> ids = field->residentPlayerIds();
+    for (std::size_t i = 0; i < ids.size(); ++i) {
+        Field::unsetPlayer(Player(ids[i], Status(), Position(ids[i], 0, 0, 0)));
+    }
+}
+
+}
 
 void applies_valid_actions_and_returns_events() {
     Field* field = Field::getInstance();
@@ -138,13 +155,12 @@ void emits_hazard_event_when_environment_is_unstable() {
 }
 
 void captures_idle_poses_only_when_new_sessions_authenticate() {
+    clearResidents();
     Field* field = Field::getInstance();
-    const Status status;
     const int64_t idleId = 15212;
     const int64_t observerId = 15213;
-    assert(field->setPlayer(Player(idleId, status, Position(idleId, 8.0f, 0.0f, 0.0f))));
-    assert(field->setPlayer(
-        Player(observerId, status, Position(observerId, 0.0f, 0.0f, 0.0f))));
+    assert(field->setPlayer(namedResident(idleId, 8.0f, "Idle")));
+    assert(field->setPlayer(namedResident(observerId, 0.0f, "Observer")));
     server::WorldFrameApplier applier(*field);
     std::vector<network::WorldUpdate> updates;
     std::string error;
@@ -164,13 +180,12 @@ void captures_idle_poses_only_when_new_sessions_authenticate() {
 }
 
 void captures_idle_public_player_poses_on_snapshot() {
+    clearResidents();
     Field* field = Field::getInstance();
-    const Status status;
     const int64_t idleId = 15210;
     const int64_t observerId = 15211;
-    assert(field->setPlayer(Player(idleId, status, Position(idleId, 7.0f, 0.0f, 0.0f))));
-    assert(field->setPlayer(
-        Player(observerId, status, Position(observerId, 0.0f, 0.0f, 0.0f))));
+    assert(field->setPlayer(namedResident(idleId, 7.0f, "Idle")));
+    assert(field->setPlayer(namedResident(observerId, 0.0f, "Observer")));
     server::WorldFrameApplier applier(*field);
     std::vector<network::WorldUpdate> updates;
     std::string error;

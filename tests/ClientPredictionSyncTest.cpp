@@ -49,8 +49,8 @@ network::WorldUpdate publicPlayerSnapshot(uint64_t sequence, uint64_t worldTick,
         "ether.fire=0;ether.water=0;ether.earth=0;ether.air=0;ether.hazard=0;"
         "player.count=1;player.0.session=" +
         std::to_string(sessionId) + ";player.0.x=" + std::to_string(x) +
-        ";player.0.y=0;player.0.z=0;player.0.id=" + std::to_string(gameplayId);
-    if (!name.empty()) payload += ";player.0.name=" + name;
+        ";player.0.y=0;player.0.z=0;player.0.id=" + std::to_string(gameplayId) +
+        ";player.0.name=" + name;
     return {1, network::UpdateKind::Snapshot, worldTick, sequence, 0, payload};
 }
 
@@ -62,6 +62,20 @@ network::WorldUpdate hazard(uint64_t sequence, uint64_t eventId) {
 bool encode(const network::WorldUpdate& update, std::vector<uint8_t>& bytes) {
     std::string error;
     return network::encodeWorldUpdateFrame(update, bytes, error);
+}
+
+Player namedResident(int64_t playerId, float x, const char* name) {
+    Player player(playerId, Status(), Position(playerId, x, 0.0f, 0.0f));
+    assert(player.setPlayerName(name));
+    return player;
+}
+
+void clearResidents() {
+    Field* field = Field::getInstance();
+    const std::vector<int64_t> ids = field->residentPlayerIds();
+    for (std::size_t i = 0; i < ids.size(); ++i) {
+        Field::unsetPlayer(Player(ids[i], Status(), Position(ids[i], 0, 0, 0)));
+    }
 }
 
 }
@@ -355,13 +369,12 @@ void reconnect_snapshot_keeps_one_remote_for_gameplay_id() {
 }
 
 void idle_remote_appears_from_join_snapshot() {
+    clearResidents();
     Field* field = Field::getInstance();
-    const Status status;
     const int64_t idleId = 15222;
     const int64_t observerId = 15223;
-    assert(field->setPlayer(Player(idleId, status, Position(idleId, 6.0f, 0.0f, 0.0f))));
-    assert(field->setPlayer(
-        Player(observerId, status, Position(observerId, 0.0f, 0.0f, 0.0f))));
+    assert(field->setPlayer(namedResident(idleId, 6.0f, "Idle")));
+    assert(field->setPlayer(namedResident(observerId, 0.0f, "Observer")));
     server::WorldFrameApplier applier(*field);
     std::vector<network::WorldUpdate> updates;
     std::string error;
@@ -387,13 +400,12 @@ void idle_remote_appears_from_join_snapshot() {
 }
 
 void idle_remote_appears_from_captured_snapshot() {
+    clearResidents();
     Field* field = Field::getInstance();
-    const Status status;
     const int64_t idleId = 15220;
     const int64_t observerId = 15221;
-    assert(field->setPlayer(Player(idleId, status, Position(idleId, 9.0f, 0.0f, 0.0f))));
-    assert(field->setPlayer(
-        Player(observerId, status, Position(observerId, 0.0f, 0.0f, 0.0f))));
+    assert(field->setPlayer(namedResident(idleId, 9.0f, "Idle")));
+    assert(field->setPlayer(namedResident(observerId, 0.0f, "Observer")));
     server::WorldFrameApplier applier(*field);
     std::vector<network::WorldUpdate> updates;
     std::string error;

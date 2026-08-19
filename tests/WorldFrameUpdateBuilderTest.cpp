@@ -72,8 +72,8 @@ void personalizes_snapshot_local_fields_without_changing_sequence() {
         network::CURRENT_PROTOCOL_VERSION, network::UpdateKind::Snapshot, 8, 4, 0,
         "ether.fire=0;ether.water=0;ether.earth=0;ether.air=0;ether.hazard=0;"
         "player.count=2;player.0.session=10;player.0.x=1;player.0.y=0;"
-        "player.0.z=0;player.1.session=20;player.1.x=5;player.1.y=0;"
-        "player.1.z=0"};
+        "player.0.z=0;player.0.name=Alpha;player.1.session=20;player.1.x=5;"
+        "player.1.y=0;player.1.z=0;player.1.name=Beta"};
     server::MovementAck observer;
     observer.sessionId = 20;
     observer.x = 5.0f;
