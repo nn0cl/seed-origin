@@ -11,6 +11,49 @@
 
 namespace server {
 
+namespace {
+
+bool enqueueSessionFrame(ClientSession* session, std::vector<uint8_t>& frame,
+                         std::string& error) {
+    if (session == 0 || !session->isOpen()) return true;
+    std::string frameError;
+    if (!session->enqueueFrame(frame, frameError)) {
+        if (error.empty()) error = frameError;
+        return false;
+    }
+    return true;
+}
+
+bool enqueueLoginResponse(ClientSession* session,
+                          const network::LoginResponse& response,
+                          std::string& error) {
+    if (session == 0 || !session->isOpen()) return true;
+    std::vector<uint8_t> frame;
+    std::string frameError;
+    if (!network::encodeLoginResponseFrame(response, frame, frameError) ||
+        !enqueueSessionFrame(session, frame, error)) {
+        if (error.empty()) error = frameError;
+        return false;
+    }
+    return true;
+}
+
+bool enqueueDisconnectResponse(ClientSession* session,
+                               const network::DisconnectResponse& response,
+                               std::string& error) {
+    if (session == 0 || !session->isOpen()) return true;
+    std::vector<uint8_t> frame;
+    std::string frameError;
+    if (!network::encodeDisconnectResponseFrame(response, frame, frameError) ||
+        !enqueueSessionFrame(session, frame, error)) {
+        if (error.empty()) error = frameError;
+        return false;
+    }
+    return true;
+}
+
+}
+
 ServerRuntime::ServerRuntime()
     : running(false), nextConnectionId(1), clients(), lifecycle(), inputQueue(),
       inputTick(inputQueue), newAuthenticatedSessions(0) {}
@@ -243,13 +286,8 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
                                     : (result.error.empty()
                                            ? std::string("disconnect was rejected")
                                            : result.error)};
-                std::vector<uint8_t> frame;
-                std::string responseError;
-                if (!network::encodeDisconnectResponseFrame(response, frame,
-                                                            responseError) ||
-                    !session->enqueueFrame(frame, responseError)) {
-                    if (error.empty()) error = responseError;
-                } else if (result.accepted) {
+                if (enqueueDisconnectResponse(session, response, error) &&
+                    result.accepted) {
                     session->requestCloseAfterFlush();
                 }
             }
@@ -290,12 +328,7 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
             result.accepted ? result.session.internalId : 0,
             result.accepted ? std::string() : result.error
         };
-        std::vector<uint8_t> frame;
-        std::string responseError;
-        if (!network::encodeLoginResponseFrame(response, frame, responseError) ||
-            !session->enqueueFrame(frame, responseError)) {
-            if (error.empty()) error = responseError;
-        }
+        enqueueLoginResponse(session, response, error);
     }
     removeClosedClients(dispatcher.sessionRegistry(), &dispatcher);
     return processed;

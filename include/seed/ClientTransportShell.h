@@ -64,6 +64,10 @@ private:
     bool enqueueRequestSnapshotIfNeeded(std::string& error);
     bool handleInboundFrames(const std::vector<InboundFrame>& frames,
                              std::string& error);
+    bool handleLoginResponseFrame(const std::vector<uint8_t>& bytes,
+                                  std::string& error);
+    bool handleDisconnectResponseFrame(const std::vector<uint8_t>& bytes,
+                                       std::string& error);
     void applyDisconnectResponse(const network::DisconnectResponse& response);
     void markFailed();
 };

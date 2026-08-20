@@ -177,40 +177,50 @@ bool ClientTransportShell::enqueueRequestSnapshotIfNeeded(std::string& error) {
     return true;
 }
 
+bool ClientTransportShell::handleLoginResponseFrame(
+    const std::vector<uint8_t>& bytes, std::string& error) {
+    network::LoginResponse response = {};
+    if (!network::decodeLoginResponseFrame(bytes, response, error)) {
+        markFailed();
+        return false;
+    }
+    if (response.status != network::LoginResponseStatus::Accepted) {
+        error = response.payload.empty() ? "login was rejected" : response.payload;
+        markFailed();
+        return false;
+    }
+    localSessionId = response.sessionId;
+    auth = TransportAuthState::LoggedIn;
+    receiver.bindLocalSession(localSessionId);
+    return true;
+}
+
+bool ClientTransportShell::handleDisconnectResponseFrame(
+    const std::vector<uint8_t>& bytes, std::string& error) {
+    network::DisconnectResponse response = {};
+    if (!network::decodeDisconnectResponseFrame(bytes, response, error)) {
+        markFailed();
+        return false;
+    }
+    applyDisconnectResponse(response);
+    if (!isOpen()) {
+        error.clear();
+        return true;
+    }
+    return true;
+}
+
 bool ClientTransportShell::handleInboundFrames(
     const std::vector<InboundFrame>& frames, std::string& error) {
     std::vector<uint8_t> worldBytes;
     for (std::vector<InboundFrame>::const_iterator it = frames.begin();
          it != frames.end(); ++it) {
         if (it->kind == InboundFrameKind::LoginResponse) {
-            network::LoginResponse response = {};
-            if (!network::decodeLoginResponseFrame(it->bytes, response, error)) {
-                markFailed();
-                return false;
-            }
-            if (response.status != network::LoginResponseStatus::Accepted) {
-                error = response.payload.empty() ? "login was rejected"
-                                                 : response.payload;
-                markFailed();
-                return false;
-            }
-            localSessionId = response.sessionId;
-            auth = TransportAuthState::LoggedIn;
-            receiver.bindLocalSession(localSessionId);
+            if (!handleLoginResponseFrame(it->bytes, error)) return false;
             continue;
         }
         if (it->kind == InboundFrameKind::DisconnectResponse) {
-            network::DisconnectResponse response = {};
-            if (!network::decodeDisconnectResponseFrame(it->bytes, response,
-                                                        error)) {
-                markFailed();
-                return false;
-            }
-            applyDisconnectResponse(response);
-            if (!isOpen()) {
-                error.clear();
-                return true;
-            }
+            if (!handleDisconnectResponseFrame(it->bytes, error)) return false;
             continue;
         }
         worldBytes.insert(worldBytes.end(), it->bytes.begin(), it->bytes.end());

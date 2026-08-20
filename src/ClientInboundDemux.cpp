@@ -1,24 +1,12 @@
 #include "ClientInboundDemux.h"
 
+#include "FrameHeaderBinary.h"
 #include "NetworkCommand.h"
 #include "NetworkFrameCodec.h"
 #include "WorldUpdate.h"
 #include "WorldUpdateFrameCodec.h"
 
 namespace client {
-
-namespace {
-uint16_t read16(const std::vector<uint8_t>& input, size_t offset) {
-    return static_cast<uint16_t>((input[offset] << 8) | input[offset + 1]);
-}
-
-uint32_t read32(const std::vector<uint8_t>& input, size_t offset) {
-    return (static_cast<uint32_t>(input[offset]) << 24) |
-           (static_cast<uint32_t>(input[offset + 1]) << 16) |
-           (static_cast<uint32_t>(input[offset + 2]) << 8) |
-           static_cast<uint32_t>(input[offset + 3]);
-}
-}
 
 ClientInboundDemux::ClientInboundDemux() : buffered(), failedState(false) {}
 
@@ -33,7 +21,7 @@ bool ClientInboundDemux::append(const std::vector<uint8_t>& bytes,
     buffered.insert(buffered.end(), bytes.begin(), bytes.end());
 
     while (buffered.size() >= 2) {
-        const uint16_t magic = read16(buffered, 0);
+        const uint16_t magic = network::readFrameU16(buffered, 0);
         size_t headerSize = 0;
         uint32_t payloadLength = 0;
         InboundFrameKind kind = InboundFrameKind::LoginResponse;
@@ -43,7 +31,7 @@ bool ClientInboundDemux::append(const std::vector<uint8_t>& bytes,
                 return true;
             }
             headerSize = network::WORLD_UPDATE_FRAME_HEADER_SIZE;
-            payloadLength = read32(buffered, 32);
+            payloadLength = network::readFrameU32(buffered, 32);
             if (payloadLength > network::MAX_UPDATE_PAYLOAD) {
                 failedState = true;
                 error = "world update stream payload exceeds maximum size";
@@ -56,13 +44,13 @@ bool ClientInboundDemux::append(const std::vector<uint8_t>& bytes,
                 return true;
             }
             headerSize = network::FRAME_HEADER_SIZE;
-            payloadLength = read32(buffered, 12);
+            payloadLength = network::readFrameU32(buffered, 12);
             if (payloadLength > network::MAX_COMMAND_PAYLOAD) {
                 failedState = true;
                 error = "command response stream payload exceeds maximum size";
                 return false;
             }
-            if (read16(buffered, 2) ==
+            if (network::readFrameU16(buffered, 2) ==
                 static_cast<uint16_t>(network::CommandType::Disconnect)) {
                 kind = InboundFrameKind::DisconnectResponse;
             } else {
