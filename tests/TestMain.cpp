@@ -257,7 +257,14 @@ void requests_a_snapshot_after_reconnect_before_accepting_events();
 namespace server_command_dispatcher_tests {
 void accepts_login();
 void rejects_unimplemented_command();
+void disconnects_active_session_and_omits_public_pose();
+void rejects_disconnect_without_an_active_session();
 void routes_combat_only_for_an_active_session();
+}
+
+namespace disconnect_command_handler_tests {
+void ends_active_session_without_unsetting_the_player();
+void rejects_inactive_or_missing_session();
 }
 
 namespace command_rate_limiter_tests {
@@ -479,7 +486,11 @@ int main() {
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
     server_command_dispatcher_tests::accepts_login();
     server_command_dispatcher_tests::rejects_unimplemented_command();
+    server_command_dispatcher_tests::disconnects_active_session_and_omits_public_pose();
+    server_command_dispatcher_tests::rejects_disconnect_without_an_active_session();
     server_command_dispatcher_tests::routes_combat_only_for_an_active_session();
+    disconnect_command_handler_tests::ends_active_session_without_unsetting_the_player();
+    disconnect_command_handler_tests::rejects_inactive_or_missing_session();
     command_rate_limiter_tests::limits_commands_per_session_and_kind_per_world_frame();
     command_rate_limiter_tests::keeps_sessions_isolated_and_releases_counters();
     movement_command_handler_tests::rejects_malformed_or_unknown_move();

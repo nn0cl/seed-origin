@@ -227,7 +227,17 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
             result = dispatcher.dispatch(pending.command);
         }
         ++processed;
-        if (pending.connectionId == 0 || pending.command.type != network::CommandType::Login) {
+        if (pending.connectionId == 0) {
+            continue;
+        }
+        if (pending.command.type == network::CommandType::Disconnect) {
+            if (result.accepted) {
+                lifecycle.disconnect(pending.connectionId,
+                                     dispatcher.sessionRegistry());
+            }
+            continue;
+        }
+        if (pending.command.type != network::CommandType::Login) {
             continue;
         }
         ClientSession* session = clientSession(pending.connectionId);

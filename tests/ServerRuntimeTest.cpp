@@ -61,7 +61,8 @@ void dispatches_pending_commands_in_fifo_order() {
         runtime.dispatchPendingCommands(dispatcher);
     assert(results.size() == 2);
     assert(results[0].accepted);
-    assert(!results[1].accepted);
+    assert(results[1].accepted);
+    assert(!registry.isActive(results[0].session.internalId));
     assert(runtime.pendingCommandCount() == 0);
     assert(runtime.stop());
 }

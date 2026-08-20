@@ -1,6 +1,7 @@
 #include "ServerCommandDispatcher.h"
 #include "ChatCommandHandler.h"
 #include "CombatCommandHandler.h"
+#include "DisconnectCommandHandler.h"
 #include "MovementCommandHandler.h"
 
 namespace server {
@@ -127,6 +128,26 @@ CommandDispatchResult ServerCommandDispatcher::dispatch(
         }
         ++snapshotRequests;
         result.accepted = true;
+        return result;
+    }
+
+    if (command.type == network::CommandType::Disconnect) {
+        if (!loginHandler.sessionRegistry().isActive(command.sessionId)) {
+            result.error = "disconnect requires an active anonymous session";
+            return result;
+        }
+        if (!rateLimiter.allow(command.sessionId, command.type)) {
+            result.error = "disconnect command rate limit exceeded";
+            return result;
+        }
+        DisconnectCommandHandler handler(loginHandler.sessionRegistry());
+        const DisconnectResult ended = handler.handle(command);
+        result.accepted = ended.accepted;
+        result.session = ended.session;
+        result.error = ended.error;
+        if (result.accepted) {
+            rateLimiter.forgetSession(command.sessionId);
+        }
         return result;
     }
 
