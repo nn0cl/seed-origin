@@ -1,8 +1,8 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
-- Status: review
-- Phase: wire-slice-complete
-- Related branch: `feature/liss-0147-login-wire`
+- Status: in_progress
+- Phase: phase-1-red-dispatcher
+- Related branch: `feature/liss-0147-dispatcher-challenge-login`
 - Priority: high
 - Depends on: LISS-0146
 - Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
@@ -145,6 +145,15 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 - Remaining for full LISS-0147 closure: ServerCommandDispatcher swap,
   Postgres adapters, anonymous `LoginCommandHandler` /
   `SessionRegistry::login(claimedId)` removal.
+
+## Phase 1 Red — Dispatcher challenge login（2026-08-20）
+
+- Tests: `tests/ServerCommandDispatcherChallengeLoginTest.cpp`
+- Covered: dispatch Login with valid ChallengeKey; reject nickname when
+  challenge auth is bound
+- Expected Red: link failure（challenge dispatcher constructor 未実装）
+- Anonymous `ServerCommandDispatcher(registry)` path remains for existing tests
+  until Green migrates runtime wiring
 
 ## Remaining decisions
 

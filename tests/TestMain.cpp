@@ -282,6 +282,11 @@ void rejects_disconnect_without_an_active_session();
 void routes_combat_only_for_an_active_session();
 }
 
+namespace server_command_dispatcher_challenge_login_tests {
+void dispatches_login_with_valid_challenge_key();
+void rejects_nickname_login_when_challenge_auth_is_bound();
+}
+
 namespace disconnect_command_handler_tests {
 void ends_active_session_without_unsetting_the_player();
 void rejects_inactive_or_missing_session();
@@ -546,6 +551,8 @@ int main() {
     server_command_dispatcher_tests::disconnects_active_session_and_omits_public_pose();
     server_command_dispatcher_tests::rejects_disconnect_without_an_active_session();
     server_command_dispatcher_tests::routes_combat_only_for_an_active_session();
+    server_command_dispatcher_challenge_login_tests::dispatches_login_with_valid_challenge_key();
+    server_command_dispatcher_challenge_login_tests::rejects_nickname_login_when_challenge_auth_is_bound();
     disconnect_command_handler_tests::ends_active_session_without_unsetting_the_player();
     disconnect_command_handler_tests::rejects_inactive_or_missing_session();
     disconnect_command_handler_tests::rejects_non_empty_disconnect_payload();
