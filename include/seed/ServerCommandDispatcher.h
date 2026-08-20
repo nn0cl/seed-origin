@@ -44,6 +44,8 @@ private:
     WorldInputQueue* inputQueue;
     CommandRateLimiter rateLimiter;
     std::size_t snapshotRequests;
+    ChallengeSessionLoginService* challengeAuth;
+    GameplaySessionPort* gameplaySessions;
 };
 
 }

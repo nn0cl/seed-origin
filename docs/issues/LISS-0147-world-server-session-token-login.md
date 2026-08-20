@@ -1,7 +1,7 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
 - Status: in_progress
-- Phase: phase-1-red-dispatcher
+- Phase: phase-2-green-dispatcher
 - Related branch: `feature/liss-0147-dispatcher-challenge-login`
 - Priority: high
 - Depends on: LISS-0146
@@ -154,6 +154,13 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 - Expected Red: link failure（challenge dispatcher constructor 未実装）
 - Anonymous `ServerCommandDispatcher(registry)` path remains for existing tests
   until Green migrates runtime wiring
+
+## Phase 2 Green — Dispatcher challenge login（2026-08-20）
+
+- New constructor binds `ChallengeSessionLoginService` + `GameplaySessionPort`
+- Login dispatch uses `ChallengeLoginCommandHandler` when bound; otherwise the
+  existing anonymous `LoginCommandHandler`
+- `CommandDispatchResult.playerSessionKey` populated on challenge login
 
 ## Remaining decisions
 
