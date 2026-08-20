@@ -1,8 +1,8 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
-- Status: review
-- Phase: dispatcher-slice-complete
-- Related branch: `feature/liss-0147-dispatcher-challenge-login`
+- Status: in_progress
+- Phase: phase-1-red-runtime
+- Related branch: `feature/liss-0147-runtime-challenge-login`
 - Priority: high
 - Depends on: LISS-0146
 - Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
@@ -172,6 +172,15 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 - Phase 1–3 dispatcher challenge Login wiring approved.
 - Remaining for full LISS-0147: ServerRuntime bind, Postgres adapters,
   anonymous `LoginCommandHandler` / `SessionRegistry::login(claimedId)` removal.
+
+## Phase 1 Red — Runtime LoginResponse session key（2026-08-20）
+
+- Tests: accepted LoginResponse may carry PlayerSessionKey payload;
+  `processFrame` writes that payload after challenge Login
+- Expected Red: codec validation rejects non-empty Accepted payload; runtime
+  still sends empty payload on accept
+- Out of this Red: Postgres adapters, anonymous login deletion, ServerMain
+  production constructor (follows codec/runtime Green)
 
 ## Remaining decisions
 

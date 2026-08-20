@@ -148,6 +148,7 @@ add_executable(seed_tests
     tests/IdentityAliasStoreTest.cpp
     tests/NetworkCommandTest.cpp
     tests/ServerRuntimeTest.cpp
+    tests/ServerRuntimeChallengeLoginTest.cpp
     tests/NetworkFrameCodecTest.cpp
     tests/LoginResponseCodecTest.cpp
     tests/DisconnectResponseCodecTest.cpp

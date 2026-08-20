@@ -134,6 +134,10 @@ void rejects_frame_processing_when_runtime_is_stopped();
 void advances_action_frame_after_network_processing();
 }
 
+namespace server_runtime_challenge_login_tests {
+void process_frame_writes_player_session_key_on_accepted_login();
+}
+
 namespace network_frame_tests {
 void round_trips_a_valid_command();
 void rejects_incomplete_and_oversized_frames();
@@ -147,6 +151,7 @@ namespace login_response_codec_tests {
 void round_trips_accepted_response();
 void round_trips_rejected_response();
 void rejects_invalid_response_identity();
+void round_trips_accepted_response_with_player_session_key();
 }
 
 namespace disconnect_response_codec_tests {
@@ -435,9 +440,11 @@ int main() {
     server_runtime_tests::rejects_client_frame_processing_when_runtime_is_stopped();
     server_runtime_tests::rejects_frame_processing_when_runtime_is_stopped();
     server_runtime_tests::advances_action_frame_after_network_processing();
+    server_runtime_challenge_login_tests::process_frame_writes_player_session_key_on_accepted_login();
     network_frame_tests::round_trips_a_valid_command();
     network_frame_tests::rejects_incomplete_and_oversized_frames();
     login_response_codec_tests::round_trips_accepted_response();
+    login_response_codec_tests::round_trips_accepted_response_with_player_session_key();
     login_response_codec_tests::round_trips_rejected_response();
     login_response_codec_tests::rejects_invalid_response_identity();
     disconnect_response_codec_tests::round_trips_accepted_response();
