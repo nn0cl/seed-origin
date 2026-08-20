@@ -1,8 +1,8 @@
 # LISS-0155: `seed_auth` Spring Boot HTTP Adapter
 
-- Status: open
-- Phase: design
-- Related branch: （未作成 — Phase 1 承認後 `feature/liss-0155-seed-auth-http-adapter`）
+- Status: in_progress
+- Phase: phase-3-refactor
+- Related branch: `feature/liss-0155-seed-auth-http-adapter`
 - Priority: high
 - Depends on: LISS-0151（Postgres/pgcrypto Adapter done — PR #16）
 - Parent: LISS-0146
@@ -23,7 +23,7 @@ LISS-0146 UseCase と LISS-0151 Postgres Adapter を、Spring Boot HTTP
 - UseCase（`PlayerAuthenticationService`）への委譲のみ（業務判断は Adapter に置かない）
 - MyBatis（または MyBatis + 既存 JDBC の段階移行）によるポート配線
 - `SEED_IDENTITY_DB_URL` からの DataSource
-- MockMvc / WebTestClient による契約テスト（DB 未設定時の方針は Phase 1 で固定）
+- MockMvc 契約テスト（UseCase はモック；DB 不要）
 
 ## スコープ外
 
@@ -54,13 +54,35 @@ LISS-0146 UseCase と LISS-0151 Postgres Adapter を、Spring Boot HTTP
 - When `POST /logout`
 - Then 対応セッションが revoke される
 
-## Remaining decisions（Adjudicator）
+## Adjudicator decisions（2026-08-20）
 
-1. Spring Boot バージョン（提案: **3.4.x** + Java 17）
-2. MyBatis Spring Boot Starter バージョン（提案: **3.0.x**）
-3. 既存 JDBC Adapter（LISS-0151）を Green で MyBatis 置換するか、
-   当面 JDBC を Spring `@Bean` 配線し MyBatis を並行導入するか
-4. JSON エラーボディ形状（`reason` 文字列中心でよいか）
+1. Spring Boot **3.4.x** / Java 17（ピン: **3.4.13** — 3.4 最終 OSS パッチ。OSS EOL 済のため
+   後続で 3.5/4.x 移行を検討）
+2. MyBatis Spring Boot Starter **3.0.x**
+3. Green: 当面 **既存 JDBC を `@Bean` 配線**、MyBatis は同スライスで段階導入
+4. エラー JSON: `{ "reason": "..." }`（`lockedUntil` は login lockout のみ）
+
+## Phase 1 Red（2026-08-20）
+
+- Tests: `seed-auth/backend/src/test/kotlin/com/seed/auth/adapter/http/PlayerAuthHttpAdapterTest.kt`
+- Covered: register 201/409, login challenge/401/423+lockedUntil, logout 200
+- Expected Red: compile failure（`PlayerAuthController` 未実装、Spring 依存未配線）
+- Out of Red: controller / Spring Boot app / MyBatis / DataSource（Green）
+
+## Phase 2 Green（2026-08-20）
+
+- `PlayerAuthController` — `/register` `/login` `/logout`（UseCase 委譲のみ）
+- Spring Boot **3.4.13** + `spring-boot-starter-web` + MockMvc tests
+- MyBatis starter **3.0.5** on classpath; `MybatisAutoConfiguration` excluded
+  （JDBC `@Bean` が当面のポート実装 — decision 3）
+- `AuthPersistenceConfig` — `SEED_IDENTITY_DB_URL` があるとき JDBC adapters 配線
+- Verification: `./gradlew test` BUILD SUCCESSFUL（HTTP 6 + UseCase 6；Postgres
+  adapter は URL 未設定時 skip）
+
+## Phase 3 Refactor（2026-08-20）
+
+- HTTP JSON ヘルパー（`acceptedBody` / `reasonBody`）と DTO ファイル分離
+- 挙動・アサーションは変更なし
 
 ## English
 
