@@ -5,15 +5,36 @@
 - Issue: LISS-0152
 - Branch: `feature/liss-0152-client-side-prediction`
 - Worktree: `/Users/nn0cl/Documents/git/seed-origin-prediction`
-- Phase: Phase 2 Green complete → `review` pending Adjudicator sign-off
+- Phase: Phase 3 Refactor complete → **done** (Adjudicator approved 2026-08-20)
 - Planning record: AIP-0152-001
+
+## Adjudicator Approval (2026-08-20)
+
+- **Decision:** LISS-0152 moves `review` → `done`.
+- **Scope approved:** Phase 3 refactor on CSP-related modules (no behavior
+  change); issue status sync and definition-of-done checklist.
+- **Out of scope confirmed:** seed-auth, LISS-0155, zone spawn, PlayerName
+  normalization, merge/push.
+
+## Phase 3 Refactor (2026-08-20)
+
+| Change | Rationale |
+| --- | --- |
+| `FrameHeaderBinary.h` | Dedup `read16`/`write16`/32/64 across Login/Disconnect/Network codecs and inbound demux |
+| `ServerRuntime` anonymous helpers | Common encode+enqueue pattern for Login/Disconnect responses |
+| `ClientTransportShell` handler split | Separate Login/Disconnect inbound frame handlers from WorldUpdate path |
+
+Verification after refactor:
+
+```text
+cd /Users/nn0cl/Documents/git/seed-origin-prediction/build
+cmake --build . && ./seed_tests   # EXIT 0
+```
 
 ## Current State
 
-- **Current phase:** Phase 2 Green complete; awaiting Adjudicator review for
-  `review` → `done`.
-- **User request:** Continue the next safe slice on the CSP branch without
-  touching auth, LISS-0155, or merge/push.
+- **Current phase:** **done** (LISS-0152 complete).
+- **User request:** Mark LISS-0152 done and execute Phase 3 refactor.
 - **Scope:** Local-player client-side prediction, server reconciliation,
   full-vs-delta WorldUpdate contract, Disconnect lifecycle, reconnect
   RequestSnapshot I/O (LISS-0128 slice on this branch), temporary Login Field
@@ -95,17 +116,13 @@ No code change required for this handoff slice.
   - LISS-0153: case/Unicode name fold, zone spawn, auth-side name ledger,
     operator UI/permissions.
   - LISS-0128 remainder: timeout, backoff, ops/UI.
-  - Whether LISS-0152 moves to `done` now or waits for LISS-0153 slice on
-    the same branch.
 
 ## Next Safe Action
 
-1. Adjudicator review LISS-0152 for `review` → `done` (or request Phase 3
-   refactor on specific modules).
-2. If approved, next implementation slice is LISS-0153 ambiguities **only
-   after** Adjudicator selects normalization/spawn/ledger policy.
-3. LISS-0128 remainder (timeout/ops) stays separate from CSP core.
-4. Do **not** merge/push without explicit Adjudicator confirmation.
+1. Adjudicator selects LISS-0153 policy (name fold, zone spawn, auth-side
+   ledger, operator UI/permissions) before durable-spawn implementation.
+2. LISS-0128 remainder (timeout/ops) stays separate from CSP core.
+3. Do **not** merge/push without explicit Adjudicator confirmation.
 
 ## Blockers
 

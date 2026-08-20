@@ -4,8 +4,8 @@
 
 - Local issue ID: LISS-0152
 - GitHub issue:
-- Status: review
-- Phase: phase-2-green-complete
+- Status: done
+- Phase: phase-3-refactor-complete
 - Type: feature + netcode
 - Priority: high
 - Initial planning size: L
@@ -135,7 +135,10 @@ on `feature/ue-client-mockup-delivery-brief` were not touched.
 
 ## Verification
 
-- 2026-08-20: Full `./build/seed_tests` in worktree
+- 2026-08-20: Phase 3 refactor complete; full `./build/seed_tests` **EXIT 0**
+  after `FrameHeaderBinary` dedup, `ServerRuntime` response enqueue helpers,
+  and `ClientTransportShell` inbound handler extraction.
+- 2026-08-20: Adjudicator approved `review` → `done` (Phase 3 refactor slice).
   `/Users/nn0cl/Documents/git/seed-origin-prediction` — **EXIT 0** (entire
   suite green, including combat spell enqueue cases previously noted as
   aborting on this branch).
