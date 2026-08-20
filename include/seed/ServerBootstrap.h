@@ -27,8 +27,8 @@ struct ChallengeProductionTestHook {
 
 class ServerBootstrap {
 public:
-    // Returns a dispatcher on the anonymous login path when challengeAuth is
-    // nullptr; otherwise binds challenge Login via ChallengeAuthBundle.
+    // Returns a dispatcher that rejects Login until challengeAuth is provided;
+    // otherwise binds challenge Login via ChallengeAuthBundle.
     static std::unique_ptr<ServerCommandDispatcher> createCommandDispatcher(
         session::SessionRegistry& registry,
         ChallengeAuthBundle* challengeAuth = nullptr);

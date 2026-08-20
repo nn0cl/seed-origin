@@ -1,3 +1,4 @@
+#include "ServerCommandErrors.h"
 #include "ServerCommandDispatcher.h"
 
 #include <cassert>
@@ -38,15 +39,17 @@ void clearFieldPlayers() {
 
 }
 
-void accepts_login() {
+void rejects_nickname_login_when_challenge_auth_is_unbound() {
     session::SessionRegistry registry;
     server::ServerCommandDispatcher dispatcher(registry);
     const network::NetworkCommand command = {
-        network::CURRENT_PROTOCOL_VERSION, network::CommandType::Login, 0, "player"};
+        network::CURRENT_PROTOCOL_VERSION, network::CommandType::Login, 0,
+        "player"};
 
     const server::CommandDispatchResult result = dispatcher.dispatch(command);
-    assert(result.accepted);
-    assert(result.session.internalId != 0);
+    assert(!result.accepted);
+    assert(result.session.internalId == 0);
+    assert(result.error == server::kChallengeAuthRequiredError);
 }
 
 void rejects_unimplemented_command() {
@@ -68,7 +71,7 @@ void disconnects_active_session_and_omits_public_pose() {
     assert(server::FieldSessionPresence::operatorSetPlayerName(9001, "Hero"));
     session::SessionRegistry registry;
     server::ServerCommandDispatcher dispatcher(registry);
-    const session::SessionInfo session = registry.login("alice");
+    const session::SessionInfo session = registry.openAuthenticatedSession(9001);
     assert(server::FieldSessionPresence::placeAfterLogin(session.internalId,
                                                          "alice"));
     Field* field = Field::getInstance();
@@ -95,14 +98,14 @@ void rejects_disconnect_without_an_active_session() {
         ""};
     const server::CommandDispatchResult result = dispatcher.dispatch(command);
     assert(!result.accepted);
-    assert(result.error == "disconnect requires an active anonymous session");
+    assert(result.error == "disconnect requires an active session");
 }
 
 void routes_combat_only_for_an_active_session() {
     session::SessionRegistry registry;
     server::WorldInputQueue queue;
     server::ServerCommandDispatcher dispatcher(registry, queue);
-    const session::SessionInfo session = registry.login("player");
+    const session::SessionInfo session = registry.openAuthenticatedSession(1);
     const network::NetworkCommand attack = {
         network::CURRENT_PROTOCOL_VERSION, network::CommandType::Attack,
         session.internalId, "attack-1|2,100"};

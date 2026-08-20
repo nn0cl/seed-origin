@@ -25,7 +25,6 @@ set(SEED_CORE_SOURCES
     src/ServerRuntime.cpp
     src/NetworkFrameCodec.cpp
     src/FrameAccumulator.cpp
-    src/LoginCommandHandler.cpp
     src/ChallengeSessionLogin.cpp
     src/ChallengeLoginCommandHandler.cpp
     src/DisconnectCommandHandler.cpp
@@ -178,10 +177,9 @@ add_executable(seed_tests
     tests/ClientHazardEffectQueueTest.cpp
     tests/ClientWorldUpdateReceiverTest.cpp
     tests/FrameAccumulatorTest.cpp
-    tests/LoginCommandHandlerTest.cpp
+    tests/DisconnectCommandHandlerTest.cpp
     tests/ChallengeSessionLoginTest.cpp
     tests/ChallengeLoginCommandHandlerTest.cpp
-    tests/DisconnectCommandHandlerTest.cpp
     tests/ServerCommandDispatcherTest.cpp
     tests/ServerCommandDispatcherChallengeLoginTest.cpp
     tests/ServerBootstrapTest.cpp

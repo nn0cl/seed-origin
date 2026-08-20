@@ -17,7 +17,7 @@ DisconnectResult DisconnectCommandHandler::handle(
     }
     if (!network::validateCommand(command, result.error)) return result;
     if (!registry.isActive(command.sessionId)) {
-        result.error = "disconnect requires an active anonymous session";
+        result.error = "disconnect requires an active session";
         return result;
     }
 

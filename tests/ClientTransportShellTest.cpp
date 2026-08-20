@@ -1,72 +1,43 @@
 #include <cassert>
+#include <map>
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <vector>
 
+#include "ChallengeAuthTestFixtures.h"
+#include "TransportLoopbackTestSupport.h"
 #include "ClientTransportShell.h"
-#include "AuthenticatedPlayerIdPort.h"
 #include "Field.h"
 #include "FieldSessionPresence.h"
 #include "LoginFieldSpawnSettings.h"
+#include "Player.h"
+#include "Status.h"
+#include "WorldFrameApplier.h"
 #include "DisconnectResponseCodec.h"
 #include "LoginResponseCodec.h"
 #include "NetworkFrameCodec.h"
-#include "Player.h"
-#include "Position.h"
+#include "RegistryGameplaySessionPort.h"
 #include "ServerCommandDispatcher.h"
 #include "ServerRuntime.h"
 #include "SessionRegistry.h"
-#include "Status.h"
-#include "WorldFrameApplier.h"
 #include "WorldUpdateFrameCodec.h"
 
 namespace client_transport_shell_tests {
 namespace {
 
-class FixedPlayerIdPort : public server::AuthenticatedPlayerIdPort {
-public:
-    explicit FixedPlayerIdPort(int64_t playerId) : playerId(playerId) {}
-    bool resolvePlayerId(int64_t, const std::string&, int64_t& out) const {
-        out = playerId;
-        return playerId > 0;
-    }
-
-private:
-    int64_t playerId;
-};
-
-void clearFieldPlayers() {
-    Field* field = Field::getInstance();
-    const std::vector<PlayerPoseSnapshot> poses = field->publicPlayerPoses();
-    for (std::size_t i = 0; i < poses.size(); ++i) {
-        const int64_t sessionId = poses[i].sessionId;
-        Field::unsetPlayer(Player(sessionId, Status(), Position(sessionId, 0, 0, 0)));
-    }
-}
+using seed_test::clearFieldPlayers;
+using seed_test::FakeChallengeClaimPort;
+using seed_test::FakeSessionStore;
+using seed_test::FixedKeyIssuer;
+using seed_test::FixedPlayerIdPort;
+using seed_test::FixedWallClock;
+using seed_test::resetFieldSessionPresence;
+using seed_test::serverTick;
 
 bool encodeUpdate(const network::WorldUpdate& update, std::vector<uint8_t>& frame) {
     std::string error;
     return network::encodeWorldUpdateFrame(update, frame, error);
-}
-
-void serverTick(server::ServerRuntime& runtime,
-                server::ServerCommandDispatcher& dispatcher,
-                server::WorldFrameApplier& applier,
-                server::ServerFrameResult& frame) {
-    std::string error;
-    frame = runtime.processFrame(dispatcher, error);
-    assert(error.empty());
-    std::vector<network::WorldUpdate> updates;
-    assert(applier.apply(
-        server::WorldFrameInputs{frame.worldTick, frame.inputs}, updates, error));
-    std::vector<server::MovementAck> acks = applier.ownerMovementAcks();
-    assert(applier.capturePublicSnapshotIfNewSessions(
-        frame.newAuthenticatedSessions + frame.snapshotRequests, frame.worldTick,
-        updates, acks, error));
-    if (updates.empty()) return;
-    std::string publishError;
-    runtime.publishWorldUpdates(updates, acks, publishError);
 }
 
 }
@@ -174,8 +145,18 @@ void snapshot_from_peer_clears_request_after_skipped_events() {
 
 void loopback_reconnect_sends_request_snapshot_and_applies_server_snapshot() {
     clearFieldPlayers();
+    const FixedPlayerIdPort playerIdPort(9001);
+    server::FieldSessionPresence::usePlayerIdPort(&playerIdPort);
+    assert(server::FieldSessionPresence::operatorSetPlayerName(9001, "Hero"));
+    const int64_t now = 1700000000;
+    FixedWallClock clock(now);
+    FakeChallengeClaimPort challenges;
+    FakeSessionStore sessions;
+    FixedKeyIssuer keys("transport-session");
+    server::ChallengeSessionLoginService auth(challenges, sessions, keys, clock);
     session::SessionRegistry registry;
-    server::ServerCommandDispatcher dispatcher(registry);
+    server::RegistryGameplaySessionPort gameplay(registry);
+    server::ServerCommandDispatcher dispatcher(registry, auth, gameplay);
     server::ServerRuntime runtime;
     server::WorldFrameApplier applier(*Field::getInstance());
     assert(runtime.start(0));
@@ -185,10 +166,13 @@ void loopback_reconnect_sends_request_snapshot_and_applies_server_snapshot() {
     const uint16_t port = runtime.listeningPort();
     assert(port != 0);
 
+    const std::string challengeKey = "liss0128-rejoin";
+    challenges.putUnclaimed(challengeKey, 42, now + 120);
+
     client::ClientTransportShell transport;
     std::string error;
     assert(transport.connectTcp("127.0.0.1", port, error));
-    assert(transport.enqueueLogin("liss0128-rejoin", error));
+    assert(transport.enqueueLogin(challengeKey, error));
     assert(transport.flushOutbound(error) == server::SendStatus::Sent);
 
     server::ServerFrameResult frame = {};
@@ -204,8 +188,9 @@ void loopback_reconnect_sends_request_snapshot_and_applies_server_snapshot() {
     assert(transport.snapshotRequested());
     serverTick(runtime, dispatcher, applier, frame);
 
+    challenges.putUnclaimed(challengeKey, 42, now + 120);
     assert(transport.connectTcp("127.0.0.1", port, error));
-    assert(transport.enqueueLogin("liss0128-rejoin", error));
+    assert(transport.enqueueLogin(challengeKey, error));
     assert(transport.flushOutbound(error) == server::SendStatus::Sent);
     loggedIn = false;
     size_t snapshotRequestsSeen = 0;
@@ -226,8 +211,7 @@ void loopback_reconnect_sends_request_snapshot_and_applies_server_snapshot() {
     assert(transport.worldReceiver().environment().value().hasLocalPlayer ||
            !transport.worldReceiver().environment().value().players.empty());
     assert(runtime.stop());
-    server::FieldSessionPresence::useSpawnSettings(server::LoginFieldSpawnSettings());
-    server::FieldSessionPresence::usePlayerIdPort(0);
+    resetFieldSessionPresence();
     clearFieldPlayers();
 }
 
@@ -308,8 +292,15 @@ void loopback_disconnect_ends_session_and_resets_client_auth() {
     const FixedPlayerIdPort port(9001);
     server::FieldSessionPresence::usePlayerIdPort(&port);
     assert(server::FieldSessionPresence::operatorSetPlayerName(9001, "Hero"));
+    const int64_t now = 1700000000;
+    FixedWallClock clock(now);
+    FakeChallengeClaimPort challenges;
+    FakeSessionStore sessions;
+    FixedKeyIssuer keys("disconnect-session");
+    server::ChallengeSessionLoginService auth(challenges, sessions, keys, clock);
     session::SessionRegistry registry;
-    server::ServerCommandDispatcher dispatcher(registry);
+    server::RegistryGameplaySessionPort gameplay(registry);
+    server::ServerCommandDispatcher dispatcher(registry, auth, gameplay);
     server::ServerRuntime runtime;
     server::WorldFrameApplier applier(*Field::getInstance());
     assert(runtime.start(0));
@@ -319,10 +310,13 @@ void loopback_disconnect_ends_session_and_resets_client_auth() {
     const uint16_t portNum = runtime.listeningPort();
     assert(portNum != 0);
 
+    const std::string challengeKey = "liss0152-disconnect";
+    challenges.putUnclaimed(challengeKey, 9001, now + 120);
+
     client::ClientTransportShell transport;
     std::string error;
     assert(transport.connectTcp("127.0.0.1", portNum, error));
-    assert(transport.enqueueLogin("liss0152-disconnect", error));
+    assert(transport.enqueueLogin(challengeKey, error));
     assert(transport.flushOutbound(error) == server::SendStatus::Sent);
 
     server::ServerFrameResult frame = {};
@@ -367,8 +361,9 @@ void loopback_disconnect_ends_session_and_resets_client_auth() {
 
     transport.beginReconnect();
     assert(transport.snapshotRequested());
+    challenges.putUnclaimed(challengeKey, 9001, now + 120);
     assert(transport.connectTcp("127.0.0.1", portNum, error));
-    assert(transport.enqueueLogin("liss0152-disconnect", error));
+    assert(transport.enqueueLogin(challengeKey, error));
     assert(transport.flushOutbound(error) == server::SendStatus::Sent);
     loggedIn = false;
     size_t snapshotRequestsSeen = 0;
@@ -393,8 +388,7 @@ void loopback_disconnect_ends_session_and_resets_client_auth() {
     assert(rebound->getPlayerName() == "Hero");
 
     assert(runtime.stop());
-    server::FieldSessionPresence::useSpawnSettings(server::LoginFieldSpawnSettings());
-    server::FieldSessionPresence::usePlayerIdPort(0);
+    resetFieldSessionPresence();
     clearFieldPlayers();
 }
 

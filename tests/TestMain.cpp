@@ -84,9 +84,8 @@ void saturates_negative_values();
 }
 
 namespace session_registry_tests {
-void assigns_unique_internal_ids_and_stable_aliases();
-void matches_claimed_ids_case_insensitively_without_authenticating();
-void treats_invalid_claims_as_anonymous();
+void assigns_unique_internal_ids_for_authenticated_sessions();
+void rejects_non_positive_user_ids();
 void never_reuses_disconnected_ids();
 }
 
@@ -100,11 +99,6 @@ void rejects_review_for_missing_alias_or_invalid_confidence();
 namespace network_command_tests {
 void validates_login_without_client_internal_id();
 void rejects_invalid_session_and_oversized_payload();
-}
-
-namespace login_command_handler_tests {
-void creates_temporary_session_from_valid_login();
-void rejects_client_supplied_internal_id();
 }
 
 namespace challenge_session_login_tests {
@@ -126,7 +120,7 @@ void rejects_commands_before_start();
 void drains_valid_commands_in_fifo_order();
 void dispatches_pending_commands_in_fifo_order();
 void ingests_decoded_commands_from_client_session();
-void dispatches_ingested_login_to_session_registry();
+void rejects_unbound_nickname_login_from_pending_commands();
 void rejects_client_accept_when_runtime_is_stopped();
 void clears_owned_clients_on_stop();
 void rejects_client_frame_processing_when_runtime_is_stopped();
@@ -280,7 +274,7 @@ void requests_a_snapshot_after_reconnect_before_accepting_events();
 }
 
 namespace server_command_dispatcher_tests {
-void accepts_login();
+void rejects_nickname_login_when_challenge_auth_is_unbound();
 void rejects_unimplemented_command();
 void disconnects_active_session_and_omits_public_pose();
 void rejects_disconnect_without_an_active_session();
@@ -294,8 +288,9 @@ void rejects_nickname_login_when_challenge_auth_is_bound();
 
 namespace server_bootstrap_tests {
 void create_dispatcher_uses_challenge_login_when_bundle_provided();
-void create_dispatcher_uses_anonymous_login_when_bundle_is_null();
-void production_dispatcher_uses_anonymous_path_when_env_is_unset();
+void create_dispatcher_without_bundle_rejects_nickname_login();
+void production_dispatcher_starts_when_challenge_env_is_unset();
+void production_dispatcher_without_challenge_env_rejects_nickname_login();
 void production_dispatcher_fails_when_challenge_auth_env_is_set_without_postgres();
 void production_dispatcher_reports_missing_identity_db_url();
 void production_dispatcher_uses_challenge_login_when_env_and_test_hook_provided();
@@ -420,9 +415,8 @@ int main() {
     seed_binary_tests::rejects_missing_block_on_save();
     status_saturation_tests::saturates_positive_values();
     status_saturation_tests::saturates_negative_values();
-    session_registry_tests::assigns_unique_internal_ids_and_stable_aliases();
-    session_registry_tests::matches_claimed_ids_case_insensitively_without_authenticating();
-    session_registry_tests::treats_invalid_claims_as_anonymous();
+    session_registry_tests::assigns_unique_internal_ids_for_authenticated_sessions();
+    session_registry_tests::rejects_non_positive_user_ids();
     session_registry_tests::never_reuses_disconnected_ids();
     identity_alias_store_tests::preserves_alias_metadata_and_case_insensitive_reconciliation();
     identity_alias_store_tests::supports_explicit_claimed_id_deletion_without_affecting_sessions();
@@ -430,8 +424,6 @@ int main() {
     identity_alias_store_tests::rejects_review_for_missing_alias_or_invalid_confidence();
     network_command_tests::validates_login_without_client_internal_id();
     network_command_tests::rejects_invalid_session_and_oversized_payload();
-    login_command_handler_tests::creates_temporary_session_from_valid_login();
-    login_command_handler_tests::rejects_client_supplied_internal_id();
     challenge_session_login_tests::claims_valid_challenge_and_issues_thirty_minute_session();
     challenge_session_login_tests::rejects_expired_challenge_without_creating_a_session();
     challenge_session_login_tests::rejects_already_claimed_challenge();
@@ -444,7 +436,7 @@ int main() {
     server_runtime_tests::drains_valid_commands_in_fifo_order();
     server_runtime_tests::dispatches_pending_commands_in_fifo_order();
     server_runtime_tests::ingests_decoded_commands_from_client_session();
-    server_runtime_tests::dispatches_ingested_login_to_session_registry();
+    server_runtime_tests::rejects_unbound_nickname_login_from_pending_commands();
     server_runtime_tests::rejects_client_accept_when_runtime_is_stopped();
     server_runtime_tests::clears_owned_clients_on_stop();
     server_runtime_tests::rejects_client_frame_processing_when_runtime_is_stopped();
@@ -563,7 +555,7 @@ int main() {
     client_world_receiver_tests::rejects_sequence_gap_without_partial_application();
     client_world_receiver_tests::requests_a_snapshot_after_reconnect_before_accepting_events();
     frame_accumulator_tests::joins_partial_frame_and_preserves_multiple_frames();
-    server_command_dispatcher_tests::accepts_login();
+    server_command_dispatcher_tests::rejects_nickname_login_when_challenge_auth_is_unbound();
     server_command_dispatcher_tests::rejects_unimplemented_command();
     server_command_dispatcher_tests::disconnects_active_session_and_omits_public_pose();
     server_command_dispatcher_tests::rejects_disconnect_without_an_active_session();
@@ -571,8 +563,9 @@ int main() {
     server_command_dispatcher_challenge_login_tests::dispatches_login_with_valid_challenge_key();
     server_command_dispatcher_challenge_login_tests::rejects_nickname_login_when_challenge_auth_is_bound();
     server_bootstrap_tests::create_dispatcher_uses_challenge_login_when_bundle_provided();
-    server_bootstrap_tests::create_dispatcher_uses_anonymous_login_when_bundle_is_null();
-    server_bootstrap_tests::production_dispatcher_uses_anonymous_path_when_env_is_unset();
+    server_bootstrap_tests::create_dispatcher_without_bundle_rejects_nickname_login();
+    server_bootstrap_tests::production_dispatcher_starts_when_challenge_env_is_unset();
+    server_bootstrap_tests::production_dispatcher_without_challenge_env_rejects_nickname_login();
     server_bootstrap_tests::production_dispatcher_fails_when_challenge_auth_env_is_set_without_postgres();
     server_bootstrap_tests::production_dispatcher_reports_missing_identity_db_url();
     server_bootstrap_tests::production_dispatcher_uses_challenge_login_when_env_and_test_hook_provided();

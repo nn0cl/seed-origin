@@ -45,7 +45,7 @@ void ends_active_session_without_unsetting_the_player() {
     server::FieldSessionPresence::usePlayerIdPort(&port);
     assert(server::FieldSessionPresence::operatorSetPlayerName(9001, "Hero"));
     session::SessionRegistry registry;
-    const session::SessionInfo session = registry.login("alice");
+    const session::SessionInfo session = registry.openAuthenticatedSession(9001);
     assert(server::FieldSessionPresence::placeAfterLogin(session.internalId,
                                                          "alice"));
     Field* field = Field::getInstance();
@@ -66,7 +66,7 @@ void ends_active_session_without_unsetting_the_player() {
     assert(field->publicPlayerPoses().empty());
     assert(!server::FieldSessionPresence::operatorSetPlayerName(9002, "Hero"));
 
-    const session::SessionInfo rebound = registry.login("alice");
+    const session::SessionInfo rebound = registry.openAuthenticatedSession(9001);
     assert(server::FieldSessionPresence::placeAfterLogin(rebound.internalId,
                                                          "alice"));
     const Player* placed = field->findPlayer(rebound.internalId);
@@ -85,7 +85,7 @@ void rejects_inactive_or_missing_session() {
         ""};
     const server::DisconnectResult missing = handler.handle(unknown);
     assert(!missing.accepted);
-    assert(missing.error == "disconnect requires an active anonymous session");
+    assert(missing.error == "disconnect requires an active session");
 
     const network::NetworkCommand unauthenticated = {
         network::CURRENT_PROTOCOL_VERSION, network::CommandType::Disconnect, 0,
@@ -97,7 +97,7 @@ void rejects_inactive_or_missing_session() {
 
 void rejects_non_empty_disconnect_payload() {
     session::SessionRegistry registry;
-    const session::SessionInfo session = registry.login("alice");
+    const session::SessionInfo session = registry.openAuthenticatedSession(1);
     server::DisconnectCommandHandler handler(registry);
     const network::NetworkCommand command = {
         network::CURRENT_PROTOCOL_VERSION, network::CommandType::Disconnect,

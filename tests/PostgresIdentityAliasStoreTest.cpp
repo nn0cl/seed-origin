@@ -15,11 +15,14 @@ void round_trips_records_through_postgres() {
         return;
     }
 
-    session::SessionRegistry registry(*store);
-    const session::SessionInfo first = registry.login("Postgres-Test-User", 1);
-    const session::SessionInfo second = registry.login("postgres-test-user", 2);
-    assert(first.aliasId != 0 && first.aliasId == second.aliasId);
+    store->erase("postgres-test-user");
+    session::IdentityAliasRecord inserted = {
+        1, "postgres-test-user", 1, 1, 1.0f,
+        session::AliasReviewStatus::Unreviewed};
+    assert(store->insert(inserted));
+    assert(store->touch("postgres-test-user", 2));
 
+    session::SessionRegistry registry(*store);
     assert(registry.recordAliasReview("postgres-test-user",
                                        session::AliasReviewStatus::HumanConfirmed,
                                        0.75f));

@@ -7,7 +7,7 @@
 namespace server {
 
 // Opens an authenticated in-world session after ChallengeKey claim, without
-// using anonymous nickname login.
+// nickname login.
 class RegistryGameplaySessionPort : public GameplaySessionPort {
 public:
     explicit RegistryGameplaySessionPort(session::SessionRegistry& registry);

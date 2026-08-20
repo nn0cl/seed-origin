@@ -49,34 +49,6 @@ std::string SessionRegistry::canonicalClaimedId(const std::string& claimedId) {
     return canonical;
 }
 
-SessionInfo SessionRegistry::login(const std::string& claimedId) {
-    return login(claimedId, 0);
-}
-
-SessionInfo SessionRegistry::login(const std::string& claimedId, uint64_t worldTick) {
-    SessionInfo result = {0, 0, std::string(), false};
-    if (nextInternalId == std::numeric_limits<int64_t>::max()) return result;
-
-    if (isValidClaimedId(claimedId)) {
-        const std::string canonicalId = canonicalClaimedId(claimedId);
-        IdentityAliasRecord record = {};
-        if (aliasStore->find(canonicalId, record)) {
-            result.aliasId = record.aliasId;
-            if (!aliasStore->touch(canonicalId, worldTick)) return result;
-        } else {
-            if (nextAliasId == std::numeric_limits<int64_t>::max()) return result;
-            record = {nextAliasId, canonicalId, worldTick, worldTick, 1.0f,
-                      AliasReviewStatus::Unreviewed};
-            if (!aliasStore->insert(record)) return result;
-            result.aliasId = nextAliasId++;
-        }
-        result.claimedId = claimedId;
-    }
-    result.internalId = nextInternalId++;
-    activeSessions.insert(result.internalId);
-    return result;
-}
-
 SessionInfo SessionRegistry::openAuthenticatedSession(int64_t userId) {
     SessionInfo result = {0, 0, std::string(), false};
     if (userId <= 0 || nextInternalId == std::numeric_limits<int64_t>::max()) {
