@@ -327,6 +327,8 @@ namespace client_inbound_demux_tests {
 void splits_login_response_and_world_update_from_one_buffer();
 void splits_disconnect_response_from_login_and_world_update();
 void joins_partial_inbound_frames_without_dispatch();
+void rejects_invalid_inbound_prefix_after_two_bytes();
+void waits_for_second_prefix_byte_before_dispatch();
 }
 
 namespace client_transport_shell_tests {
@@ -343,6 +345,7 @@ void snapshot_wait_timeout_records_failure_and_keeps_snapshot_pending();
 void login_response_wait_timeout_records_failure_during_reconnect();
 void peer_close_records_peer_closed_on_logged_in_transport();
 void corrupt_inbound_frame_records_protocol_error();
+void connect_timeout_records_connect_timeout();
 void successful_reconnect_increments_reconnect_counter();
 }
 
@@ -465,6 +468,8 @@ int main() {
     client_inbound_demux_tests::splits_login_response_and_world_update_from_one_buffer();
     client_inbound_demux_tests::splits_disconnect_response_from_login_and_world_update();
     client_inbound_demux_tests::joins_partial_inbound_frames_without_dispatch();
+    client_inbound_demux_tests::rejects_invalid_inbound_prefix_after_two_bytes();
+    client_inbound_demux_tests::waits_for_second_prefix_byte_before_dispatch();
     client_transport_shell_tests::after_reconnect_and_login_writes_request_snapshot_on_the_socket();
     client_transport_shell_tests::unauthenticated_reconnect_does_not_write_request_snapshot();
     client_transport_shell_tests::snapshot_from_peer_clears_request_after_skipped_events();
@@ -475,6 +480,7 @@ int main() {
     client_transport_shell_timeout_tests::login_response_wait_timeout_records_failure_during_reconnect();
     client_transport_shell_timeout_tests::peer_close_records_peer_closed_on_logged_in_transport();
     client_transport_shell_timeout_tests::corrupt_inbound_frame_records_protocol_error();
+    client_transport_shell_timeout_tests::connect_timeout_records_connect_timeout();
     client_transport_shell_timeout_tests::successful_reconnect_increments_reconnect_counter();
     combat_command_handler_tests::queues_attack_and_spell_intents();
     combat_command_handler_tests::rejects_malformed_or_oversized_power();

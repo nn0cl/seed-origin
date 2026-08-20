@@ -1,7 +1,7 @@
 # LISS-0128: クライアント通信シェル
 
-- Status: in_progress
-- Phase: phase-2-green
+- Status: done
+- Phase: phase-3-refactor
 - Related branch: `feature/liss-0128-reconnect-timeout-ops`
 - Type: feature + client transport
 - Priority: high
@@ -39,11 +39,13 @@ RequestSnapshot が **再接続後に POSIX TCP ソケットへ載り**、ログ
 
 ## 本スライスで残したもの
 
-- **本 Phase 1 Red 対象（timeout / ops 最小）**
+- **本 Phase 1 Red 対象（timeout / ops 最小）** — **Phase 3 完了（2026-08-20）**
   - Snapshot 待ち・Login 応答待ちの monotonic 期限と `TransportErrorReason`
     記録。
+  - Connect timeout（`connectTimeoutMs`、clock 未設定時は無効）。
   - 切断・プロトコル・タイムアウトを再現可能な状態機械として参照可能にする
-    （`lastError` / `lastErrorDetail`）。
+    （`lastError` / `lastErrorDetail`、統一フォーマット）。
+  - 不正フレーム先頭 2 バイト検証を `ClientInboundDemux` に統合。
   - 運用向け最小カウンタ（`reconnectCount`, `snapshotRequestCount`）。
     詳細ログ・backpressure・個人情報排除は LISS-0132。
 - **後続（本 issue 残だが Phase 1 外）**
@@ -61,6 +63,17 @@ RequestSnapshot が **再接続後に POSIX TCP ソケットへ載り**、ログ
 - ログイン応答と WorldUpdate が同一 TCP 読みに混在しうるため、先頭 2 バイトの
   WorldUpdate magic（0x5755）で demux する。これは既存フレーム形の読み取りであり
   新チャンネルではない。
+
+## Wait deadline arm / clear（Phase 3）
+
+| Deadline | Arm 条件 | Clear / disarm 条件 |
+| --- | --- | --- |
+| Login response | `connectTcp` / `attachConnectedSocket` 成功後、`reconnectPending && Anonymous && clock && loginResponseWaitMs > 0` | Login Accepted、`beginReconnect`、`markFailed` |
+| Snapshot wait | `RequestSnapshot` を outbound に載せた直後（`noteSnapshotRequestQueued`）、`LoggedIn && snapshotRequested && clock && snapshotWaitMs > 0` | Snapshot 適用で `snapshotRequested` が false、`beginReconnect`、`markFailed` |
+| Connect | `connectTcp` 開始時、`clock && connectTimeoutMs > 0`（非 blocking connect + poll） | 接続成功、ConnectTimeout、connect 失敗 |
+
+- clock 未設定、または該当 timeout ms が 0 のとき deadline は無効（Phase 1/2 互換）。
+- Login / Snapshot deadline は `TransportWaitDeadline` に抽出。Connect は `connectTcp` 内ローカル期限。
 
 ## Gherkin（timeout / ops スライス — Phase 1 Red 2026-08-20）
 

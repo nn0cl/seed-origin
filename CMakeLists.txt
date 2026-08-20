@@ -58,6 +58,8 @@ set(SEED_CORE_SOURCES
     src/ClientWorldUpdateReceiver.cpp
     src/ClientInboundDemux.cpp
     src/ClientTransportShell.cpp
+    src/TransportWaitDeadline.cpp
+    src/TransportErrorDetail.cpp
     src/MovementCommandHandler.cpp
     src/Npc.cpp
     src/NpcAi.cpp

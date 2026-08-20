@@ -4,12 +4,14 @@
 #include "LoginResponseCodec.h"
 #include "NetworkFrameCodec.h"
 #include "Protocol.h"
+#include "TransportErrorDetail.h"
 #include "WorldUpdateFrameCodec.h"
 
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <poll.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -17,6 +19,20 @@ namespace client {
 
 namespace {
 constexpr std::size_t READ_BUFFER_SIZE = 4096;
+
+bool socketConnectCompleted(int fd, std::string& error) {
+    int socketError = 0;
+    socklen_t length = sizeof(socketError);
+    if (::getsockopt(fd, SOL_SOCKET, SO_ERROR, &socketError, &length) != 0) {
+        error = "client tcp connect status check failed";
+        return false;
+    }
+    if (socketError != 0) {
+        error = "client tcp connect failed";
+        return false;
+    }
+    return true;
+}
 }
 
 ClientTransportShell::ClientTransportShell()
@@ -25,8 +41,7 @@ ClientTransportShell::ClientTransportShell()
       snapshotCommandQueued(false), disconnectQueued(false), outboundFrames(),
       inbound(), receiver(), clock(0), timeouts(), lastErrorReason(TransportErrorReason::None),
       lastErrorDetailText(), reconnectCounter(0), snapshotRequestCounter(0),
-      reconnectPending(false), loginResponseDeadlineMs(0),
-      snapshotWaitDeadlineMs(0) {}
+      reconnectPending(false), loginResponseDeadline(), snapshotWaitDeadline() {}
 
 ClientTransportShell::~ClientTransportShell() {
     close();
@@ -55,28 +70,30 @@ uint32_t ClientTransportShell::snapshotRequestCount() const {
 }
 
 void ClientTransportShell::recordError(TransportErrorReason reason,
-                                       const std::string& detail) {
+                                       const std::string& context) {
     lastErrorReason = reason;
-    lastErrorDetailText = detail;
+    lastErrorDetailText = formatTransportErrorDetail(reason, context);
 }
 
 void ClientTransportShell::clearWaitDeadlines() {
-    loginResponseDeadlineMs = 0;
-    snapshotWaitDeadlineMs = 0;
+    loginResponseDeadline.clear();
+    snapshotWaitDeadline.clear();
 }
 
 void ClientTransportShell::armLoginResponseWaitIfNeeded() {
-    if (clock == 0 || timeouts.loginResponseWaitMs == 0) return;
-    if (!reconnectPending || auth != TransportAuthState::Anonymous) return;
-    loginResponseDeadlineMs = clock->nowMs() + timeouts.loginResponseWaitMs;
+    if (!reconnectPending || auth != TransportAuthState::Anonymous) {
+        loginResponseDeadline.clear();
+        return;
+    }
+    loginResponseDeadline.arm(clock, timeouts.loginResponseWaitMs);
 }
 
 void ClientTransportShell::armSnapshotWaitIfNeeded() {
-    if (clock == 0 || timeouts.snapshotWaitMs == 0) return;
     if (auth != TransportAuthState::LoggedIn || !receiver.snapshotRequested()) {
+        snapshotWaitDeadline.clear();
         return;
     }
-    snapshotWaitDeadlineMs = clock->nowMs() + timeouts.snapshotWaitMs;
+    snapshotWaitDeadline.arm(clock, timeouts.snapshotWaitMs);
 }
 
 void ClientTransportShell::noteSnapshotRequestQueued() {
@@ -96,17 +113,14 @@ void ClientTransportShell::noteReconnectCompletedIfReady() {
 
 bool ClientTransportShell::checkDeadlines(std::string& error) {
     if (clock == 0) return true;
-    const uint64_t nowMs = clock->nowMs();
-    if (loginResponseDeadlineMs > 0 && nowMs >= loginResponseDeadlineMs) {
-        markFailed(TransportErrorReason::LoginResponseTimeout,
-                   "login response wait timed out");
+    if (loginResponseDeadline.isExpired(clock)) {
+        markFailed(TransportErrorReason::LoginResponseTimeout, std::string());
         error = lastErrorDetailText;
         return false;
     }
-    if (snapshotWaitDeadlineMs > 0 && auth == TransportAuthState::LoggedIn &&
-        receiver.snapshotRequested() && nowMs >= snapshotWaitDeadlineMs) {
-        markFailed(TransportErrorReason::SnapshotWaitTimeout,
-                   "snapshot wait timed out");
+    if (snapshotWaitDeadline.isExpired(clock) &&
+        auth == TransportAuthState::LoggedIn && receiver.snapshotRequested()) {
+        markFailed(TransportErrorReason::SnapshotWaitTimeout, std::string());
         error = lastErrorDetailText;
         return false;
     }
@@ -150,13 +164,68 @@ bool ClientTransportShell::connectTcp(const char* host, uint16_t port,
         link = TransportLinkState::Failed;
         return false;
     }
-    if (::connect(fd, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) !=
-        0) {
-        ::close(fd);
-        error = "client tcp connect failed";
-        link = TransportLinkState::Failed;
-        return false;
+
+    const bool useConnectTimeout = clock != 0 && timeouts.connectTimeoutMs > 0;
+    if (useConnectTimeout) {
+        const int flags = fcntl(fd, F_GETFL, 0);
+        if (flags < 0 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) != 0) {
+            ::close(fd);
+            error = "client socket could not be set non-blocking";
+            link = TransportLinkState::Failed;
+            return false;
+        }
     }
+
+    const int connectResult =
+        ::connect(fd, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr));
+    if (connectResult != 0) {
+        if (!useConnectTimeout) {
+            ::close(fd);
+            error = "client tcp connect failed";
+            link = TransportLinkState::Failed;
+            return false;
+        }
+        if (errno != EINPROGRESS) {
+            ::close(fd);
+            error = "client tcp connect failed";
+            link = TransportLinkState::Failed;
+            return false;
+        }
+
+        const uint64_t deadlineMs = clock->nowMs() + timeouts.connectTimeoutMs;
+        while (true) {
+            if (clock->nowMs() >= deadlineMs) {
+                ::close(fd);
+                markFailed(TransportErrorReason::ConnectTimeout, std::string());
+                error = lastErrorDetailText;
+                return false;
+            }
+
+            struct pollfd pollFd = {};
+            pollFd.fd = fd;
+            pollFd.events = POLLOUT;
+            const uint64_t remainingMs = deadlineMs - clock->nowMs();
+            const int pollTimeoutMs =
+                remainingMs > 50 ? 50 : static_cast<int>(remainingMs);
+            const int pollResult = ::poll(&pollFd, 1, pollTimeoutMs);
+            if (pollResult < 0) {
+                if (errno == EINTR) continue;
+                ::close(fd);
+                error = "client tcp connect poll failed";
+                link = TransportLinkState::Failed;
+                return false;
+            }
+            if (pollResult == 0) continue;
+
+            if (!socketConnectCompleted(fd, error)) {
+                ::close(fd);
+                link = TransportLinkState::Failed;
+                return false;
+            }
+            break;
+        }
+    }
+
     clientSocket = fd;
     if (!setNonBlocking(error)) return false;
     link = TransportLinkState::Connected;
@@ -241,7 +310,7 @@ server::SendStatus ClientTransportShell::flushOutbound(std::string& error) {
             return server::SendStatus::NoData;
         }
         if (errno == ECONNRESET || errno == EPIPE) {
-            recordError(TransportErrorReason::PeerClosed, "client transport peer closed");
+            recordError(TransportErrorReason::PeerClosed, std::string());
             close();
             return server::SendStatus::Closed;
         }
@@ -277,14 +346,16 @@ bool ClientTransportShell::handleLoginResponseFrame(
         return false;
     }
     if (response.status != network::LoginResponseStatus::Accepted) {
-        error = response.payload.empty() ? "login was rejected" : response.payload;
-        markFailed(TransportErrorReason::LoginRejected, error);
+        const std::string rejection =
+            response.payload.empty() ? "login was rejected" : response.payload;
+        markFailed(TransportErrorReason::LoginRejected, rejection);
+        error = lastErrorDetailText;
         return false;
     }
     localSessionId = response.sessionId;
     auth = TransportAuthState::LoggedIn;
     receiver.bindLocalSession(localSessionId);
-    loginResponseDeadlineMs = 0;
+    loginResponseDeadline.disarm();
     armSnapshotWaitIfNeeded();
     return true;
 }
@@ -333,7 +404,7 @@ bool ClientTransportShell::handleInboundFrames(
     }
     if (!receiver.snapshotRequested()) {
         snapshotCommandQueued = false;
-        snapshotWaitDeadlineMs = 0;
+        snapshotWaitDeadline.disarm();
         noteReconnectCompletedIfReady();
     }
     error.clear();
@@ -354,7 +425,7 @@ bool ClientTransportShell::pump(std::string& error) {
     uint8_t bytes[READ_BUFFER_SIZE];
     const ssize_t received = ::recv(clientSocket, bytes, sizeof(bytes), 0);
     if (received == 0) {
-        recordError(TransportErrorReason::PeerClosed, "client transport peer closed");
+        recordError(TransportErrorReason::PeerClosed, std::string());
         error = lastErrorDetailText;
         close();
         return false;
@@ -362,8 +433,7 @@ bool ClientTransportShell::pump(std::string& error) {
     if (received < 0) {
         if (errno != EAGAIN && errno != EWOULDBLOCK && errno != EINTR) {
             if (errno == ECONNRESET || errno == EPIPE) {
-                recordError(TransportErrorReason::PeerClosed,
-                            "client transport peer closed");
+                recordError(TransportErrorReason::PeerClosed, std::string());
                 error = lastErrorDetailText;
                 close();
                 return false;
@@ -374,16 +444,6 @@ bool ClientTransportShell::pump(std::string& error) {
         }
     }
     if (received > 0) {
-        if (!inbound.hasBufferedData() && received >= 2) {
-            const uint16_t prefix =
-                static_cast<uint16_t>((bytes[0] << 8) | bytes[1]);
-            if (prefix != network::WORLD_UPDATE_FRAME_MAGIC &&
-                prefix != network::CURRENT_PROTOCOL_VERSION) {
-                error = "inbound frame prefix is invalid";
-                markFailed(TransportErrorReason::ProtocolError, error);
-                return false;
-            }
-        }
         const std::vector<uint8_t> input(bytes, bytes + received);
         std::vector<InboundFrame> frames;
         if (!inbound.append(input, frames, error)) {
@@ -449,8 +509,8 @@ void ClientTransportShell::applyDisconnectResponse(
 }
 
 void ClientTransportShell::markFailed(TransportErrorReason reason,
-                                      const std::string& detail) {
-    recordError(reason, detail);
+                                      const std::string& context) {
+    recordError(reason, context);
     if (clientSocket >= 0) {
         ::close(clientSocket);
         clientSocket = -1;

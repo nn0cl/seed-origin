@@ -13,6 +13,7 @@
 #include "OutboundFrameQueue.h"
 #include "TransportErrorReason.h"
 #include "TransportTimeouts.h"
+#include "TransportWaitDeadline.h"
 
 namespace client {
 
@@ -95,8 +96,8 @@ private:
     uint32_t reconnectCounter;
     uint32_t snapshotRequestCounter;
     bool reconnectPending;
-    uint64_t loginResponseDeadlineMs;
-    uint64_t snapshotWaitDeadlineMs;
+    TransportWaitDeadline loginResponseDeadline;
+    TransportWaitDeadline snapshotWaitDeadline;
 };
 
 }

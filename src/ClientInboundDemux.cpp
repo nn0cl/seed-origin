@@ -3,10 +3,18 @@
 #include "FrameHeaderBinary.h"
 #include "NetworkCommand.h"
 #include "NetworkFrameCodec.h"
+#include "Protocol.h"
 #include "WorldUpdate.h"
 #include "WorldUpdateFrameCodec.h"
 
 namespace client {
+
+namespace {
+bool isSupportedInboundPrefix(uint16_t prefix) {
+    return prefix == network::WORLD_UPDATE_FRAME_MAGIC ||
+           prefix == network::CURRENT_PROTOCOL_VERSION;
+}
+}
 
 ClientInboundDemux::ClientInboundDemux() : buffered(), failedState(false) {}
 
@@ -22,6 +30,11 @@ bool ClientInboundDemux::append(const std::vector<uint8_t>& bytes,
 
     while (buffered.size() >= 2) {
         const uint16_t magic = network::readFrameU16(buffered, 0);
+        if (!isSupportedInboundPrefix(magic)) {
+            failedState = true;
+            error = "inbound frame prefix is invalid";
+            return false;
+        }
         size_t headerSize = 0;
         uint32_t payloadLength = 0;
         InboundFrameKind kind = InboundFrameKind::LoginResponse;

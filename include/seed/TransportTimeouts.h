@@ -8,6 +8,7 @@ namespace client {
 struct TransportTimeouts {
     uint64_t loginResponseWaitMs;
     uint64_t snapshotWaitMs;
+    uint64_t connectTimeoutMs;
 };
 
 }

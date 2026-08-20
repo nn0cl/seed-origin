@@ -1,6 +1,7 @@
 #include <cassert>
 #include <string>
 #include <sys/socket.h>
+#include <time.h>
 #include <unistd.h>
 #include <vector>
 
@@ -29,11 +30,21 @@ namespace {
 class FakeMonotonicClock : public client::MonotonicClockPort {
 public:
     FakeMonotonicClock() : nowMs_(0) {}
-    uint64_t nowMs() const { return nowMs_; }
+    uint64_t nowMs() const override { return nowMs_; }
     void advance(uint64_t deltaMs) { nowMs_ += deltaMs; }
 
 private:
     uint64_t nowMs_;
+};
+
+class SystemMonotonicClock : public client::MonotonicClockPort {
+public:
+    uint64_t nowMs() const override {
+        struct timespec ts = {};
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        return static_cast<uint64_t>(ts.tv_sec) * 1000ULL +
+               static_cast<uint64_t>(ts.tv_nsec / 1000000ULL);
+    }
 };
 
 void serverTick(server::ServerRuntime& runtime,
@@ -63,7 +74,7 @@ void snapshot_wait_timeout_records_failure_and_keeps_snapshot_pending() {
     FakeMonotonicClock clock;
     client::ClientTransportShell transport;
     transport.setClock(&clock);
-    client::TransportTimeouts timeouts = {3000, 5000};
+    client::TransportTimeouts timeouts = {3000, 5000, 0};
     transport.setTimeouts(timeouts);
     std::string error;
     transport.beginReconnect();
@@ -90,6 +101,7 @@ void snapshot_wait_timeout_records_failure_and_keeps_snapshot_pending() {
     assert(!transport.pump(error));
     assert(transport.linkState() == client::TransportLinkState::Failed);
     assert(transport.lastError() == client::TransportErrorReason::SnapshotWaitTimeout);
+    assert(transport.lastErrorDetail() == "snapshot wait timed out");
     assert(transport.snapshotRequested());
     assert(transport.snapshotRequestCount() == 1);
     ::close(sockets[0]);
@@ -101,7 +113,7 @@ void login_response_wait_timeout_records_failure_during_reconnect() {
     FakeMonotonicClock clock;
     client::ClientTransportShell transport;
     transport.setClock(&clock);
-    client::TransportTimeouts timeouts = {3000, 5000};
+    client::TransportTimeouts timeouts = {3000, 5000, 0};
     transport.setTimeouts(timeouts);
     std::string error;
     transport.beginReconnect();
@@ -113,6 +125,7 @@ void login_response_wait_timeout_records_failure_during_reconnect() {
     assert(transport.linkState() == client::TransportLinkState::Failed);
     assert(transport.lastError() ==
            client::TransportErrorReason::LoginResponseTimeout);
+    assert(transport.lastErrorDetail() == "login response wait timed out");
     assert(transport.authState() == client::TransportAuthState::Anonymous);
     ::close(sockets[0]);
 }
@@ -139,6 +152,7 @@ void peer_close_records_peer_closed_on_logged_in_transport() {
     assert(!transport.pump(error));
     assert(transport.linkState() == client::TransportLinkState::Disconnected);
     assert(transport.lastError() == client::TransportErrorReason::PeerClosed);
+    assert(transport.lastErrorDetail() == "peer closed connection");
     assert(transport.authState() == client::TransportAuthState::Anonymous);
 }
 
@@ -155,7 +169,22 @@ void corrupt_inbound_frame_records_protocol_error() {
     assert(!transport.pump(error));
     assert(transport.linkState() == client::TransportLinkState::Failed);
     assert(transport.lastError() == client::TransportErrorReason::ProtocolError);
+    assert(transport.lastErrorDetail() ==
+           "protocol error: inbound frame prefix is invalid");
     ::close(sockets[0]);
+}
+
+void connect_timeout_records_connect_timeout() {
+    SystemMonotonicClock clock;
+    client::ClientTransportShell transport;
+    transport.setClock(&clock);
+    client::TransportTimeouts timeouts = {0, 0, 200};
+    transport.setTimeouts(timeouts);
+    std::string error;
+    assert(!transport.connectTcp("198.18.0.1", 1, error));
+    assert(transport.linkState() == client::TransportLinkState::Failed);
+    assert(transport.lastError() == client::TransportErrorReason::ConnectTimeout);
+    assert(transport.lastErrorDetail() == "connect timed out");
 }
 
 void successful_reconnect_increments_reconnect_counter() {
