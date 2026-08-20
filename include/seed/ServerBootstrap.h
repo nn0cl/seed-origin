@@ -43,7 +43,8 @@ public:
     static std::unique_ptr<ServerCommandDispatcher> createProductionCommandDispatcher(
         session::SessionRegistry& registry,
         std::string& error,
-        ChallengeProductionTestHook* testHook = nullptr);
+        ChallengeProductionTestHook* testHook = nullptr,
+        void* postgresOwnedState = nullptr);
 };
 
 }

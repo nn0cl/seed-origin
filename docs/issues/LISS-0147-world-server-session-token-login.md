@@ -1,8 +1,8 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
-- Status: review
-- Phase: phase-2-green-challenge-production
-- Related branch: `feature/liss-0147-challenge-production-wiring`
+- Status: in_progress
+- Phase: review
+- Related branch: `feature/liss-0147-postgres-production-bootstrap`
 - Priority: high
 - Depends on: LISS-0146
 - Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
@@ -292,6 +292,67 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 - Phase 1–3 challenge production wiring approved.
 - Remaining for full LISS-0147: live Postgres-backed production bootstrap,
   anonymous login removal.
+
+## Phase 1 Red — Postgres production bootstrap（2026-08-20）
+
+- Contract: `include/seed/PostgresChallengeServerBootstrap.h`
+- Tests: `tests/PostgresChallengeServerBootstrapTest.cpp`（2 scenarios）
+- Covered: fail without `SEED_IDENTITY_DB_URL`; challenge dispatcher when env +
+  DB URL set; nickname Login rejected, valid ChallengeKey accepted
+- Expected Red: link failure（`createPostgresChallengeProductionDispatcher` 未実装）
+- Out of this Red: `ServerMain.cpp` wiring, anonymous login removal
+
+## Phase 2 Green — Postgres production bootstrap（2026-08-20）
+
+- Implementation: `src/PostgresChallengeServerBootstrap.cpp`
+- `SEED_IDENTITY_DB_URL` 未設定時は bootstrap error を返す
+- DB URL がある場合は `PostgresPlayerSessionStore` + `SystemWallClock` +
+  `RandomSessionKeyIssuer` + `RegistryGameplaySessionPort` で challenge
+  dispatcher を構築する
+- Still out of scope: `ServerMain.cpp` wiring, anonymous login removal
+
+## Phase 3 Refactor — Postgres production bootstrap（2026-08-20）
+
+- owned bootstrap state の組み立てを private helper へ抽出（挙動不変）
+
+## Postgres production bootstrap Adjudicator approval（2026-08-20）
+
+- Phase 1–3 Postgres production bootstrap approved.
+- Remaining for full LISS-0147: `ServerMain.cpp` live wiring, anonymous login
+  removal.
+
+## Phase 1 Red — ServerMain live Postgres bootstrap（2026-08-20）
+
+- Tests: `production_dispatcher_reports_missing_identity_db_url` plus existing
+  Postgres bootstrap tests
+- Covered: `ServerBootstrap::createProductionCommandDispatcher` should delegate
+  to live Postgres bootstrap when `SEED_CHALLENGE_AUTH=1`; missing DB URL error
+  should come from that bootstrap
+- Expected Red: assertion failure（still returning legacy fail-fast message）
+- Out of this Red: `ServerMain.cpp` callsite update, anonymous login removal
+
+## Phase 2 Green — ServerMain live Postgres bootstrap（2026-08-20）
+
+- `PostgresProductionBootstrapBridge.h` + weak stub in `seed_core`; strong
+  implementation in `seed_postgres`
+- `ServerBootstrap::createProductionCommandDispatcher` delegates to
+  `postgresProductionBootstrap` when `SEED_CHALLENGE_AUTH=1` and no test hook
+- `ServerMain.cpp` holds `PostgresChallengeProductionState` and passes it for
+  live server lifetime
+- `production_dispatcher_reports_missing_identity_db_url` Green（seed_tests）
+- Still out of scope: anonymous login removal
+
+## Phase 3 Refactor — ServerMain live Postgres bootstrap（2026-08-20）
+
+- bootstrap error 文字列を `ChallengeProductionBootstrapErrors.h` に集約（挙動不変）
+- `resolveOwnedState` helper へ owned-state 解決を抽出（挙動不変）
+- `ServerMain` の `#ifdef` 分岐を `postgresOwnedState` 変数へ整理（挙動不変）
+- `ServerBootstrap.cpp` の未使用 include を削除
+
+## ServerMain live Postgres bootstrap Adjudicator approval（2026-08-20）
+
+- Phase 1–3 ServerMain live Postgres bootstrap approved.
+- Remaining for full LISS-0147: anonymous login removal.
 
 ## Remaining decisions
 

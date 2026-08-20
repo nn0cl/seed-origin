@@ -5,9 +5,7 @@
 #include <memory>
 
 #include "ChallengeSessionLogin.h"
-#include "RandomSessionKeyIssuer.h"
-#include "RegistryGameplaySessionPort.h"
-#include "SystemWallClock.h"
+#include "PostgresProductionBootstrapBridge.h"
 
 namespace server {
 
@@ -52,7 +50,8 @@ std::unique_ptr<ServerCommandDispatcher> ServerBootstrap::createCommandDispatche
 std::unique_ptr<ServerCommandDispatcher> ServerBootstrap::createProductionCommandDispatcher(
     session::SessionRegistry& registry,
     std::string& error,
-    ChallengeProductionTestHook* testHook) {
+    ChallengeProductionTestHook* testHook,
+    void* postgresOwnedState) {
     error.clear();
     if (!challengeAuthEnabledFromEnvironment()) {
         return createCommandDispatcher(registry, nullptr);
@@ -69,9 +68,7 @@ std::unique_ptr<ServerCommandDispatcher> ServerBootstrap::createProductionComman
         return createCommandDispatcher(registry, &bundle);
     }
 
-    error = "seed_server: SEED_CHALLENGE_AUTH is set but Postgres "
-            "challenge adapters are not wired yet (LISS-0147)";
-    return nullptr;
+    return postgresProductionBootstrap(registry, error, postgresOwnedState);
 }
 
 }

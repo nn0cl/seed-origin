@@ -111,6 +111,14 @@ void restoreChallengeAuthEnv(const char* saved) {
     setenv("SEED_CHALLENGE_AUTH", saved, 1);
 }
 
+void restoreEnv(const char* var, const char* saved) {
+    if (saved == nullptr) {
+        unsetenv(var);
+        return;
+    }
+    setenv(var, saved, 1);
+}
+
 } // namespace
 
 void create_dispatcher_uses_challenge_login_when_bundle_provided() {
@@ -195,6 +203,26 @@ void production_dispatcher_fails_when_challenge_auth_env_is_set_without_postgres
     assert(!error.empty());
 
     restoreChallengeAuthEnv(saved);
+}
+
+void production_dispatcher_reports_missing_identity_db_url() {
+    const char* savedAuth = std::getenv("SEED_CHALLENGE_AUTH");
+    const char* savedDb = std::getenv("SEED_IDENTITY_DB_URL");
+    setenv("SEED_CHALLENGE_AUTH", "1", 1);
+    unsetenv("SEED_IDENTITY_DB_URL");
+
+    session::SessionRegistry registry;
+    std::string error;
+    const std::unique_ptr<server::ServerCommandDispatcher> dispatcher =
+        server::ServerBootstrap::createProductionCommandDispatcher(registry,
+                                                                   error,
+                                                                   nullptr);
+    assert(dispatcher.get() == nullptr);
+    assert(error ==
+           "seed_server: SEED_CHALLENGE_AUTH requires SEED_IDENTITY_DB_URL");
+
+    restoreEnv("SEED_CHALLENGE_AUTH", savedAuth);
+    restoreEnv("SEED_IDENTITY_DB_URL", savedDb);
 }
 
 void production_dispatcher_uses_challenge_login_when_env_and_test_hook_provided() {

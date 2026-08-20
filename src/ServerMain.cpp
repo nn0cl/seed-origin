@@ -14,6 +14,7 @@
 #include "WorldFrameApplier.h"
 
 #ifdef SEED_HAVE_LIBPQXX
+#include "PostgresChallengeServerBootstrap.h"
 #include "PostgresIdentityAliasStore.h"
 #endif
 
@@ -59,9 +60,15 @@ int main(int argc, char** argv) {
         : std::make_unique<session::SessionRegistry>();
 
     std::string bootstrapError;
+#ifdef SEED_HAVE_LIBPQXX
+    server::PostgresChallengeProductionState challengeProductionState;
+    void* postgresOwnedState = &challengeProductionState;
+#else
+    void* postgresOwnedState = nullptr;
+#endif
     std::unique_ptr<server::ServerCommandDispatcher> dispatcher =
-        server::ServerBootstrap::createProductionCommandDispatcher(*registry,
-                                                                   bootstrapError);
+        server::ServerBootstrap::createProductionCommandDispatcher(
+            *registry, bootstrapError, nullptr, postgresOwnedState);
     if (dispatcher.get() == nullptr) {
         std::cerr << bootstrapError << "\n";
         return 1;
