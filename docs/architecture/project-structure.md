@@ -10,7 +10,10 @@ Issue requires them.
 .
 ├── include/seed/                 # public headers and domain contracts
 ├── src/                          # core, adapters, CLI and server code
-├── tests/                        # CTest-compatible test sources
+├── tests/                        # C++ CTest-compatible test sources
+├── seed-auth/                    # LISS-0146 Kotlin/Spring Boot service
+│   └── backend/
+│       └── src/test/kotlin/      # service-local JUnit tests
 ├── client/                       # reserved for LISS-0064 client shell
 ├── docs/architecture/            # architecture and ADRs
 ├── docs/collaboration/           # LLM operating contracts and traces
@@ -36,6 +39,11 @@ Future persistence and client/network ports must be explicit interfaces.
 
 `src/main.cpp` owns the current CLI entry point; a server entry point and
 client delivery layer are planned by LISS-0056 and LISS-0064.
+
+`seed-auth/backend/` owns the Kotlin/Spring Boot service boundary defined by
+LISS-0146. Its production sources and Gradle build remain independent from
+the root CMake target. Its tests live under `backend/src/test/kotlin/` and are
+not added to `tests/` or `seed_tests`.
 
 ## Forbidden Placement
 

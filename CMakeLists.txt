@@ -26,6 +26,7 @@ set(SEED_CORE_SOURCES
     src/NetworkFrameCodec.cpp
     src/FrameAccumulator.cpp
     src/LoginCommandHandler.cpp
+    src/ChallengeSessionLogin.cpp
     src/DisconnectCommandHandler.cpp
     src/ServerCommandDispatcher.cpp
     src/CommandRateLimiter.cpp
@@ -167,6 +168,7 @@ add_executable(seed_tests
     tests/ClientWorldUpdateReceiverTest.cpp
     tests/FrameAccumulatorTest.cpp
     tests/LoginCommandHandlerTest.cpp
+    tests/ChallengeSessionLoginTest.cpp
     tests/DisconnectCommandHandlerTest.cpp
     tests/ServerCommandDispatcherTest.cpp
     tests/CommandRateLimiterTest.cpp

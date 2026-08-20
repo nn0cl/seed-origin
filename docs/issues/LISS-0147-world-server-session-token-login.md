@@ -1,7 +1,8 @@
-# LISS-0147: ワールドサーバーのセッショントークン検証ログインへの置換
+# LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
-- Status: proposed
-- Phase: phase-0-design-intake
+- Status: review
+- Phase: phase-3-refactor
+- Related branch: `feature/liss-0147-challenge-session-login`
 - Priority: high
 - Depends on: LISS-0146
 - Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
@@ -9,61 +10,114 @@
 ## 目的
 
 `seed_server`の`Login` Commandを、自己申告ニックネームの無条件受理から、
-`seed_auth`が発行したセッショントークンの検証（`player_sessions`照合）へ
-置き換える。
+`seed_auth`が発行したチャレンジキーのclaimと、正規セッションキーの発行・
+検証へ置き換える。
 
 ## 受入条件（ドラフト）
 
-- `NetworkCommand::Login`のpayloadは`seed_auth`発行の**初期セッションキー**
-  として扱う。
-- `seed_server`は`player_sessions`（Postgres）を照合し、`user_id`を
-  解決する。パスワードや`users`テーブルには一切触れない。
-- 無効・期限切れ・**既に使用済み（`claimed_at IS NOT NULL`）**トークンは
+- `NetworkCommand::Login`のpayloadは`seed_auth`発行の**チャレンジキー**として
+  扱う。
+- `seed_server`はPostgresの`player_challenges`でチャレンジキーを原子的にclaim
+  し、成功した場合に`player_sessions`へ新しい正規セッションキーを登録する。
+- 無効・期限切れ・**既にclaim済み（`claimed_at IS NOT NULL`）**のチャレンジキーは
   ログイン拒否とする。
+- 正規セッションキーは30分TTLで発行し、Keep-Aliveによって期限を更新する。
+- `seed_server`はパスワードや`users`テーブルには一切触れず、チャレンジキーの
+  claim結果から`user_id`を解決する。
 - `SessionRegistry::login(claimedId)`の「任意の整形済みニックネームを
   無条件で受理する」現行動作は削除する（死んだコードとして残さない）。
 - 複数`seed_server`インスタンスが同じセッショントークンを検証できる
   （in-memoryに依存しない）ことをPostgres共有で確認する。
 
-## セッションキーの「先勝ち」ローテーション（2026-07-18、Adjudicator決定）
+## 二段階キーのclaimと正規セッション発行（2026-07-22、ADR 0023承認済み）
 
-- クライアントは`seed_auth`の`/login`で得た初期セッションキーで
-  `seed_server`へログインする。
-- `seed_server`はログイン成功時、そのキーを**使用済みにし、新しい
-  プレイ継続用キーを発行**する。SQLで表すと概ね次の形（楽観ロックと
-  同じ発想）:
+- ネイティブクライアントは`seed_auth`から2分TTLの単回利用
+  `ChallengeKey`を取得し、そのキーを`Login` Commandのpayloadとして送信する。
+- `seed_server`はトランザクション内で`player_challenges`の有効な未claim行を
+  原子的にclaimする。claimに成功した場合だけ、次のように新しい正規セッション
+  キーを`player_sessions`へINSERTする。
   ```sql
-  UPDATE player_sessions
-  SET claimed_at = now(), session_token = <new_token>
-  WHERE session_token = <presented_token>
-    AND claimed_at IS NULL
-    AND expires_at > now()
-  RETURNING user_id;
+  BEGIN;
+
+  -- Lock and validate the challenge row. No row means reject the login.
+  SELECT user_id
+    FROM player_challenges
+   WHERE challenge_key = <presented_challenge_key>
+     AND claimed_at IS NULL
+     AND expires_at > now()
+   FOR UPDATE;
+
+  -- Consume the challenge, then create the independent regular session.
+  UPDATE player_challenges
+     SET claimed_at = now()
+   WHERE challenge_key = <presented_challenge_key>;
+
+  INSERT INTO player_sessions
+      (session_token, user_id, created_at, expires_at, revoked_at)
+  VALUES
+      (<new_player_session_key>, <claimed_user_id>, now(),
+       now() + interval '30 minutes', NULL);
+
+  COMMIT;
   ```
-  0件更新なら「無効・期限切れ・既に他の接続が同じキーを使用済み」の
-  いずれかとしてログイン拒否する。同じキーで後から来た2件目のログイン
-  試行は必ず失敗する（先勝ち）。
-- 名寄せ（`identity_aliases`）由来の競合ユースケースはADR 0018により
-  そもそも存在しない（申告IDという概念自体が廃止されるため）。今回の
-  「先勝ちキー消費」が、登録制認証モデルにおける唯一の競合防止機構となる。
-- LISS-0122（5分間再接続）は、ワールドログイン成功時に発行された
-  **ローテーション後の新キー**を使って再接続する前提とする。初期キー
-  （`seed_auth`発行のもの）は一度きりで再接続には使えない。
+- claimが失敗した場合は、無効・期限切れ・既にclaim済みのいずれかとして
+  ログイン拒否する。同じチャレンジキーによる後続試行は成功しない。
+- 正規セッションキーは以後の通信とKeep-Aliveに使用し、LISS-0122の再接続は
+  有効な正規キーを保持した一時切断からの復帰として扱う。チャレンジキーは
+  再接続には使用しない。
+- LISS-0122の再接続は、ワールドログイン成功時に発行された
+  **30分TTLの正規セッションキー**を使って一時切断から復帰する前提とする。
+  チャレンジキー（`seed_auth`発行の2分TTL）は一度きりで再接続には使わない。
+
+## Phase 1 設計着手（2026-07-22、ADR 0023承認済み）
+
+`seed_server`は`ChallengeKey`を検証した後、30分TTLの
+`PlayerSessionKey`を発行する。以降の通信は正規セッションキーを使い、
+クライアント起点のKeep-AliveでTTLを更新・延長する。LISS-0122の再接続は、
+有効な正規キーを保持した一時切断からの復帰として扱う。
+
+Phase 1では、チャレンジキーclaim、正規キー発行、期限切れ拒否、
+Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテストとして定義する。
 
 ## 設計課題
 
 - `LoginCommandHandler`／`SessionRegistry`をどこまで作り替えるか
   （新規`PostgresPlayerSessionValidator`ポートを追加するか、既存クラスを
   改修するか）。
-- LISS-0122（5分間再接続Snapshot復旧）との整合：再接続時にセッション
-  トークンをどう扱うか。
+- チャレンジキーと正規セッションキーの保存・検証ポートの具体的な分割。
+
+## Phase 1 Red artifact（2026-08-20）
+
+- Ports / UseCase contract: `include/seed/ChallengeSessionLogin.h`
+- Tests: `tests/ChallengeSessionLoginTest.cpp`（5 scenarios）
+- Covered: valid claim → 30 min session; expired / already-claimed reject;
+  Keep-Alive extend; reconnect validation of unexpired `PlayerSessionKey`
+- Out of this Red: Login Command wire swap, Postgres adapters, anonymous
+  `SessionRegistry::login` removal（Phase 2 wiring / later Green slice）
+- Expected Red: link failure（`ChallengeSessionLoginService` 未実装）
+
+## Phase 2 Green artifact（2026-08-20）
+
+- Implementation: `src/ChallengeSessionLogin.cpp`
+- Behavior: claim via port → issue session key → create 30 min session;
+  reject with `invalid_challenge`; keep-alive extends by 30 min from now;
+  `validateSession` delegates to `PlayerSessionStorePort::isActive`
+- Still out of scope: Login Command wire swap, Postgres adapters, anonymous
+  login removal
+
+## Phase 3 Refactor（2026-08-20）
+
+- Ports を `ChallengeSessionPorts.h` へ分離（サービス契約とポート境界の分離）
+- 結果構築と TTL 計算を private ヘルパーへ抽出（挙動不変）
+- Assertions / public API は変更なし
 
 ## Remaining decisions
 
-- 上記はLISS-0146の設計確定後に着手する。
+- TTL、Keep-Alive、再接続の基本方針は確定済み。Phase 1 Redのテストレビュー後に
+  Phase 2 Greenへ進む。
 
 ## English
 
-Design intake for replacing seed_server's anonymous claimed-ID login with
-Postgres-backed session-token validation against player_sessions, resolving
-a user_id without the world server ever seeing credentials.
+Phase 1 Red design for replacing seed_server's anonymous claimed-ID login with
+Postgres-backed challenge claim and session-key validation, resolving a user_id
+without the world server ever seeing credentials.

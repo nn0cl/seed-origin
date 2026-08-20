@@ -1,15 +1,17 @@
-# LISS-0149: 登録・ログインReact SPA
+# LISS-0149: アカウント管理用React SPA
 
 - Status: proposed
-- Phase: phase-0-design-intake
+- Phase: phase-1-red
 - Priority: medium
 - Depends on: LISS-0146
 - Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
 
 ## 目的
 
-`seed_auth`の`/register`・`/login`を利用する、プレイヤー向け登録・
-ログインReact SPAを追加する。
+`seed_auth`を利用する、プレイヤー向けのアカウント管理React SPAを追加する。
+スコープは新規登録、アカウント情報変更、パスワードリセット、アカウント状態
+確認に限定する。ゲームプレイ用ログインはネイティブクライアントが担当し、
+本SPAはログイン画面やゲーム用セッションキーを持たない。
 
 ## ディレクトリ構造（2026-07-18確定）
 
@@ -23,9 +25,9 @@ seed-auth/
     └── src/
         ├── main.tsx
         ├── app/          # ルーティング・レイアウト
-        ├── pages/        # RegisterPage, LoginPage
+        ├── pages/        # RegisterPage, AccountSettingsPage, PasswordResetPage
         ├── components/   # 再利用可能なUI部品（shadcn/ui生成物含む）
-        ├── store/        # Zustandストア（セッションキー等）
+        ├── store/        # Zustandストア（アカウント管理状態等）
         ├── api/          # TanStack Queryフック・APIクライアント
         └── types/        # バックエンドDTOに対応する型定義
 ```
@@ -50,24 +52,31 @@ seed-auth/
 - npmツールチェーンは**Vite**に決定。
 - 管理者UI（LISS-0145）とは**別アプリ**に決定（確定）。
 
+## Phase 1 設計着手（2026-07-22、ADR 0023承認済み）
+
+ゲームプレイ時のログインは本Issueのスコープ外とし、ネイティブクライアント
+内のログインフォームが`seed_auth`を直接呼び出す。ブラウザからゲームクライアント
+へのディープリンク、カスタムURLスキーム、OSレベルのコールバックは使用しない。
+本SPAはアカウントの新規登録、アカウント情報変更、パスワードリセット、
+アカウント状態確認に特化する。ゲームプレイ用ログイン機能や、ゲームクライアント
+へのチャレンジキー／正規セッションキーの引き渡しは実装しない。
+
+Phase 1では、登録、アカウント管理、パスワードリセットの画面とAPI契約に対する
+Redテストを定義し、ゲームプレイログインやネイティブクライアント連携のテストは
+作成しない。
+
 ## 設計課題
 
-- ログイン成功後のセッションキー（LISS-0146/0147の「先勝ちローテーション」
-  設計を参照）をゲームクライアント（ADR 0021、Unreal Engine）へどう
-  引き継ぐか（ブラウザSPAとUnrealクライアントが別プロセス/別技術の
-  場合の橋渡し）。
 - パスワードそのものは`seed_auth`とこのSPAの間でのみやり取りし、
   `seed_server`には一切渡さない（Adjudicator確認済み、ADR 0018/
-  LISS-0147と整合）。
+  LISS-0147と整合、変更なし）。
 
 ## Remaining decisions
 
-- ゲームクライアントへのセッションキー引き継ぎ方式が未決定。
-  ゲームクライアント技術自体はADR 0021（Unreal Engine、本番）／
-  ADR 0020（Godot、MVP）で決定済み。
+- ゲームプレイログインはネイティブクライアント側の別Issue／仕様で扱う。
 
 ## English
 
-Design intake for a React registration/login SPA calling seed_auth. Shares
-open build-tooling decisions with LISS-0145 (admin UI). How the session
-token hands off to the (not-yet-decided) game client is an open question.
+Phase 1 Red design for a React account-management SPA calling seed_auth.
+Shares build-tooling decisions with LISS-0145 (admin UI). Game-play login is
+intentionally outside this SPA and is handled by the native client.
