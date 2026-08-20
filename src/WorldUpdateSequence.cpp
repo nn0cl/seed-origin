@@ -16,6 +16,18 @@ UpdateSequenceStatus WorldUpdateSequenceTracker::accept(
     }
 
     if (!hasSequence) {
+        // Join/resync Snapshots may start the stream at any sequence.
+        // An Event before that baseline must still be the expected next
+        // sequence (1); a jump is a gap, not a bootstrap.
+        if (update.kind == UpdateKind::Event &&
+            update.sequence != expectedSequence) {
+            if (update.sequence > expectedSequence) {
+                error = "world update sequence gap detected";
+                return UpdateSequenceStatus::Gap;
+            }
+            error = "world update sequence is a duplicate or stale";
+            return UpdateSequenceStatus::Duplicate;
+        }
         hasSequence = true;
         expectedSequence = update.sequence + 1;
         return UpdateSequenceStatus::Accepted;

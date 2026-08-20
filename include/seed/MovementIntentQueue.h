@@ -19,6 +19,7 @@ struct MovementIntent {
     float dx;
     float dy;
     float dz;
+    uint64_t clientInputSequence;
 };
 
 class MovementIntentQueue {
@@ -27,6 +28,8 @@ public:
 
     MovementIntentQueue();
     bool enqueue(int64_t sessionId, float dx, float dy, float dz);
+    bool enqueue(int64_t sessionId, float dx, float dy, float dz,
+                 uint64_t clientInputSequence);
     std::vector<MovementIntent> takeFrame();
     bool restoreFrame(const std::vector<MovementIntent>& frame);
     size_t pendingCount() const;

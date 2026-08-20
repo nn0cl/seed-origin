@@ -3,6 +3,23 @@
 #include "WorldFrameApplier.h"
 
 namespace world_frame_applier_tests {
+namespace {
+
+Player namedResident(int64_t playerId, float x, const char* name) {
+    Player player(playerId, Status(), Position(playerId, x, 0.0f, 0.0f));
+    assert(player.setPlayerName(name));
+    return player;
+}
+
+void clearResidents() {
+    Field* field = Field::getInstance();
+    const std::vector<int64_t> ids = field->residentPlayerIds();
+    for (std::size_t i = 0; i < ids.size(); ++i) {
+        Field::unsetPlayer(Player(ids[i], Status(), Position(ids[i], 0, 0, 0)));
+    }
+}
+
+}
 
 void applies_valid_actions_and_returns_events() {
     Field* field = Field::getInstance();
@@ -135,6 +152,68 @@ void emits_hazard_event_when_environment_is_unstable() {
     assert(applier.apply(frame, updates, error));
     assert(updates.size() == 1);
     assert(updates[0].payload.find("etherHazard=") == 0);
+}
+
+void captures_idle_poses_only_when_new_sessions_authenticate() {
+    clearResidents();
+    Field* field = Field::getInstance();
+    const int64_t idleId = 15212;
+    const int64_t observerId = 15213;
+    assert(field->setPlayer(namedResident(idleId, 8.0f, "Idle")));
+    assert(field->setPlayer(namedResident(observerId, 0.0f, "Observer")));
+    server::WorldFrameApplier applier(*field);
+    std::vector<network::WorldUpdate> updates;
+    std::string error;
+    std::vector<server::MovementAck> publishAcks;
+    assert(applier.capturePublicSnapshotIfNewSessions(0, 11, updates,
+                                                      publishAcks, error));
+    assert(updates.empty());
+    assert(applier.capturePublicSnapshotIfNewSessions(1, 11, updates,
+                                                      publishAcks, error));
+    assert(updates.size() == 1);
+    assert(updates.back().kind == network::UpdateKind::Snapshot);
+    assert(updates.back().payload.find("session=15212") != std::string::npos);
+    assert(updates.back().payload.find("session=15213") != std::string::npos);
+    assert(updates[0].payload.find("lastProcessedInputSequence") ==
+           std::string::npos);
+    assert(publishAcks.size() == applier.snapshotLocalAcks().size());
+}
+
+void captures_idle_public_player_poses_on_snapshot() {
+    clearResidents();
+    Field* field = Field::getInstance();
+    const int64_t idleId = 15210;
+    const int64_t observerId = 15211;
+    assert(field->setPlayer(namedResident(idleId, 7.0f, "Idle")));
+    assert(field->setPlayer(namedResident(observerId, 0.0f, "Observer")));
+    server::WorldFrameApplier applier(*field);
+    std::vector<network::WorldUpdate> updates;
+    std::string error;
+    assert(applier.capturePublicSnapshot(9, updates, error));
+    assert(updates.size() == 1);
+    const network::WorldUpdate& snapshot = updates.back();
+    assert(snapshot.kind == network::UpdateKind::Snapshot);
+    assert(snapshot.eventId == 0);
+    assert(snapshot.worldTick == 9);
+    assert(snapshot.payload.find("player.") != std::string::npos);
+    assert(snapshot.payload.find("session=15210") != std::string::npos);
+    assert(snapshot.payload.find("session=15211") != std::string::npos);
+    assert(snapshot.payload.find("7") != std::string::npos);
+    assert(snapshot.payload.find("lastProcessedInputSequence") ==
+           std::string::npos);
+    assert(snapshot.payload.find("local.") == std::string::npos);
+    network::WorldUpdate observerCopy;
+    assert(server::copyWorldUpdateForSession(snapshot, observerId,
+                                             applier.snapshotLocalAcks(),
+                                             observerCopy, error));
+    assert(observerCopy.sequence == snapshot.sequence);
+    assert(observerCopy.eventId == 0);
+    assert(observerCopy.payload.find("local.x=") != std::string::npos);
+    assert(observerCopy.payload.find("local.lastProcessedInputSequence=") !=
+           std::string::npos);
+    assert(observerCopy.payload.find(";x:") == std::string::npos);
+    assert(observerCopy.payload.find("lastProcessedInputSequence:") ==
+           std::string::npos);
 }
 
 } // namespace world_frame_applier_tests

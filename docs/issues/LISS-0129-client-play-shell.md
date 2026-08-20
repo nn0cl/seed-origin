@@ -3,6 +3,10 @@
 - Status: proposed
 - Priority: medium
 - Depends on: LISS-0128, LISS-0125, LISS-0126, LISS-0127
+- Related ADR: `docs/architecture/adr/0020-game-client-mvp-godot.md`
+  （MVPスコープ: 右クリックメニュー、簡易3Dポリゴンキャラクター、
+  スパークル等のパーティクル、移動・攻撃・魔法・地形・バトルを一通り
+  試せること。2026-07-18時点で未承認）
 
 ## 目的
 

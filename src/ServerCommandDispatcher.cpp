@@ -1,6 +1,7 @@
 #include "ServerCommandDispatcher.h"
 #include "ChatCommandHandler.h"
 #include "CombatCommandHandler.h"
+#include "DisconnectCommandHandler.h"
 #include "MovementCommandHandler.h"
 
 namespace server {
@@ -14,11 +15,11 @@ session::SessionInfo emptySession() {
 }
 
 ServerCommandDispatcher::ServerCommandDispatcher(session::SessionRegistry& registry)
-    : loginHandler(registry), inputQueue(0) {}
+    : loginHandler(registry), inputQueue(0), snapshotRequests(0) {}
 
 ServerCommandDispatcher::ServerCommandDispatcher(session::SessionRegistry& registry,
                                                  WorldInputQueue& queue)
-    : loginHandler(registry), inputQueue(&queue) {}
+    : loginHandler(registry), inputQueue(&queue), snapshotRequests(0) {}
 
 void ServerCommandDispatcher::bindWorldInputQueue(WorldInputQueue& queue) {
     inputQueue = &queue;
@@ -26,6 +27,7 @@ void ServerCommandDispatcher::bindWorldInputQueue(WorldInputQueue& queue) {
 
 void ServerCommandDispatcher::beginFrame(uint64_t worldTick) {
     rateLimiter.beginFrame(worldTick);
+    snapshotRequests = 0;
 }
 
 void ServerCommandDispatcher::forgetSession(int64_t sessionId) {
@@ -38,6 +40,10 @@ void ServerCommandDispatcher::clearRateLimits() {
 
 session::SessionRegistry& ServerCommandDispatcher::sessionRegistry() {
     return loginHandler.sessionRegistry();
+}
+
+std::size_t ServerCommandDispatcher::snapshotRequestCount() const {
+    return snapshotRequests;
 }
 
 CommandDispatchResult ServerCommandDispatcher::dispatch(
@@ -108,6 +114,40 @@ CommandDispatchResult ServerCommandDispatcher::dispatch(
         const MovementResult movement = handler.handle(command);
         result.accepted = movement.accepted;
         result.error = movement.error;
+        return result;
+    }
+
+    if (command.type == network::CommandType::RequestSnapshot) {
+        if (!loginHandler.sessionRegistry().isActive(command.sessionId)) {
+            result.error = "snapshot request requires an active anonymous session";
+            return result;
+        }
+        if (!rateLimiter.allow(command.sessionId, command.type)) {
+            result.error = "snapshot request rate limit exceeded";
+            return result;
+        }
+        ++snapshotRequests;
+        result.accepted = true;
+        return result;
+    }
+
+    if (command.type == network::CommandType::Disconnect) {
+        if (!loginHandler.sessionRegistry().isActive(command.sessionId)) {
+            result.error = "disconnect requires an active anonymous session";
+            return result;
+        }
+        if (!rateLimiter.allow(command.sessionId, command.type)) {
+            result.error = "disconnect command rate limit exceeded";
+            return result;
+        }
+        DisconnectCommandHandler handler(loginHandler.sessionRegistry());
+        const DisconnectResult ended = handler.handle(command);
+        result.accepted = ended.accepted;
+        result.session = ended.session;
+        result.error = ended.error;
+        if (result.accepted) {
+            rateLimiter.forgetSession(command.sessionId);
+        }
         return result;
     }
 

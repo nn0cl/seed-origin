@@ -1,0 +1,117 @@
+#include "RemotePlayerPoseStore.h"
+
+#include <cmath>
+
+namespace client {
+namespace {
+
+float poseDistance(const PredictedPose& a, const PredictedPose& b) {
+    const float dx = a.x - b.x;
+    const float dy = a.y - b.y;
+    const float dz = a.z - b.z;
+    return std::sqrt(dx * dx + dy * dy + dz * dz);
+}
+
+}
+
+RemotePlayerPoseStore::RemotePlayerPoseStore()
+    : poses(), sessionToGameplayId(), correctionSeconds() {}
+
+void RemotePlayerPoseStore::correctRender(RemotePlayerPose& pose,
+                                          float& remaining, float errorDistance,
+                                          bool snap) {
+    if (snap || errorDistance >= PREDICTION_SNAP_DISTANCE) {
+        pose.rendered = pose.authority;
+        remaining = 0.0f;
+        return;
+    }
+    if (errorDistance > 0.0001f) {
+        remaining = PREDICTION_CORRECTION_SECONDS;
+        return;
+    }
+    pose.rendered = pose.authority;
+    remaining = 0.0f;
+}
+
+void RemotePlayerPoseStore::replaceFromSnapshot(
+    const std::vector<PlayerPoseSnapshot>& publicPoses, int64_t localSessionId) {
+    std::map<int64_t, RemotePlayerPose> next;
+    std::map<int64_t, int64_t> nextSessions;
+    for (std::size_t i = 0; i < publicPoses.size(); ++i) {
+        const PlayerPoseSnapshot& snapshot = publicPoses[i];
+        if (snapshot.sessionId <= 0) continue;
+        if (snapshot.gameplayId <= 0) continue;
+        if (localSessionId > 0 && snapshot.sessionId == localSessionId) continue;
+        RemotePlayerPose pose;
+        pose.gameplayId = snapshot.gameplayId;
+        pose.sessionId = snapshot.sessionId;
+        pose.name = snapshot.name;
+        pose.authority = {snapshot.x, snapshot.y, snapshot.z};
+        pose.rendered = pose.authority;
+        next[snapshot.gameplayId] = pose;
+        nextSessions[snapshot.sessionId] = snapshot.gameplayId;
+    }
+    poses.swap(next);
+    sessionToGameplayId.swap(nextSessions);
+    correctionSeconds.clear();
+}
+
+bool RemotePlayerPoseStore::applyAuthoritative(int64_t sessionId, float x,
+                                               float y, float z,
+                                               bool snapBaseline) {
+    if (sessionId <= 0 || !std::isfinite(x) || !std::isfinite(y) ||
+        !std::isfinite(z)) {
+        return false;
+    }
+    std::map<int64_t, int64_t>::const_iterator mapped =
+        sessionToGameplayId.find(sessionId);
+    if (mapped == sessionToGameplayId.end()) return false;
+    std::map<int64_t, RemotePlayerPose>::iterator found =
+        poses.find(mapped->second);
+    if (found == poses.end()) return false;
+    found->second.authority = {x, y, z};
+    const float error =
+        poseDistance(found->second.rendered, found->second.authority);
+    correctRender(found->second, correctionSeconds[found->first], error,
+                  snapBaseline);
+    return true;
+}
+
+void RemotePlayerPoseStore::stepRender(float dtSeconds) {
+    if (dtSeconds < 0.0f) dtSeconds = 0.0f;
+    for (std::map<int64_t, RemotePlayerPose>::iterator it = poses.begin();
+         it != poses.end(); ++it) {
+        float& remaining = correctionSeconds[it->first];
+        if (remaining <= 0.0f) {
+            it->second.rendered = it->second.authority;
+            continue;
+        }
+        const float t = dtSeconds >= remaining ? 1.0f : dtSeconds / remaining;
+        PredictedPose& rendered = it->second.rendered;
+        const PredictedPose& authority = it->second.authority;
+        rendered.x += (authority.x - rendered.x) * t;
+        rendered.y += (authority.y - rendered.y) * t;
+        rendered.z += (authority.z - rendered.z) * t;
+        remaining -= dtSeconds;
+        if (remaining <= 0.0f) {
+            remaining = 0.0f;
+            rendered = authority;
+        }
+    }
+}
+
+const RemotePlayerPose* RemotePlayerPoseStore::find(int64_t gameplayId) const {
+    std::map<int64_t, RemotePlayerPose>::const_iterator found =
+        poses.find(gameplayId);
+    return found == poses.end() ? 0 : &found->second;
+}
+
+std::size_t RemotePlayerPoseStore::count() const { return poses.size(); }
+
+void RemotePlayerPoseStore::clear() {
+    poses.clear();
+    sessionToGameplayId.clear();
+    correctionSeconds.clear();
+}
+
+}

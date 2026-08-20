@@ -15,6 +15,7 @@ void reports_no_pending_client_without_blocking() {
     Connection connection;
     int clientSocket = -1;
     assert(connection.open(0));
+    assert(connection.boundPort() != 0);
     assert(connection.acceptClient(clientSocket) == AcceptStatus::NoPendingClient);
     assert(clientSocket == -1);
     assert(connection.closeSocket());

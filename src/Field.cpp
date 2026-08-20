@@ -7,6 +7,8 @@
 //
 
 #include "Field.h"
+#include "MovementSimulation.h"
+#include "PlayerName.h"
 #include "WorldInputQueue.h"
 
 #include <cctype>
@@ -16,10 +18,11 @@
 namespace {
 const uint64_t kAttackCooldownTicks = 1;
 const uint64_t kSpellCooldownTicks = 2;
-const float kSpellMpCostRatio = 0.1f;
+// ceil(basePower * 0.1): divide by 10 (IEEE-exact) so 50 costs 5, not 6.
+const double kSpellMpCostDivisor = 10.0;
 
 bool spellMpCost(float power, long& cost) {
-    const double raw = std::ceil(static_cast<double>(power) * kSpellMpCostRatio);
+    const double raw = std::ceil(static_cast<double>(power) / kSpellMpCostDivisor);
     if (!std::isfinite(raw) || raw < 1.0 ||
         raw > static_cast<double>(std::numeric_limits<long>::max())) {
         return false;
@@ -35,7 +38,7 @@ bool tickAfter(uint64_t tick, uint64_t duration, uint64_t& result) {
 }
 }
 
-Field::Field() : lastEtherHazard(0.0f) {
+Field::Field() : lastEtherHazard(0.0f), nextGameplayId(1) {
     
 };
 
@@ -79,7 +82,9 @@ Field::setPlayer(Player player){
 bool
 Field::unsetPlayer(Player player){
     Field* instance = Field::getInstance();
-    const int64_t playerId = player.getPlayerId();
+    const int64_t playerId = instance->resolvePlayerId(player.getPlayerId());
+    if (playerId <= 0) return false;
+    instance->forgetBindingsForPlayer(playerId);
     instance->nextAttackTick.erase(playerId);
     instance->nextSpellTick.erase(playerId);
     return instance->playerList.erase(playerId) > 0;
@@ -116,10 +121,15 @@ bool Field::scheduleNpcRespawn(int64_t npcId, uint64_t respawnTick,
 
 bool
 Field::queueMovement(int64_t playerId, float dx, float dy, float dz){
-    std::map<int64_t,Player>::iterator playerItt = playerList.find(playerId);
+    const int64_t gameplayId = resolvePlayerId(playerId);
+    std::map<int64_t,Player>::iterator playerItt = playerList.find(gameplayId);
     if (playerItt == playerList.end()) return false;
     Position next = playerItt->second.getPosition();
-    next.movePosition(dx, dy, dz);
+    float x = next.getX();
+    float y = next.getY();
+    float z = next.getZ();
+    if (!server::integrateMovement(x, y, z, dx, dy, dz)) return false;
+    next.setPosition(x, y, z);
     positionQueue.push_back(next);
     return true;
 }
@@ -127,29 +137,26 @@ Field::queueMovement(int64_t playerId, float dx, float dy, float dz){
 bool
 Field::queueNpcMovement(int64_t npcId, float dx, float dy, float dz){
     Npc* npc = findNpc(npcId);
-    if (npc == nullptr || !npc->isAlive() ||
-        !server::isValidMovementDelta(dx, dy, dz)) return false;
+    if (npc == nullptr || !npc->isAlive()) return false;
     Position next = npc->getPosition();
-    next.movePosition(dx, dy, dz);
-    const float x = next.getX();
-    const float y = next.getY();
-    const float z = next.getZ();
-    if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z) ||
-        std::fabs(x) > server::MAX_WORLD_COORDINATE ||
-        std::fabs(y) > server::MAX_WORLD_COORDINATE ||
-        std::fabs(z) > server::MAX_WORLD_COORDINATE) return false;
+    float x = next.getX();
+    float y = next.getY();
+    float z = next.getZ();
+    if (!server::integrateMovement(x, y, z, dx, dy, dz)) return false;
+    next.setPosition(x, y, z);
     positionQueue.push_back(next);
     return true;
 }
 
 bool
 Field::hasPlayer(int64_t playerId) const {
-    return playerList.find(playerId) != playerList.end();
+    return resolvePlayerId(playerId) > 0;
 }
 
 const Player*
 Field::findPlayer(int64_t playerId) const {
-    std::map<int64_t,Player>::const_iterator found = playerList.find(playerId);
+    const int64_t gameplayId = resolvePlayerId(playerId);
+    std::map<int64_t,Player>::const_iterator found = playerList.find(gameplayId);
     return found == playerList.end() ? nullptr : &found->second;
 }
 
@@ -167,7 +174,8 @@ float Field::environmentHazard() const {
 
 Player*
 Field::findPlayer(int64_t playerId) {
-    std::map<int64_t,Player>::iterator found = playerList.find(playerId);
+    const int64_t gameplayId = resolvePlayerId(playerId);
+    std::map<int64_t,Player>::iterator found = playerList.find(gameplayId);
     return found == playerList.end() ? nullptr : &found->second;
 }
 
@@ -193,6 +201,129 @@ std::vector<NpcSnapshot> Field::publicNpcSnapshots() const {
                              true});
     }
     return snapshots;
+}
+
+std::vector<PlayerPoseSnapshot> Field::publicPlayerPoses() const {
+    std::vector<PlayerPoseSnapshot> poses;
+    for (std::map<int64_t, Player>::const_iterator it = playerList.begin();
+         it != playerList.end(); ++it) {
+        const Player& player = it->second;
+        const int64_t boundSession = sessionIdForPlayer(player.getPlayerId());
+        if (player.getAuthPlayerId() > 0 && boundSession <= 0) continue;
+        const Position& pose = player.getPosition();
+        PlayerPoseSnapshot snapshot;
+        snapshot.sessionId = boundSession > 0 ? boundSession : player.getPlayerId();
+        snapshot.x = pose.getX();
+        snapshot.y = pose.getY();
+        snapshot.z = pose.getZ();
+        snapshot.gameplayId = player.getPlayerId();
+        snapshot.name = player.getPlayerName();
+        poses.push_back(snapshot);
+    }
+    return poses;
+}
+
+int64_t Field::resolvePlayerId(int64_t id) const {
+    if (id <= 0) return 0;
+    if (playerList.find(id) != playerList.end()) return id;
+    const std::map<int64_t, int64_t>::const_iterator found =
+        sessionToPlayerId.find(id);
+    if (found == sessionToPlayerId.end()) return 0;
+    return found->second;
+}
+
+void Field::forgetBindingsForPlayer(int64_t gameplayId) {
+    const std::map<int64_t, int64_t>::iterator bound =
+        playerToSessionId.find(gameplayId);
+    if (bound != playerToSessionId.end()) {
+        sessionToPlayerId.erase(bound->second);
+        playerToSessionId.erase(bound);
+    }
+}
+
+bool Field::bindSession(int64_t sessionId, int64_t gameplayId) {
+    if (sessionId <= 0 || gameplayId <= 0) return false;
+    if (playerList.find(gameplayId) == playerList.end()) return false;
+    unbindSession(sessionId);
+    const std::map<int64_t, int64_t>::iterator previous =
+        playerToSessionId.find(gameplayId);
+    if (previous != playerToSessionId.end()) {
+        sessionToPlayerId.erase(previous->second);
+        playerToSessionId.erase(previous);
+    }
+    sessionToPlayerId[sessionId] = gameplayId;
+    playerToSessionId[gameplayId] = sessionId;
+    return true;
+}
+
+bool Field::unbindSession(int64_t sessionId) {
+    if (sessionId <= 0) return false;
+    const std::map<int64_t, int64_t>::iterator found =
+        sessionToPlayerId.find(sessionId);
+    if (found == sessionToPlayerId.end()) return false;
+    playerToSessionId.erase(found->second);
+    sessionToPlayerId.erase(found);
+    return true;
+}
+
+int64_t Field::playerIdForSession(int64_t sessionId) const {
+    const std::map<int64_t, int64_t>::const_iterator found =
+        sessionToPlayerId.find(sessionId);
+    return found == sessionToPlayerId.end() ? 0 : found->second;
+}
+
+int64_t Field::sessionIdForPlayer(int64_t gameplayId) const {
+    const std::map<int64_t, int64_t>::const_iterator found =
+        playerToSessionId.find(gameplayId);
+    return found == playerToSessionId.end() ? 0 : found->second;
+}
+
+int64_t Field::allocateGameplayId() {
+    while (nextGameplayId < std::numeric_limits<int64_t>::max()) {
+        const int64_t candidate = nextGameplayId++;
+        if (playerList.find(candidate) != playerList.end()) continue;
+        if (findNpc(candidate) != nullptr) continue;
+        if (sessionToPlayerId.find(candidate) != sessionToPlayerId.end()) continue;
+        return candidate;
+    }
+    return 0;
+}
+
+const Player* Field::findPlayerByAuthId(int64_t authPlayerId) const {
+    if (authPlayerId <= 0) return nullptr;
+    for (std::map<int64_t, Player>::const_iterator it = playerList.begin();
+         it != playerList.end(); ++it) {
+        if (it->second.getAuthPlayerId() == authPlayerId) return &it->second;
+    }
+    return nullptr;
+}
+
+Player* Field::findPlayerByAuthId(int64_t authPlayerId) {
+    if (authPlayerId <= 0) return nullptr;
+    for (std::map<int64_t, Player>::iterator it = playerList.begin();
+         it != playerList.end(); ++it) {
+        if (it->second.getAuthPlayerId() == authPlayerId) return &it->second;
+    }
+    return nullptr;
+}
+
+bool Field::hasPlayerName(const std::string& displayName) const {
+    const std::string trimmed = trimPlayerName(displayName);
+    if (trimmed.empty()) return false;
+    for (std::map<int64_t, Player>::const_iterator it = playerList.begin();
+         it != playerList.end(); ++it) {
+        if (it->second.getPlayerName() == trimmed) return true;
+    }
+    return false;
+}
+
+std::vector<int64_t> Field::residentPlayerIds() const {
+    std::vector<int64_t> ids;
+    for (std::map<int64_t, Player>::const_iterator it = playerList.begin();
+         it != playerList.end(); ++it) {
+        ids.push_back(it->first);
+    }
+    return ids;
 }
 
 void Field::processFrame(){
@@ -293,6 +424,7 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
     std::map<int64_t, long> projectedMp;
     std::map<int64_t, uint64_t> projectedAttackTick = nextAttackTick;
     std::map<int64_t, uint64_t> projectedSpellTick = nextSpellTick;
+    std::map<int64_t, Position> projectedPosition;
     for (std::vector<server::WorldInput>::const_iterator it = inputs.begin();
          it != inputs.end(); ++it) {
         if (it->kind() == server::WorldInputKind::Movement &&
@@ -344,15 +476,24 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
         }
         if (it->kind() == server::WorldInputKind::Movement) {
             const Player* player = findPlayer(it->movement().sessionId);
-            const Position& position = player->getPosition();
-            const float x = position.getX() + it->movement().dx;
-            const float y = position.getY() + it->movement().dy;
-            const float z = position.getZ() + it->movement().dz;
-            if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(z) ||
-                std::fabs(x) > server::MAX_WORLD_COORDINATE ||
-                std::fabs(y) > server::MAX_WORLD_COORDINATE ||
-                std::fabs(z) > server::MAX_WORLD_COORDINATE) {
+            std::map<int64_t, Position>::iterator projected =
+                projectedPosition.find(it->movement().sessionId);
+            float x = projected == projectedPosition.end()
+                ? player->getPosition().getX() : projected->second.getX();
+            float y = projected == projectedPosition.end()
+                ? player->getPosition().getY() : projected->second.getY();
+            float z = projected == projectedPosition.end()
+                ? player->getPosition().getZ() : projected->second.getZ();
+            if (!server::integrateMovement(x, y, z, it->movement().dx,
+                                           it->movement().dy,
+                                           it->movement().dz)) {
                 return false;
+            }
+            const Position next(it->movement().sessionId, x, y, z);
+            if (projected == projectedPosition.end()) {
+                projectedPosition.insert(std::make_pair(it->movement().sessionId, next));
+            } else {
+                projected->second = next;
             }
         }
     }
@@ -366,15 +507,29 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
          it != inputs.end(); ++it) {
         if (it->kind() == server::WorldInputKind::Movement) {
             std::map<int64_t,Player>::iterator playerItt =
-                playerList.find(it->movement().sessionId);
+                playerList.find(resolvePlayerId(it->movement().sessionId));
             Position next = playerItt->second.getPosition();
-            next.movePosition(it->movement().dx, it->movement().dy, it->movement().dz);
+            float x = next.getX();
+            float y = next.getY();
+            float z = next.getZ();
+            if (!server::integrateMovement(x, y, z, it->movement().dx,
+                                           it->movement().dy,
+                                           it->movement().dz)) {
+                playerList = playersBefore;
+                npcList = npcsBefore;
+                fieldEther = etherBefore;
+                nextAttackTick = attackTicksBefore;
+                nextSpellTick = spellTicksBefore;
+                lastEtherHazard = hazardBefore;
+                resolutions.clear();
+                return false;
+            }
+            next.setPosition(x, y, z);
             playerItt->second.setPosition(next);
         } else if (it->kind() == server::WorldInputKind::Action) {
             applyAction(it->action());
         } else if (it->kind() == server::WorldInputKind::Combat) {
-            const Player* targetBefore = findPlayer(it->combat().targetId);
-            const long hpBefore = targetBefore->getStatus().getHp();
+            const long hpBefore = targetHp(it->combat().targetId);
             std::string error;
             if (!applyCombat(it->combat(), error)) {
                 playerList = playersBefore;
@@ -386,7 +541,7 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
                 resolutions.clear();
                 return false;
             }
-            const Player* targetAfter = findPlayer(it->combat().targetId);
+            const long hpAfter = targetHp(it->combat().targetId);
             server::CombatResolution resolution;
             resolution.inputSequence = it->sequence();
             resolution.actorId = it->combat().attackerId;
@@ -394,15 +549,14 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
             resolution.basePower = it->combat().power;
             resolution.requestId = it->combat().requestId;
             resolution.effectivePower = it->combat().power;
-            resolution.damage = hpBefore - targetAfter->getStatus().getHp();
-            resolution.remainingHp = targetAfter->getStatus().getHp();
+            resolution.damage = hpBefore - hpAfter;
+            resolution.remainingHp = hpAfter;
             resolution.mpSpent = 0;
             tickAfter(worldTick, kAttackCooldownTicks, resolution.cooldownUntil);
             nextAttackTick[it->combat().attackerId] = resolution.cooldownUntil;
             resolutions.push_back(resolution);
         } else if (it->kind() == server::WorldInputKind::Spell) {
-            const Player* targetBefore = findPlayer(it->spell().targetId);
-            const long hpBefore = targetBefore->getStatus().getHp();
+            const long hpBefore = targetHp(it->spell().targetId);
             const float before[4] = {
                 fieldEther.value(world::EtherAttribute::Fire),
                 fieldEther.value(world::EtherAttribute::Water),
@@ -436,7 +590,7 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
             }
             Player* caster = findPlayer(it->spell().casterId);
             caster->getStatus().gainMp(-mpCost);
-            const Player* targetAfter = findPlayer(it->spell().targetId);
+            const long hpAfter = targetHp(it->spell().targetId);
             server::CombatResolution resolution;
             resolution.spell = true;
             resolution.inputSequence = it->sequence();
@@ -445,9 +599,9 @@ bool Field::processInputs(const std::vector<server::WorldInput>& inputs,
             resolution.element = it->spell().element;
             resolution.requestId = it->spell().requestId;
             resolution.basePower = it->spell().power;
-            resolution.damage = hpBefore - targetAfter->getStatus().getHp();
+            resolution.damage = hpBefore - hpAfter;
             resolution.effectivePower = effectivePower;
-            resolution.remainingHp = targetAfter->getStatus().getHp();
+            resolution.remainingHp = hpAfter;
             resolution.mpSpent = mpCost;
             tickAfter(worldTick, kSpellCooldownTicks, resolution.cooldownUntil);
             nextSpellTick[it->spell().casterId] = resolution.cooldownUntil;
@@ -603,6 +757,13 @@ bool Field::targetIsAlive(int64_t targetId) const {
     if (player != nullptr) return player->getStatus().getHp() > 0;
     const Npc* npc = findNpc(targetId);
     return npc != nullptr && npc->isAlive();
+}
+
+long Field::targetHp(int64_t targetId) const {
+    const Player* player = findPlayer(targetId);
+    if (player != nullptr) return player->getStatus().getHp();
+    const Npc* npc = findNpc(targetId);
+    return npc == nullptr ? 0 : npc->getStatus().getHp();
 }
 
 bool Field::applyDamageToTarget(int64_t targetId, long damage) {

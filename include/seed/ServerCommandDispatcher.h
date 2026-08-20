@@ -1,6 +1,7 @@
 #ifndef SEED_SERVER_COMMAND_DISPATCHER_H
 #define SEED_SERVER_COMMAND_DISPATCHER_H
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -29,6 +30,7 @@ public:
 
     CommandDispatchResult dispatch(const network::NetworkCommand& command);
     session::SessionRegistry& sessionRegistry();
+    std::size_t snapshotRequestCount() const;
     std::vector<CommandDispatchResult> dispatchAll(
         const std::vector<network::NetworkCommand>& commands);
 
@@ -36,6 +38,7 @@ private:
     LoginCommandHandler loginHandler;
     WorldInputQueue* inputQueue;
     CommandRateLimiter rateLimiter;
+    std::size_t snapshotRequests;
 };
 
 }

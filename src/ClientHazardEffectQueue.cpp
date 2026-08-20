@@ -74,6 +74,24 @@ HazardIngestResult ClientHazardEffectQueue::ingest(
     return HazardIngestResult::Applied;
 }
 
+HazardIngestResult ClientHazardEffectQueue::observeEvent(
+    const network::WorldUpdate& update, std::string& error) {
+    if (update.kind != network::UpdateKind::Event || update.eventId == 0 ||
+        !network::validateWorldUpdate(update, error)) {
+        if (error.empty()) error = "invalid WorldUpdate Event";
+        return HazardIngestResult::Rejected;
+    }
+    const network::SyncResult result = sync.receive(update);
+    if (result.decision == network::SyncDecision::IgnoreDuplicate)
+        return HazardIngestResult::IgnoredDuplicate;
+    if (result.decision == network::SyncDecision::RequestSnapshot)
+        return HazardIngestResult::RequestSnapshot;
+    if (result.decision != network::SyncDecision::Apply)
+        return HazardIngestResult::Rejected;
+    error.clear();
+    return HazardIngestResult::Applied;
+}
+
 void ClientHazardEffectQueue::confirmSnapshot(uint64_t sequence) {
     sync.confirmSnapshot(sequence);
 }

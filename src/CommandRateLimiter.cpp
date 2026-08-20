@@ -13,6 +13,7 @@ std::size_t CommandRateLimiter::limitFor(network::CommandType type) {
         case network::CommandType::Attack: return 4;
         case network::CommandType::CastSpell: return 4;
         case network::CommandType::Disconnect: return 2;
+        case network::CommandType::RequestSnapshot: return 1;
         case network::CommandType::Login: return 0;
     }
     return 0;

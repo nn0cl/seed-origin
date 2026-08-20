@@ -161,17 +161,21 @@ Adjudicator.
 
 Before reporting completion, check `docs/collaboration/definition-of-done.md`.
 Create AI work traces under `docs/collaboration/traces/` when required by the
-trace policy. This repository uses `main` for approved issue work; use
-feature-unit branches only when the Adjudicator explicitly requests them.
+trace policy. This repository uses a dedicated branch per Issue, per
+`docs/collaboration/branch-commit-pr-discipline.md` (ADR 0022; this reverses
+the earlier ADR 0013 main-only exception). Do not implement issue work
+directly on `main`. An issue's branch is merged into `main` on completion
+(CI-gated); any merge into `main`, like any `git push`, requires explicit
+per-instance user confirmation.
 For feature work, identify local issue or GitHub issue dependencies before
 creating the branch.
 
 ## Selected Stack
 
 C++11-compatible core and server sources, Xcode project, and CMake/CTest
-foundation. The client technology, wire serialization, persistence backend,
-and deployment runtime remain ADR decisions tracked by LISS-0055, LISS-0064,
-LISS-0066, and LISS-0068.
+foundation. The client technology, wire serialization, and deployment
+runtime remain ADR decisions tracked by LISS-0055, LISS-0064, and
+LISS-0068. Identity/session persistence backend is decided (see below).
 
 ## Current Non-Decisions
 
@@ -180,7 +184,16 @@ rather than assumed by an agent. Example shape:
 
 - Client renderer and UI framework.
 - Wire serialization format and compatibility policy.
-- Identity persistence format/backend.
 - Server deployment and monitoring platform.
+
+## Decided (moved out of Non-Decisions)
+
+- Identity/session persistence engine: PostgreSQL (ADR 0016). Player
+  identity model: registered accounts with Postgres-backed sessions,
+  superseding the earlier anonymous-alias approach (ADR 0018; formal
+  deprecation of the superseded pieces tracked by LISS-0150). Admin
+  backend implementation language is proposed as Kotlin/Spring Boot (ADR
+  0019, not yet Accepted as of 2026-07-18 — treat as still open until that
+  ADR's Status changes).
 
 Treat these as ADR topics, not assumptions.

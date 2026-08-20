@@ -41,4 +41,83 @@ void applies_public_npc_snapshot_state() {
     assert(state.value().npcs[0].id == 19510);
 }
 
+void applies_public_player_snapshot_poses() {
+    network::WorldUpdate update = {
+        1, network::UpdateKind::Snapshot, 2, 1, 0,
+        "ether.fire=0;ether.water=0;ether.earth=0;ether.air=0;ether.hazard=0;"
+        "player.count=1;player.0.session=99;player.0.x=8;player.0.y=0;"
+        "player.0.z=0;player.0.name=Hero"};
+    client::ClientEnvironmentState state;
+    client::ClientWorldSnapshotApplier applier;
+    std::string error;
+    assert(applier.applySnapshot(update, state, error));
+    assert(state.value().players.size() == 1);
+    assert(state.value().players[0].sessionId == 99);
+    assert(state.value().players[0].x == 8.0f);
+    assert(state.value().players[0].gameplayId == 0);
+    assert(state.value().players[0].name == "Hero");
+    assert(!state.value().hasLocalPlayer);
+}
+
+void applies_gameplay_id_and_display_name_without_auth_id() {
+    network::WorldUpdate update = {
+        1, network::UpdateKind::Snapshot, 2, 1, 0,
+        "ether.fire=0;ether.water=0;ether.earth=0;ether.air=0;ether.hazard=0;"
+        "player.count=1;player.0.session=99;player.0.x=8;player.0.y=0;"
+        "player.0.z=0;player.0.id=7;player.0.name=Hero"};
+    client::ClientEnvironmentState state;
+    client::ClientWorldSnapshotApplier applier;
+    std::string error;
+    assert(applier.applySnapshot(update, state, error));
+    assert(state.value().players.size() == 1);
+    assert(state.value().players[0].sessionId == 99);
+    assert(state.value().players[0].gameplayId == 7);
+    assert(state.value().players[0].name == "Hero");
+    assert(update.payload.find("auth") == std::string::npos);
+}
+
+void rejects_auth_player_id_on_public_snapshot() {
+    network::WorldUpdate update = {
+        1, network::UpdateKind::Snapshot, 2, 1, 0,
+        "ether.fire=0;ether.water=0;ether.earth=0;ether.air=0;ether.hazard=0;"
+        "player.count=1;player.0.session=99;player.0.x=8;player.0.y=0;"
+        "player.0.z=0;player.0.id=7;player.0.name=Hero;player.0.authPlayerId=501"};
+    client::ClientEnvironmentState state;
+    client::ClientWorldSnapshotApplier applier;
+    std::string error;
+    assert(!applier.applySnapshot(update, state, error));
+    assert(state.value().players.empty());
+}
+
+void rejects_missing_or_empty_player_name_on_snapshot() {
+    client::ClientWorldSnapshotApplier applier;
+    client::ClientEnvironmentState missingName;
+    std::string error;
+    network::WorldUpdate omitted = {
+        1, network::UpdateKind::Snapshot, 2, 1, 0,
+        "ether.fire=0;ether.water=0;ether.earth=0;ether.air=0;ether.hazard=0;"
+        "player.count=1;player.0.session=99;player.0.x=8;player.0.y=0;"
+        "player.0.z=0;player.0.id=7"};
+    assert(!applier.applySnapshot(omitted, missingName, error));
+    assert(missingName.value().players.empty());
+
+    client::ClientEnvironmentState emptyName;
+    network::WorldUpdate blank = {
+        1, network::UpdateKind::Snapshot, 2, 1, 0,
+        "ether.fire=0;ether.water=0;ether.earth=0;ether.air=0;ether.hazard=0;"
+        "player.count=1;player.0.session=99;player.0.x=8;player.0.y=0;"
+        "player.0.z=0;player.0.id=7;player.0.name="};
+    assert(!applier.applySnapshot(blank, emptyName, error));
+    assert(emptyName.value().players.empty());
+
+    client::ClientEnvironmentState paddedName;
+    network::WorldUpdate spaces = {
+        1, network::UpdateKind::Snapshot, 2, 1, 0,
+        "ether.fire=0;ether.water=0;ether.earth=0;ether.air=0;ether.hazard=0;"
+        "player.count=1;player.0.session=99;player.0.x=8;player.0.y=0;"
+        "player.0.z=0;player.0.id=7;player.0.name=   "};
+    assert(!applier.applySnapshot(spaces, paddedName, error));
+    assert(paddedName.value().players.empty());
+}
+
 } // namespace client_snapshot_tests

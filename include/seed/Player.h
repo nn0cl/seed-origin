@@ -23,6 +23,7 @@
 class Player{
 private:
     int64_t id;
+    int64_t authPlayerId;
     char name[64]{};
     Status status;
     std::list<Buff> buffs;
@@ -35,6 +36,10 @@ public:
     ~Player();
     
     int64_t getPlayerId() const;
+    int64_t getAuthPlayerId() const;
+    void setAuthPlayerId(int64_t issuedId);
+    std::string getPlayerName() const;
+    bool setPlayerName(const std::string& displayName);
     
     bool setHp(long _hp);
     bool setMp(long _mp);

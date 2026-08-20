@@ -1,4 +1,5 @@
 #include "WorldFrameUpdateBuilder.h"
+#include "ClientInputSequence.h"
 #include "Field.h"
 
 #include <cmath>
@@ -58,7 +59,9 @@ bool WorldFrameUpdateBuilder::build(const WorldFrameInputs& frame,
             payload << "movement=session:" << it->movement().sessionId
                     << ";dx=" << it->movement().dx
                     << ";dy=" << it->movement().dy
-                    << ";dz=" << it->movement().dz;
+                    << ";dz=" << it->movement().dz
+                    << ";clientInputSequence="
+                    << it->movement().clientInputSequence;
         } else if (it->kind() == WorldInputKind::Combat) {
             payload << "combat=attacker:" << it->combat().attackerId
                     << ";target:" << it->combat().targetId
@@ -129,6 +132,27 @@ bool WorldFrameUpdateBuilder::appendCombatResolution(
     return appendEvent(worldTick, payload.str(), updates, error);
 }
 
+bool WorldFrameUpdateBuilder::appendSnapshot(
+    uint64_t worldTick, const std::string& payload,
+    std::vector<network::WorldUpdate>& updates, std::string& error) {
+    if (updateSequence == std::numeric_limits<uint64_t>::max()) {
+        error = "world update identity exhausted";
+        return false;
+    }
+    const network::WorldUpdate update = {
+        network::CURRENT_PROTOCOL_VERSION,
+        network::UpdateKind::Snapshot,
+        worldTick,
+        updateSequence++,
+        0,
+        payload
+    };
+    if (!network::validateWorldUpdate(update, error)) return false;
+    updates.push_back(update);
+    error.clear();
+    return true;
+}
+
 bool WorldFrameUpdateBuilder::appendEvent(uint64_t worldTick,
                                           const std::string& payload,
                                           std::vector<network::WorldUpdate>& updates,
@@ -157,6 +181,98 @@ bool WorldFrameUpdateBuilder::appendEvent(uint64_t worldTick,
 
 uint64_t WorldFrameUpdateBuilder::nextSequence() const {
     return updateSequence;
+}
+
+namespace {
+
+bool attachOwnerAckFields(network::WorldUpdate& update, const MovementAck& ack,
+                          std::string& error) {
+    std::string discarded;
+    if (!formatMovementAck(ack, discarded, error)) return false;
+    (void)discarded;
+    std::ostringstream extra;
+    extra << ";x:" << ack.x
+          << ";y:" << ack.y
+          << ";z:" << ack.z
+          << ";worldTick:" << ack.worldTick
+          << ";lastProcessedInputSequence:" << ack.lastProcessedInputSequence;
+    update.payload.append(extra.str());
+    if (!network::validateWorldUpdate(update, error)) return false;
+    error.clear();
+    return true;
+}
+
+bool attachPublicPoseFields(network::WorldUpdate& update, const MovementAck& ack,
+                            std::string& error) {
+    if (!std::isfinite(ack.x) || !std::isfinite(ack.y) || !std::isfinite(ack.z)) {
+        error = "public movement pose contains invalid state";
+        return false;
+    }
+    std::ostringstream extra;
+    extra << ";x=" << ack.x << ";y=" << ack.y << ";z=" << ack.z;
+    update.payload.append(extra.str());
+    if (!network::validateWorldUpdate(update, error)) return false;
+    error.clear();
+    return true;
+}
+
+bool attachLocalSnapshotFields(network::WorldUpdate& update, const MovementAck& ack,
+                               std::string& error) {
+    if (!std::isfinite(ack.x) || !std::isfinite(ack.y) || !std::isfinite(ack.z)) {
+        error = "snapshot local pose contains invalid state";
+        return false;
+    }
+    std::ostringstream extra;
+    extra << ";local.x=" << ack.x
+          << ";local.y=" << ack.y
+          << ";local.z=" << ack.z
+          << ";local.lastProcessedInputSequence="
+          << ack.lastProcessedInputSequence;
+    update.payload.append(extra.str());
+    if (!network::validateWorldUpdate(update, error)) return false;
+    error.clear();
+    return true;
+}
+
+const MovementAck* findOwnerAck(const std::vector<MovementAck>& ownerAcks,
+                                int64_t sessionId) {
+    for (std::vector<MovementAck>::const_iterator it = ownerAcks.begin();
+         it != ownerAcks.end(); ++it) {
+        if (it->sessionId == sessionId) return &(*it);
+    }
+    return 0;
+}
+
+}
+
+bool copyWorldUpdateForSession(const network::WorldUpdate& publicUpdate,
+                               int64_t recipientSessionId,
+                               const std::vector<MovementAck>& ownerAcks,
+                               network::WorldUpdate& personalized,
+                               std::string& error) {
+    personalized = publicUpdate;
+    if (publicUpdate.kind == network::UpdateKind::Snapshot) {
+        const MovementAck* ack = findOwnerAck(ownerAcks, recipientSessionId);
+        if (ack == 0) {
+            error.clear();
+            return true;
+        }
+        return attachLocalSnapshotFields(personalized, *ack, error);
+    }
+    int64_t movementSession = 0;
+    if (!parseMovementEventSession(publicUpdate.payload, movementSession)) {
+        error.clear();
+        return true;
+    }
+    const MovementAck* ack = findOwnerAck(ownerAcks, movementSession);
+    if (ack == 0) {
+        error.clear();
+        return true;
+    }
+    if (movementSession == recipientSessionId) {
+        return attachOwnerAckFields(personalized, *ack, error);
+    }
+    return attachPublicPoseFields(personalized, *ack, error);
 }
 
 }

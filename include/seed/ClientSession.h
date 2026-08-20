@@ -35,11 +35,13 @@ public:
                           std::string& error);
     bool enqueueFrame(const std::vector<uint8_t>& frame, std::string& error);
     SendStatus flushOutbound(std::string& error);
+    void requestCloseAfterFlush();
     bool close();
     bool isOpen() const;
 
 private:
     int clientSocket;
+    bool closeAfterFlush;
     network::FrameAccumulator accumulator;
     OutboundFrameQueue outboundFrames;
 };

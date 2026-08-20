@@ -19,7 +19,7 @@ public:
 
 private:
     struct SessionCounters {
-        std::array<std::size_t, 7> counts{};
+        std::array<std::size_t, 8> counts{};
     };
 
     static std::size_t commandIndex(network::CommandType type);

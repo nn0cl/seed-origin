@@ -21,6 +21,7 @@
 #include "EnvironmentEther.h"
 #include "Npc.h"
 #include "NpcSnapshot.h"
+#include "PlayerPoseSnapshot.h"
 
 namespace server {
 class WorldInput;
@@ -85,6 +86,16 @@ public:
     const Npc* findNpc(int64_t npcId) const;
     Npc* findNpc(int64_t npcId);
     std::vector<NpcSnapshot> publicNpcSnapshots() const;
+    std::vector<PlayerPoseSnapshot> publicPlayerPoses() const;
+    bool bindSession(int64_t sessionId, int64_t gameplayId);
+    bool unbindSession(int64_t sessionId);
+    int64_t playerIdForSession(int64_t sessionId) const;
+    int64_t sessionIdForPlayer(int64_t gameplayId) const;
+    int64_t allocateGameplayId();
+    const Player* findPlayerByAuthId(int64_t authPlayerId) const;
+    Player* findPlayerByAuthId(int64_t authPlayerId);
+    bool hasPlayerName(const std::string& displayName) const;
+    std::vector<int64_t> residentPlayerIds() const;
     world::EnvironmentEther& environmentEther();
     const world::EnvironmentEther& environmentEther() const;
     float environmentHazard() const;
@@ -110,10 +121,16 @@ private:
     bool applySpell(const server::SpellIntent& intent, std::string& error);
     const Position* findTargetPosition(int64_t targetId) const;
     bool targetIsAlive(int64_t targetId) const;
+    long targetHp(int64_t targetId) const;
     bool applyDamageToTarget(int64_t targetId, long damage);
+    int64_t resolvePlayerId(int64_t id) const;
+    void forgetBindingsForPlayer(int64_t gameplayId);
     std::map<int64_t, uint64_t> nextAttackTick;
     std::map<int64_t, uint64_t> nextSpellTick;
     std::map<int64_t, NpcRespawnState> npcRespawns;
+    std::map<int64_t, int64_t> sessionToPlayerId;
+    std::map<int64_t, int64_t> playerToSessionId;
+    int64_t nextGameplayId;
 };
 
 #endif

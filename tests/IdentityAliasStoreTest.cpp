@@ -27,4 +27,33 @@ void supports_explicit_claimed_id_deletion_without_affecting_sessions() {
     assert(registry.isActive(session.internalId));
 }
 
+void records_human_review_decision_without_affecting_active_sessions() {
+    session::SessionRegistry registry;
+    const session::SessionInfo session = registry.login("Player-B", 5);
+    assert(registry.recordAliasReview("player-b",
+                                       session::AliasReviewStatus::HumanConfirmed,
+                                       0.5f));
+    const std::vector<session::IdentityAliasRecord> records =
+        registry.exportAliasRecords();
+    assert(records.size() == 1);
+    assert(records[0].reviewStatus == session::AliasReviewStatus::HumanConfirmed);
+    assert(records[0].confidence == 0.5f);
+    assert(registry.isActive(session.internalId));
+}
+
+void rejects_review_for_missing_alias_or_invalid_confidence() {
+    session::InMemoryIdentityAliasStore store;
+    session::SessionRegistry registry(store);
+    registry.login("known-id", 1);
+    assert(!registry.recordAliasReview("unknown-id",
+                                        session::AliasReviewStatus::HumanRejected,
+                                        1.0f));
+    assert(!registry.recordAliasReview("known-id",
+                                        session::AliasReviewStatus::HumanRejected,
+                                        1.5f));
+    const std::vector<session::IdentityAliasRecord> records = store.exportRecords();
+    assert(records.size() == 1);
+    assert(records[0].reviewStatus == session::AliasReviewStatus::Unreviewed);
+}
+
 } // namespace identity_alias_store_tests

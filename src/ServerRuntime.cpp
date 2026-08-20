@@ -1,6 +1,9 @@
 #include "ServerRuntime.h"
+#include "FieldSessionPresence.h"
+#include "DisconnectResponseCodec.h"
 #include "LoginResponseCodec.h"
 #include "ServerCommandDispatcher.h"
+#include "WorldFrameUpdateBuilder.h"
 #include "WorldUpdateFrameCodec.h"
 
 #include <limits>
@@ -8,9 +11,52 @@
 
 namespace server {
 
+namespace {
+
+bool enqueueSessionFrame(ClientSession* session, std::vector<uint8_t>& frame,
+                         std::string& error) {
+    if (session == 0 || !session->isOpen()) return true;
+    std::string frameError;
+    if (!session->enqueueFrame(frame, frameError)) {
+        if (error.empty()) error = frameError;
+        return false;
+    }
+    return true;
+}
+
+bool enqueueLoginResponse(ClientSession* session,
+                          const network::LoginResponse& response,
+                          std::string& error) {
+    if (session == 0 || !session->isOpen()) return true;
+    std::vector<uint8_t> frame;
+    std::string frameError;
+    if (!network::encodeLoginResponseFrame(response, frame, frameError) ||
+        !enqueueSessionFrame(session, frame, error)) {
+        if (error.empty()) error = frameError;
+        return false;
+    }
+    return true;
+}
+
+bool enqueueDisconnectResponse(ClientSession* session,
+                               const network::DisconnectResponse& response,
+                               std::string& error) {
+    if (session == 0 || !session->isOpen()) return true;
+    std::vector<uint8_t> frame;
+    std::string frameError;
+    if (!network::encodeDisconnectResponseFrame(response, frame, frameError) ||
+        !enqueueSessionFrame(session, frame, error)) {
+        if (error.empty()) error = frameError;
+        return false;
+    }
+    return true;
+}
+
+}
+
 ServerRuntime::ServerRuntime()
     : running(false), nextConnectionId(1), clients(), lifecycle(), inputQueue(),
-      inputTick(inputQueue) {}
+      inputTick(inputQueue), newAuthenticatedSessions(0) {}
 
 ServerRuntime::~ServerRuntime() {
     stop();
@@ -25,6 +71,11 @@ bool ServerRuntime::start(uint16_t port) {
 bool ServerRuntime::stop() {
     pendingCommands.clear();
     inputQueue.clear();
+    for (std::map<uint64_t, std::unique_ptr<ClientSession> >::iterator it =
+             clients.begin();
+         it != clients.end(); ++it) {
+        FieldSessionPresence::releaseAfterStop(lifecycle.sessionId(it->first));
+    }
     clients.clear();
     lifecycle.clear();
     const bool closed = listener.closeSocket();
@@ -35,6 +86,11 @@ bool ServerRuntime::stop() {
 bool ServerRuntime::stop(session::SessionRegistry& registry) {
     pendingCommands.clear();
     inputQueue.clear();
+    for (std::map<uint64_t, std::unique_ptr<ClientSession> >::iterator it =
+             clients.begin();
+         it != clients.end(); ++it) {
+        FieldSessionPresence::releaseAfterStop(lifecycle.sessionId(it->first));
+    }
     clients.clear();
     lifecycle.clear(registry);
     const bool closed = listener.closeSocket();
@@ -44,6 +100,10 @@ bool ServerRuntime::stop(session::SessionRegistry& registry) {
 
 bool ServerRuntime::isRunning() const {
     return running;
+}
+
+uint16_t ServerRuntime::listeningPort() const {
+    return running ? listener.boundPort() : 0;
 }
 
 AcceptStatus ServerRuntime::acceptPendingClient(uint64_t& connectionId,
@@ -93,6 +153,7 @@ size_t ServerRuntime::removeClosedClients(session::SessionRegistry& registry,
             continue;
         }
         const int64_t sessionId = lifecycle.sessionId(it->first);
+        FieldSessionPresence::removeAfterLogout(sessionId);
         lifecycle.disconnect(it->first, registry);
         if (dispatcher != nullptr) {
             dispatcher->forgetSession(sessionId);
@@ -171,6 +232,7 @@ bool ServerRuntime::enqueueCommands(
 
 size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
                                           std::string& error) {
+    newAuthenticatedSessions = 0;
     if (!running) {
         error = "server runtime is stopped";
         return 0;
@@ -209,7 +271,33 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
             result = dispatcher.dispatch(pending.command);
         }
         ++processed;
-        if (pending.connectionId == 0 || pending.command.type != network::CommandType::Login) {
+        if (pending.connectionId == 0) {
+            continue;
+        }
+        if (pending.command.type == network::CommandType::Disconnect) {
+            ClientSession* session = clientSession(pending.connectionId);
+            if (session != 0 && session->isOpen()) {
+                const network::DisconnectResponse response = {
+                    network::CURRENT_PROTOCOL_VERSION,
+                    result.accepted ? network::DisconnectResponseStatus::Accepted
+                                    : network::DisconnectResponseStatus::Rejected,
+                    pending.command.sessionId,
+                    result.accepted ? std::string()
+                                    : (result.error.empty()
+                                           ? std::string("disconnect was rejected")
+                                           : result.error)};
+                if (enqueueDisconnectResponse(session, response, error) &&
+                    result.accepted) {
+                    session->requestCloseAfterFlush();
+                }
+            }
+            if (result.accepted) {
+                lifecycle.disconnect(pending.connectionId,
+                                     dispatcher.sessionRegistry());
+            }
+            continue;
+        }
+        if (pending.command.type != network::CommandType::Login) {
             continue;
         }
         ClientSession* session = clientSession(pending.connectionId);
@@ -221,6 +309,16 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
                 result.accepted = false;
                 result.session = {0, 0, std::string(), false};
                 result.error = bindingError;
+            } else if (!FieldSessionPresence::placeAfterLogin(
+                           result.session.internalId,
+                           result.session.claimedId)) {
+                lifecycle.disconnect(pending.connectionId,
+                                     dispatcher.sessionRegistry());
+                result.accepted = false;
+                result.session = {0, 0, std::string(), false};
+                result.error = "authenticated session could not be placed on the field";
+            } else {
+                ++newAuthenticatedSessions;
             }
         }
         const network::LoginResponse response = {
@@ -230,12 +328,7 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
             result.accepted ? result.session.internalId : 0,
             result.accepted ? std::string() : result.error
         };
-        std::vector<uint8_t> frame;
-        std::string responseError;
-        if (!network::encodeLoginResponseFrame(response, frame, responseError) ||
-            !session->enqueueFrame(frame, responseError)) {
-            if (error.empty()) error = responseError;
-        }
+        enqueueLoginResponse(session, response, error);
     }
     removeClosedClients(dispatcher.sessionRegistry(), &dispatcher);
     return processed;
@@ -244,7 +337,7 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
 ServerFrameResult ServerRuntime::processFrame(ServerCommandDispatcher& dispatcher,
                                               std::string& error) {
     ServerFrameResult stopped = {inputTick.currentWorldTick(), 0,
-                                 std::vector<WorldInput>()};
+                                 std::vector<WorldInput>(), 0, 0};
     if (!running) {
         error = "server runtime is stopped";
         return stopped;
@@ -272,12 +365,20 @@ ServerFrameResult ServerRuntime::processFrame(ServerCommandDispatcher& dispatche
     removeClosedClients(dispatcher.sessionRegistry(), &dispatcher);
     const WorldFrameInputs worldFrame = inputTick.advanceFrame();
     ServerFrameResult result = {worldFrame.worldTick, accepted + processed,
-                                worldFrame.inputs};
+                                worldFrame.inputs, newAuthenticatedSessions,
+                                dispatcher.snapshotRequestCount()};
     return result;
 }
 
 size_t ServerRuntime::publishWorldUpdates(
     const std::vector<network::WorldUpdate>& updates, std::string& error) {
+    const std::vector<MovementAck> noAcks;
+    return publishWorldUpdates(updates, noAcks, error);
+}
+
+size_t ServerRuntime::publishWorldUpdates(
+    const std::vector<network::WorldUpdate>& updates,
+    const std::vector<MovementAck>& ownerAcks, std::string& error) {
     if (!running) {
         error = "server runtime is stopped";
         return 0;
@@ -285,11 +386,18 @@ size_t ServerRuntime::publishWorldUpdates(
     size_t published = 0;
     for (std::vector<network::WorldUpdate>::const_iterator update = updates.begin();
          update != updates.end(); ++update) {
-        std::vector<uint8_t> frame;
-        if (!network::encodeWorldUpdateFrame(*update, frame, error)) return published;
         for (std::map<uint64_t, std::unique_ptr<ClientSession> >::iterator it =
                  clients.begin(); it != clients.end(); ++it) {
             if (!lifecycle.hasSession(it->first)) continue;
+            network::WorldUpdate personalized;
+            if (!copyWorldUpdateForSession(*update, lifecycle.sessionId(it->first),
+                                           ownerAcks, personalized, error)) {
+                return published;
+            }
+            std::vector<uint8_t> frame;
+            if (!network::encodeWorldUpdateFrame(personalized, frame, error)) {
+                return published;
+            }
             std::string enqueueError;
             if (!it->second->enqueueFrame(frame, enqueueError)) {
                 error = enqueueError;

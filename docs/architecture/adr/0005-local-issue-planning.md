@@ -41,8 +41,10 @@ Before feature work starts, agents should identify issue dependencies and create
 or update a work plan. Work should proceed from the next unblocked issue.
 
 The generic template baseline recommends a dedicated branch for each local or
-GitHub Issue. `seed-origin` follows the explicit exception in ADR 0013 and uses
-`main` for issue work.
+GitHub Issue. `seed-origin` previously followed an explicit exception in ADR
+0013 to use `main` directly for issue work; that exception was reversed by
+ADR 0022 (2026-07-18), and `seed-origin` now follows the generic per-Issue
+branch baseline like any other project using this template.
 
 ## Consequences
 

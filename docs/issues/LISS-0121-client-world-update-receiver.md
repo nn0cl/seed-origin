@@ -18,7 +18,8 @@ TCPの部分受信をWorldUpdate単位へ再構成し、Snapshotとhazard Event�
 - Snapshot適用後、hazard Eventのsequence基準をSnapshotへ合わせる。
 - sequence gap、壊れたframe、不正payloadで既存状態とEffectQueueを部分適用しない。
 - accumulatorが失敗した後に入力を受け付け続けない。
-- Socket、再接続、Snapshot再要求の実送信は後続Issueへ分離する。
+- Socket、再接続の実送信は後続Issue（LISS-0128）。Snapshot再要求 Command は
+  LISS-0154。
 
 ## 実装資料
 
@@ -39,4 +40,5 @@ Reassemble partial TCP reads into WorldUpdate units and route Snapshots and haza
 - Align hazard-event sequence tracking after applying a Snapshot.
 - Avoid partial state or EffectQueue mutation for sequence gaps, broken frames, or invalid payloads.
 - Reject further input after the accumulator enters a failed state.
-- Keep sockets, reconnect, and actual snapshot requests as follow-up work.
+- Keep sockets and reconnect I/O as follow-up work (LISS-0128). Snapshot
+  request Command is LISS-0154.

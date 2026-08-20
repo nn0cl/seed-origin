@@ -14,12 +14,18 @@ bool isValidMovementDelta(float dx, float dy, float dz) {
 }
 
 bool MovementIntentQueue::enqueue(int64_t sessionId, float dx, float dy, float dz) {
+    return enqueue(sessionId, dx, dy, dz, 0);
+}
+
+bool MovementIntentQueue::enqueue(int64_t sessionId, float dx, float dy, float dz,
+                                  uint64_t clientInputSequence) {
     if (sessionId <= 0 || !isValidMovementDelta(dx, dy, dz) ||
         pending.size() >= MAX_PENDING_INTENTS ||
         nextSequence == std::numeric_limits<uint64_t>::max()) {
         return false;
     }
-    pending.push_back({nextSequence++, sessionId, dx, dy, dz});
+    pending.push_back(
+        {nextSequence++, sessionId, dx, dy, dz, clientInputSequence});
     return true;
 }
 

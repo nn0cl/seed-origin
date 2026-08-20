@@ -7,23 +7,57 @@
 //
 
 #include "Player.h"
+#include "PlayerName.h"
+
+#include <cstring>
 
 Player::Player()
-    : id(0), status(10, 10), position(1, 0.0f, 0.0f, 0.0f) {}
+    : id(0), authPlayerId(0), status(10, 10), position(1, 0.0f, 0.0f, 0.0f) {}
 
 Player::Player(const Player& player)
-    : id(player.id), name{}, status(player.status), buffs(player.buffs),
-      position(player.position) {}
+    : id(player.id), authPlayerId(player.authPlayerId), name{},
+      status(player.status), buffs(player.buffs), position(player.position) {
+    std::memcpy(name, player.name, sizeof(name));
+}
 
 
 Player::Player(int64_t playerId, const Status& status, const Position& position)
-    : id(playerId), status(status), position(position) {}
+    : id(playerId), authPlayerId(0), status(status), position(position) {}
 
 Player::~Player() = default;
 
 int64_t
 Player::getPlayerId() const{
     return this->id;
+}
+
+int64_t
+Player::getAuthPlayerId() const {
+    return authPlayerId;
+}
+
+void
+Player::setAuthPlayerId(int64_t issuedId) {
+    if (authPlayerId > 0) return;
+    authPlayerId = issuedId < 0 ? 0 : issuedId;
+}
+
+std::string
+Player::getPlayerName() const {
+    return std::string(name);
+}
+
+bool
+Player::setPlayerName(const std::string& displayName) {
+    const std::string trimmed = trimPlayerName(displayName);
+    if (trimmed.empty() || trimmed.size() >= sizeof(name)) return false;
+    if (trimmed.find(';') != std::string::npos ||
+        trimmed.find('=') != std::string::npos) {
+        return false;
+    }
+    std::memset(name, 0, sizeof(name));
+    std::memcpy(name, trimmed.c_str(), trimmed.size());
+    return true;
 }
 
 bool

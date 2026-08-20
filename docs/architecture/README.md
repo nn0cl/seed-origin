@@ -103,12 +103,38 @@ through the versioned network protocol rather than depend on World internals.
 - `adr/0013-project-main-branch-and-adjudicator-roles.md`
 - `adr/0014-adjudicator-and-developer-role-model.md`
 - `adr/0015-cpp20-language-standard-adoption.md`
+- `adr/0016-identity-alias-persistence-and-review.md`
+- `adr/0017-admin-authentication-and-http-surface.md`
+- `adr/0018-registered-player-authentication.md` (supersedes ADR 0016 for
+  player identity; ADR 0016 remains for historical record)
+- `adr/0022-restore-per-issue-branching.md` (supersedes ADR 0013's
+  branching/push decision only; ADR 0013's Adjudicator/Developer
+  role-boundary decision remains in effect)
 
 ## Remaining Technology Evaluation
 
 Technology choices still open for ADR decision:
 
-- identity persistence engine and schema.
-- client platform, renderer, and UI framework.
+- Static-asset serving for the React admin/auth SPAs (Spring Boot vs.
+  Nginx); build tooling and directory placement are decided (LISS-0145/
+  0149: Vite, `seed-admin/frontend/` and `seed-auth/frontend/`, separate
+  apps, TanStack Query + Zustand + shadcn/ui + Tailwind CSS v4).
+- player session token TTL, reconnect-window integration with LISS-0122,
+  and whether seed_auth/seed_admin share a Postgres-backed session-store
+  component (ADR 0018 follow-ups; tracked as LISS-0146/0147). `seed_auth`'s
+  own implementation language is also still open (LISS-0146).
+- player progression (level/item) domain model and persistence schema
+  (LISS-0148, not designed yet).
+- production client platform (LISS-0064): Unreal Engine is proposed in
+  ADR 0021, not yet approved (version, scripting approach, and repository
+  placement still open). A separate Godot 4.7/GDScript MVP (ADR 0020, also
+  not yet approved) is a throwaway validation client, not the production
+  choice.
 - snapshot/event wire encoding extension.
 - deployment and observability stack.
+
+Retired by ADR 0018 (no longer open — player identity is resolved by
+registered accounts, not these): identity-alias persistence schema/driver
+selection detail, and the wall-clock-to-WorldTick retention mapping (ADR
+0016 decisions 2/... — ADR 0016 itself remains as a historical record, see
+LISS-0150 for the formal deprecation Issue).

@@ -17,7 +17,8 @@ enum class CommandType {
     Chat = 3,
     Attack = 4,
     CastSpell = 5,
-    Disconnect = 6
+    Disconnect = 6,
+    RequestSnapshot = 7
 };
 
 struct NetworkCommand {
@@ -28,6 +29,7 @@ struct NetworkCommand {
 };
 
 [[nodiscard]] bool validateCommand(const NetworkCommand& command, std::string& error);
+[[nodiscard]] NetworkCommand makeRequestSnapshotCommand(int64_t sessionId);
 
 }
 

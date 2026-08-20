@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ClientInputSequence.h"
 #include "Connection.h"
 #include "ClientSession.h"
 #include "NetworkCommand.h"
@@ -27,6 +28,8 @@ struct ServerFrameResult {
     uint64_t worldTick;
     size_t networkOperations;
     std::vector<WorldInput> inputs;
+    size_t newAuthenticatedSessions;
+    size_t snapshotRequests;
 };
 
 class ServerRuntime {
@@ -37,6 +40,7 @@ public:
     bool start(uint16_t port);
     bool stop();
     bool isRunning() const;
+    uint16_t listeningPort() const;
     AcceptStatus acceptPendingClient(uint64_t& connectionId, std::string& error);
     ClientSession* clientSession(uint64_t connectionId);
     size_t connectedClientCount() const;
@@ -46,6 +50,9 @@ public:
     size_t processClientFrames(ServerCommandDispatcher& dispatcher, std::string& error);
     ServerFrameResult processFrame(ServerCommandDispatcher& dispatcher, std::string& error);
     size_t publishWorldUpdates(const std::vector<network::WorldUpdate>& updates,
+                               std::string& error);
+    size_t publishWorldUpdates(const std::vector<network::WorldUpdate>& updates,
+                               const std::vector<MovementAck>& ownerAcks,
                                std::string& error);
     bool submit(const network::NetworkCommand& command);
     bool submitAction(const Action& action);
@@ -74,6 +81,7 @@ private:
     WorldInputQueue inputQueue;
     WorldInputTick inputTick;
     std::deque<PendingCommand> pendingCommands;
+    size_t newAuthenticatedSessions;
 };
 
 }
