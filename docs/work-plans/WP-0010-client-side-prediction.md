@@ -16,7 +16,7 @@ movement without weakening the authoritative 20 Hz simulation.
 | Issue | Status | Initial size | Current size | Planning record | Depends on | Blocks | Branch |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | LISS-0152 | done | L | L | AIP-0152-001 | LISS-0121, LISS-0125 | LISS-0153 | feature/liss-0152-client-side-prediction |
-| LISS-0153 | in_progress | M | M | AIP-0153-001 | LISS-0152 | - | feature/liss-0152-client-side-prediction |
+| LISS-0153 | proposed | M | M | AIP-0153-001 | LISS-0152 | - | feature/liss-0152-client-side-prediction |
 | LISS-0154 | review | M | M | AIP-0154-001 | LISS-0121, LISS-0122, LISS-0152 | LISS-0128 | feature/liss-0152-client-side-prediction |
 | LISS-0128 | in_progress | L | M (I/O slice) | AIP-0128-001 | LISS-0121, LISS-0122, LISS-0154 | LISS-0129 | feature/liss-0152-client-side-prediction |
 
@@ -29,9 +29,10 @@ movement without weakening the authoritative 20 Hz simulation.
 
 ## Current Next Issue
 
-- Issue: **LISS-0153** durable spawn policy (case/Unicode name fold, auth-side
-  name ledger, zone spawn, operator UI/permissions) pending Adjudicator
-  decision, then remaining **LISS-0128** (timeout/ops/UI).
+- Issue: **LISS-0153** durable spawn policy — **proposed**; decided subset
+  already on branch; Adjudicator answers needed for case/Unicode fold, zone
+  spawn, auth-side name ledger, operator UI/permissions before closing issue.
+  Then remaining **LISS-0128** (timeout/ops/UI).
 - Reason LISS-0152 is done: Adjudicator approved Phase 3 refactor and
   `review` → `done` on 2026-08-20. Full `seed_tests` green after refactor;
   see `docs/collaboration/traces/2026-08-20-liss-0152-completion-handoff.md`.

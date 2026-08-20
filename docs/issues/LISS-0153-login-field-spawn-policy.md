@@ -4,8 +4,8 @@
 
 - Local issue ID: LISS-0153
 - GitHub issue:
-- Status: in_progress
-- Phase: phase-2-green
+- Status: proposed
+- Phase: awaiting-adjudicator-decisions
 - Type: feature + world
 - Priority: high
 - Initial planning size: M
@@ -75,6 +75,35 @@ Login 成功後の Field 配置を、設定可能な初期 pose/HP/MP と 4 役�
   claimed-name レジストリ。
 - 運営改名は旧名をレジストリから外し、新名を独占する。プレイヤー改名は不可。
   空・空白のみは不可。一意は trim 後完全一致。ID は不変。
+
+## Implemented on branch (decided items only)
+
+以下は Adjudicator 既決（2026-08-19 / 2026-08-20）に基づき
+`feature/liss-0152-client-side-prediction` に実装済み。本 Issue の
+**proposed** 範囲は未決ポリシーと恒久化のみ。
+
+- `LoginFieldSpawnSettings` による初期 pose / HP / MP（未設定時 `(0,0,0)` / 10,10、max 1024）
+- 4 役割 ID 分離（認証 PlayerId / session / ゲーム内ID / PlayerName）
+- 運営のみ PlayerName 付与（spawn 設定 / operator setter / テスト stub）
+- trim 後 empty 拒否、trim 後完全一致の一意（case fold なし）
+- claimed-name レジストリ（logout / Field unset 後も解放しない）
+- 運営改名で旧名 release → 新名 claim
+- 再接続: 新 session を同一 auth + ゲーム内ID 実体へ rebind
+- Disconnect: session 除去・公開 pose 除去、実体は unset しない
+- リモート追跡キー = ゲーム内ID（`RemotePlayerPoseStore`）
+- E2E: disconnect → reconnect で RequestSnapshot がサーバーに届く
+  （`loopback_disconnect_ends_session_and_resets_client_auth`）
+
+## Adjudicator questions (blocking durable policy)
+
+1. **PlayerName 正規化:** 大小文字折りたたみ（case-insensitive 一意）を
+   採用するか。Unicode 正規化（NFC/NFKC 等）の要否。
+2. **スポーン位置:** ゾーン別 spawn、ログアウト地点復帰、衝突回避スポーンの
+   優先順位と設定 surface（`LoginFieldSpawnSettings` 拡張 vs 別 policy）。
+3. **auth 側名前帳票:** LISS-0146–0150 の Postgres 永続と claimed-name
+   レジストリの同期契約（いつ auth が正、いつ world が正、移行手順）。
+4. **運営 UI / 権限:** operator rename の delivery 面（CLI のみ / admin API /
+   権限モデル）。早期関数レベル setter からの移行条件。
 
 ## Ambiguities
 

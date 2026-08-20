@@ -357,6 +357,7 @@ void loopback_disconnect_ends_session_and_resets_client_auth() {
     assert(transport.sessionId() == 0);
     assert(!transport.isOpen());
     assert(transport.linkState() == client::TransportLinkState::Disconnected);
+    assert(transport.snapshotRequested());
     assert(!registry.isActive(sessionId));
     assert(!field->hasPlayer(sessionId));
     assert(field->hasPlayer(gameplayId));
@@ -365,16 +366,26 @@ void loopback_disconnect_ends_session_and_resets_client_auth() {
     assert(!server::FieldSessionPresence::operatorSetPlayerName(9002, "Hero"));
 
     transport.beginReconnect();
+    assert(transport.snapshotRequested());
     assert(transport.connectTcp("127.0.0.1", portNum, error));
     assert(transport.enqueueLogin("liss0152-disconnect", error));
     assert(transport.flushOutbound(error) == server::SendStatus::Sent);
     loggedIn = false;
-    for (int i = 0; i < 32 && !loggedIn; ++i) {
+    size_t snapshotRequestsSeen = 0;
+    for (int i = 0; i < 32; ++i) {
         serverTick(runtime, dispatcher, applier, frame);
+        snapshotRequestsSeen += frame.snapshotRequests;
         assert(transport.pump(error));
-        loggedIn = transport.authState() == client::TransportAuthState::LoggedIn;
+        if (transport.authState() == client::TransportAuthState::LoggedIn) {
+            loggedIn = true;
+        }
+        if (loggedIn && !transport.snapshotRequested() && snapshotRequestsSeen >= 1) {
+            break;
+        }
     }
     assert(loggedIn);
+    assert(snapshotRequestsSeen >= 1);
+    assert(!transport.snapshotRequested());
     const Player* rebound = field->findPlayer(transport.sessionId());
     assert(rebound != 0);
     assert(rebound->getPlayerId() == gameplayId);
