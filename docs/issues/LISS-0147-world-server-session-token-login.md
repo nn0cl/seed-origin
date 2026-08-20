@@ -1,8 +1,8 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
-- Status: review
-- Phase: phase-3-refactor
-- Related branch: `feature/liss-0147-challenge-session-login`
+- Status: in_progress
+- Phase: phase-1-red-wire
+- Related branch: `feature/liss-0147-login-wire`
 - Priority: high
 - Depends on: LISS-0146
 - Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
@@ -110,6 +110,22 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 - Ports を `ChallengeSessionPorts.h` へ分離（サービス契約とポート境界の分離）
 - 結果構築と TTL 計算を private ヘルパーへ抽出（挙動不変）
 - Assertions / public API は変更なし
+
+## UseCase slice completion（2026-08-20）
+
+- PR #4 merged to main (`4436d66`). UseCase claim/keep-alive/validate is on main.
+- Remaining LISS-0147 work is the Login Command wire + gameplay session binder
+  + eventual anonymous login removal / Postgres adapters.
+
+## Phase 1 Red — Login wire（2026-08-20）
+
+- Contract: `include/seed/ChallengeLoginCommandHandler.h`
+- Tests: `tests/ChallengeLoginCommandHandlerTest.cpp`（3 scenarios）
+- Covered: Login payload = ChallengeKey; invalid challenge reject; client
+  internalId rejected before claim
+- Expected Red: link failure（handler 未実装）
+- Out of this Red: ServerCommandDispatcher swap, Postgres adapters, deleting
+  anonymous `LoginCommandHandler` / `SessionRegistry::login(claimedId)`
 
 ## Remaining decisions
 

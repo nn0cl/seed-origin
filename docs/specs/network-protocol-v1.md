@@ -22,16 +22,13 @@ Loginだけsession ID 0を許可し、それ以外はサーバーが発行した
 
 TCPの部分read/write、切断、タイムアウト、再送はConnection/transport adapterで処理し、codecは完全なframe単位だけを受け取る。codecはWorld状態を変更しない。
 
-## Login payloadの意味変更予定（2026-07-18、未実装）
+## Login payloadの意味変更（LISS-0147）
 
-現在Loginのpayloadは自己申告ニックネーム（自由記述文字列）として扱われる
-（`SessionRegistry::isValidClaimedId`が文字種・長さのみ検証し、資格情報の
-検証は行わない）。ADR 0023承認後の実装では、Loginのpayloadはネイティブ
-クライアントが`seed_auth`から取得した**チャレンジキー**に置き換える。
-`seed_server`は検証後に30分TTLの正規セッションキーを発行し、以降の通信で
-使用する。フレームレイアウト自体（16バイトヘッダ+payload）は変更しないが、
-payloadの内容とサーバー側の検証ロジックが置き換わる。LISS-0147がmainへ
-着地するまでは、現在の実装（自己申告ニックネーム）を正とする。
+Loginのpayloadはネイティブクライアントが`seed_auth`から取得した**チャレンジキー**
+とする（フレームレイアウトは変更しない）。`seed_server`はチャレンジをclaimし、
+30分TTLの正規セッションキーを発行する。UseCase（`ChallengeSessionLoginService`）
+は main 済み。Login Command への配線は LISS-0147 wire スライス
+（`ChallengeLoginCommandHandler`）で進める。匿名ニックネーム受理は配線完了後に削除する。
 
 ## Move payload (local-player prediction)
 

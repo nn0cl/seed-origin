@@ -1,8 +1,8 @@
 # LISS-0146: `users`テーブルと`seed_auth`（登録・ネイティブログイン・Postgresセッション）
 
-- Status: review
-- Phase: phase-2-green-verified
-- Related branch: `feature/liss-0146-seed-auth`
+- Status: done
+- Phase: usecase-slice-complete
+- Related branch: merged via PR #4 (`feature/liss-0147-challenge-session-login`)
 - Priority: high
 - Depends on: なし（ADR 0018が起点）
 - Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
@@ -160,6 +160,12 @@ JAVA_HOME=<jdk-23-or-newer> ./gradlew test --no-daemon
 
 - Dependency adoption: Kotlin `2.0.21` + Gradle Wrapper 実行確認済み。
   脆弱性監査の継続は Adapter 導入時に再確認する。
+
+## UseCase slice done（2026-08-20）
+
+- Merged via PR #4. Application UseCase + Gradle verification are on main.
+- Remaining outside this Issue completion: Spring HTTP, MyBatis, PostgreSQL
+  Adapter, real `pgcrypto`（follow-up Issue or later LISS-0146 adapter slice）.
 
 ## 設計契約（Phase 1 Redの入力）
 
