@@ -1,7 +1,7 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
 - Status: review
-- Phase: phase-3-refactor-runtime
+- Phase: runtime-slice-complete
 - Related branch: `feature/liss-0147-runtime-challenge-login`
 - Priority: high
 - Depends on: LISS-0146
@@ -191,6 +191,12 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 ## Phase 3 Refactor — Runtime LoginResponse session key（2026-08-20）
 
 - `loginResponseFromDispatch` を抽出（挙動不変）
+
+## Runtime slice Adjudicator approval（2026-08-20）
+
+- Phase 1–3 Runtime LoginResponse session key approved.
+- Remaining for full LISS-0147: ServerMain production bind, Postgres adapters,
+  anonymous `LoginCommandHandler` / `SessionRegistry::login(claimedId)` removal.
 
 ## Remaining decisions
 
