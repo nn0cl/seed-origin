@@ -32,9 +32,19 @@ mainへ着地した後、匿名ログイン・ID名寄せ関連の資産を正�
 - `identity_aliases`テーブルのPostgres上のデータ移行・削除方針
   （既存データがあれば）を決める。
 
+## コード削除タイミングとデータ移行（2026-07-18確定、ADR 0023決定5・6）
+
+- `IdentityAliasStore`系コードは、`seed_auth`（LISS-0146）と
+  `seed_admin`のKotlin移行（ADR 0019）の実装完了・検証後に削除する
+  （未使用のまま無期限に残さない）。
+- 本番データは存在しないため、`identity_aliases`のデータ移行・削除方針の
+  検討は不要（本番運用が始まった場合は別途再検討）。
+
 ## Remaining decisions
 
-- コード削除の是非、既存`identity_aliases`データの扱いは未決定。
+- 前提（削除タイミング、データ移行不要）は確定済み。他のissue
+  （LISS-0146/0147/0149）の検討が進んだ後に、本Issue自体の着手可否を
+  改めて検討する（Adjudicator指示、2026-07-18）。
 
 ## English
 

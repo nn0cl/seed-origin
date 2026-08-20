@@ -3,11 +3,12 @@
 ## 目的
 
 ADR 0018に基づき、匿名ログイン＋ID名寄せ（LISS-0123／LISS-0130／ADR 0016）を
-登録制ユーザー認証（`users`テーブル、Postgres裏付けの`player_sessions`、
+登録制ユーザー認証（`users`テーブル、Postgres裏付けの`player_challenges`と
+`player_sessions`、
 `seed_auth`サービス）へ置き換える。本WorkPlanはその移行の依存グラフを
 canonicalに定義する。
 
-## 前提（2026-07-18時点で確定済み）
+## 前提（ADR 0023 Open Questions解決に基づく最新版）
 
 - 管理者UI（LISS-0145）と同じくReact SPAをフロントエンドに使う。
 - ワールドサーバー（`seed_server`）は複数インスタンス展開を想定するため、
@@ -16,16 +17,25 @@ canonicalに定義する。
   両者と別インスタンスとする。
 - パスワード検証は`pgcrypto`（ADR 0017で確立したパターン）を再利用し、
   新規C++暗号ライブラリは追加しない。
+- `seed_auth`の実装言語はKotlin + Spring Boot（`seed_admin`と同一
+  アーキテクチャ、ADR 0023決定1）。
+- チャレンジキーはネイティブクライアントが`seed_auth`から取得し、TTLは
+  2分の単回利用とする。
+- `seed_server`が検証後に発行する正規セッションキーのTTLは30分とし、
+  クライアント起点のKeep-Aliveで更新・延長する。
+- ゲームプレイログインはネイティブクライアント内で完結し、LISS-0149の
+  SPAはアカウント登録・管理・パスワードリセットに限定する。
+- 詳細フローは`docs/specs/player-authentication-flow-v1.md`を参照。
 
 ## Canonical実行順
 
 | 順序 | Issue | 内容 | 状態 |
 | --- | --- | --- | --- |
 | 0 | ADR 0018 | 登録制認証アーキテクチャ決定 | accepted |
-| 1 | LISS-0146 | `users`テーブル・`seed_auth`（登録・ログイン・Postgresセッション） | proposed |
-| 2 | LISS-0147 | ワールドサーバーのセッショントークン検証ログインへの置換 | proposed（depends: 0146） |
-| 3 | LISS-0148 | プレイヤー特性・アイテムのPostgres永続化スキーマ | proposed（depends: 0146） |
-| 4 | LISS-0149 | 登録・ログインReact SPA | proposed（depends: 0146） |
+| 1 | LISS-0146 | `users`・`player_challenges`・`player_sessions`・`seed_auth` | review（UseCase Green + Gradle verified 2026-08-20; HTTP/MyBatis/Postgres Adapter は後続） |
+| 2 | LISS-0147 | チャレンジclaim・正規セッション発行・検証・更新 | phase-1-red（depends: 0146） |
+| 3 | LISS-0148 | クラシックMMORPG型プレイヤープログレッション永続化 | phase-1-red（depends: 0146） |
+| 4 | LISS-0149 | 登録・アカウント管理用React SPA（ゲームログインなし） | phase-1-red（depends: 0146） |
 | 5 | LISS-0150 | LISS-0123／LISS-0130／ADR 0016の廃止処理 | proposed（depends: 0147） |
 
 ## 廃止対象の扱い
@@ -48,7 +58,8 @@ canonicalに定義する。
 
 Canonical execution plan for replacing anonymous login + alias
 reconciliation (LISS-0123/LISS-0130/ADR 0016) with registered-user
-authentication (ADR 0018): a `users` table, Postgres-backed
-`player_sessions`, and a new `seed_auth` service, followed by the world
-server's login-flow migration, player data persistence, a React
-registration/login SPA, and formal deprecation of the superseded pieces.
+authentication (ADR 0018): `users`, `player_challenges`, and
+`player_sessions` tables plus a new `seed_auth` service, followed by the
+world server's challenge/session migration, player data persistence, an
+account-management React SPA without game-play login, and formal deprecation
+of the superseded pieces.

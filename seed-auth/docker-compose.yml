@@ -1,0 +1,9 @@
+# LISS-0146: seed_auth joins the shared Docker network with db/ and seed-admin.
+# Create once: docker network create seed-network
+#
+# The Spring Boot HTTP process is added when the delivery adapter lands.
+# This file reserves network membership so Compose layouts stay aligned.
+
+networks:
+  seed-network:
+    external: true

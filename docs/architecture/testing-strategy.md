@@ -13,7 +13,11 @@ Purpose:
 
 Placement:
 
-- `tests/` with CTest registration in `CMakeLists.txt`.
+- C++ core/server and C++ adapter acceptance tests: `tests/` with CTest
+  registration in the root `CMakeLists.txt`.
+- Kotlin/Spring Boot service acceptance tests: under the service's
+  `backend/src/test/kotlin/` tree and executed by its Gradle test task
+  (ADR 0024). They are not added to the C++ `seed_tests` target.
 - Client acceptance tests will live under `client/tests/` after LISS-0064.
 - E2E tests only after a runnable shell/deployment exists.
 
@@ -75,6 +79,18 @@ Rules:
 - The client UI test framework is deferred to LISS-0064.
 - mock the shared transport/API client boundary.
 - do not mock random request strings inside components.
+
+### Service Test Boundaries
+
+Each service uses the test runner and test source layout of its implementation
+language:
+
+- Kotlin/Spring Boot services use Kotlin/JUnit tests under
+  `backend/src/test/kotlin/` and Gradle tasks.
+- Service unit and use-case tests mock ports and do not require PostgreSQL,
+  HTTP servers, or Docker.
+- Service adapter integration tests remain separate and require explicit
+  approval; they are not part of Phase 1 Red core behavior.
 
 ### E2E Tests
 

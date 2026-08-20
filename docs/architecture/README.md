@@ -110,6 +110,15 @@ through the versioned network protocol rather than depend on World internals.
 - `adr/0022-restore-per-issue-branching.md` (supersedes ADR 0013's
   branching/push decision only; ADR 0013's Adjudicator/Developer
   role-boundary decision remains in effect)
+- `adr/0023-player-auth-session-flow-details.md` (registered player session
+  lifecycle and native-client game-play login)
+- `adr/0024-language-specific-test-layouts.md` (C++ CTest and Kotlin Gradle
+  test boundaries)
+
+`adr/0023-player-auth-session-flow-details.md` is Accepted and resolves ADR
+0018's deferred follow-ups: native-client game-play login, two-stage key
+lifecycle, 30-minute renewable player sessions, and the LISS-0148 progression
+constraints.
 
 ## Remaining Technology Evaluation
 
@@ -119,12 +128,12 @@ Technology choices still open for ADR decision:
   Nginx); build tooling and directory placement are decided (LISS-0145/
   0149: Vite, `seed-admin/frontend/` and `seed-auth/frontend/`, separate
   apps, TanStack Query + Zustand + shadcn/ui + Tailwind CSS v4).
-- player session token TTL, reconnect-window integration with LISS-0122,
-  and whether seed_auth/seed_admin share a Postgres-backed session-store
-  component (ADR 0018 follow-ups; tracked as LISS-0146/0147). `seed_auth`'s
-  own implementation language is also still open (LISS-0146).
-- player progression (level/item) domain model and persistence schema
-  (LISS-0148, not designed yet).
+- the exact Keep-Alive endpoint and shared session-store component between
+  `seed_auth`/`seed_server` remain implementation details for LISS-0146/0147;
+  the lifecycle policy itself is accepted (challenge key 1–2 minutes,
+  player session key 30 minutes and renewable).
+- player progression schema details (LISS-0148) remain to be designed within
+  the accepted classic MMORPG-style constraints.
 - production client platform (LISS-0064): Unreal Engine is proposed in
   ADR 0021, not yet approved (version, scripting approach, and repository
   placement still open). A separate Godot 4.7/GDScript MVP (ADR 0020, also

@@ -26,12 +26,12 @@ TCPの部分read/write、切断、タイムアウト、再送はConnection/trans
 
 現在Loginのpayloadは自己申告ニックネーム（自由記述文字列）として扱われる
 （`SessionRegistry::isValidClaimedId`が文字種・長さのみ検証し、資格情報の
-検証は行わない）。ADR 0018（登録制プレイヤー認証）・LISS-0147により、
-Loginのpayloadは**`seed_auth`が発行した一回限りのセッションキー**に
-意味が変わる予定。フレームレイアウト自体（16バイトヘッダ+payload）は
-変更しないが、payloadの内容とサーバー側の検証ロジックが置き換わる。
-LISS-0147がmainへ着地するまでは、この節は将来の変更点の記録であり、
-現在の実装（自己申告ニックネーム）を正とする。
+検証は行わない）。ADR 0023承認後の実装では、Loginのpayloadはネイティブ
+クライアントが`seed_auth`から取得した**チャレンジキー**に置き換える。
+`seed_server`は検証後に30分TTLの正規セッションキーを発行し、以降の通信で
+使用する。フレームレイアウト自体（16バイトヘッダ+payload）は変更しないが、
+payloadの内容とサーバー側の検証ロジックが置き換わる。LISS-0147がmainへ
+着地するまでは、現在の実装（自己申告ニックネーム）を正とする。
 
 ## Move payload (local-player prediction)
 
