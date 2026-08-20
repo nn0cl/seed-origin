@@ -103,7 +103,8 @@ if(LIBPQXX_FOUND)
     message(STATUS "libpqxx found: building PostgresIdentityAliasStore adapter")
 
     add_library(seed_postgres src/PostgresIdentityAliasStore.cpp src/AdminAuthStore.cpp
-        src/PostgresPlayerSessionStore.cpp src/PostgresChallengeServerBootstrap.cpp)
+        src/PostgresPlayerSessionStore.cpp src/PostgresChallengeServerBootstrap.cpp
+        src/PostgresPlayerProgressionStore.cpp)
     target_include_directories(seed_postgres PUBLIC include/seed)
     target_link_libraries(seed_postgres PUBLIC seed_core)
     target_include_directories(seed_postgres PUBLIC ${LIBPQXX_INCLUDE_DIRS})
@@ -119,6 +120,7 @@ if(LIBPQXX_FOUND)
         tests/PostgresIdentityAliasStoreTest.cpp
         tests/PostgresPlayerSessionStoreTest.cpp
         tests/PostgresChallengeServerBootstrapTest.cpp
+        tests/PostgresPlayerProgressionStoreTest.cpp
     )
     target_link_libraries(seed_postgres_tests PRIVATE seed_postgres)
     add_test(NAME seed_postgres_tests COMMAND seed_postgres_tests)

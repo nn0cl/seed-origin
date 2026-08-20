@@ -1,15 +1,18 @@
 # LISS-0148: プレイヤー特性・アイテムのPostgres永続化スキーマ
 
-- Status: proposed
-- Phase: phase-1-red
+- Status: in_progress
+- Phase: phase-2-green
+- Related branch: `feature/liss-0148-player-progression-persistence`
 - Priority: medium
-- Depends on: LISS-0146
-- Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
+- Depends on: LISS-0146（done）
+- Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`,
+  `docs/architecture/adr/0023-player-auth-session-flow-details.md`
+- Spec: `docs/specs/player-progression-v1.md`
 
 ## 目的
 
 `user_id`に紐づくプレイヤーのレベル・経験値・アイテム・所持品等を
-PostgreSQLへ永続化するスキーマと読み書きアダプタを設計する。
+PostgreSQLへ永続化するスキーマと読み書きアダプタを追加する。
 
 ## 現状
 
@@ -26,28 +29,49 @@ PostgreSQLへ永続化するスキーマと読み書きアダプタを設計す�
 調整値はハードコードせず、`seed_admin`から編集できるマスターデータとして
 プレイヤー個別状態から分離する。
 
-## Phase 1 設計着手
+## Adjudicator decisions（2026-08-20）
 
-ベース／職業EXPの独立更新、装備インスタンスのUUID・耐久値・装備EXP・ソケット、
-プレイヤーのスタミナ、管理可能なマスターデータを対象にRedテストと受入シナリオ
-を設計する。
+一般的構成・推奨で確定:
 
-## 設計課題（Must not guess）
+1. **永続化頻度**: イベント駆動（経験値取得、アイテム消費・装備変更、
+   スタミナ更新など）。定期フルスナップショットや logout のみではない。
+2. **高頻度ランタイム状態**: HP / MP / 位置 / Buff は **メモリのみ**
+   （毎 tick 永続化しない）。再接続は既存セッション/スナップショット経路。
+3. **実装境界**: C++ `seed_server` の Port + `seed_postgres` Adapter。
+4. **Phase 1 スライス**: 受入シナリオ + Postgres Adapter Red（migration /
+   実装は Green）。
 
-- レベル・経験値・アイテムの詳細な項目定義。
-- 高頻度で変わるHP/MP/位置と、低頻度で変わるレベル/アイテムを分離して
-  永続化するか（毎tick全部書き込むのは非現実的）。
-- `seed_admin`から編集可能なチューニング設定テーブルと、プレイヤー個別の
-  進行状態テーブルを分離するスキーマ設計。
-- ログアウト時のみ保存するのか、定期的にスナップショット保存するのか。
+## 想定スキーマ（Green で migration 化）
 
-## Remaining decisions
+プレイヤー状態:
 
-- ドメインモデルの大方針と必須永続化要件は確定済み。Phase 1 Redのテスト
-  レビュー後にPhase 2 Greenへ進む。
+- `player_characters` — `user_id` FK、名前、base/job level+exp、stamina、job_class_id
+- `equipment_instances` — UUID、character_id、item_template_id、durability、equipment_exp
+- `equipment_sockets` — equipment_instance_id、socket_index、socketed_item_instance_id
+
+マスター:
+
+- `master_base_exp_curve` / `master_job_exp_curve` — level → exp_to_next
+- `master_item_templates` — id、max_durability、socket_count 等
+
+## Phase 1 Red（2026-08-20）
+
+- Spec: `docs/specs/player-progression-v1.md`
+- Tests: `tests/PostgresPlayerProgressionStoreTest.cpp`（`seed_postgres_tests`）
+- Covered: base/job EXP 独立更新、装備インスタンス、ソケット、スタミナ、
+  マスター EXP 読み取り
+- Expected Red: compile failure（`PostgresPlayerProgressionStore` 未実装）
+- Out of Red: migration `0004_*`、Adapter 実装、Field/Player ドメイン拡張（後続）
+
+## Phase 2 Green（2026-08-20）
+
+- Migration: `db/migrations/0004_player_progression.sql`
+- Adapter: `PostgresPlayerProgressionStore`（create/load character、base/job EXP、
+  stamina、equipment instance/socket、master EXP/item template helpers）
+- Verification: progression adapter 6 scenarios PASS with `SEED_IDENTITY_DB_URL`
+  （full `seed_postgres_tests` は既存 bootstrap ケースが環境依存で assert しうる）
 
 ## English
 
-Design intake for persisting player progression (level, items) in
-PostgreSQL keyed by user_id. The domain model itself does not exist yet;
-this Issue starts from design, not implementation.
+Persist classic-MMORPG player progression in PostgreSQL keyed by user/character,
+with event-driven writes and master-data separation (ADR 0023 decision 7).
