@@ -4,8 +4,8 @@
 
 - Local issue ID: LISS-0152
 - GitHub issue:
-- Status: in_progress
-- Phase: phase-2-green
+- Status: review
+- Phase: phase-2-green-complete
 - Type: feature + netcode
 - Priority: high
 - Initial planning size: L
@@ -135,17 +135,20 @@ on `feature/ue-client-mockup-delivery-brief` were not touched.
 
 ## Verification
 
-- Owner-only ack subset: EXIT 0 via isolated driver linking the rebuilt
-  `seed_tests` objects (`personalizes_owner_copy_without_changing_sequence`,
-  `acks_monotonic_client_input_sequences`,
-  `ignores_foreign_session_movement_ack`,
-  `reconciles_from_owner_copy_of_public_movement`,
-  `other_session_keeps_sequence_without_owner_ack`, plus prior CSP tests).
-- Full vs delta subset plus login Field placement: new
-  `field_session_presence_tests` cases pass (join Snapshot lists self at
-  origin and idle others; login does not emit `movement=`; logout unsets).
-- Full `seed_tests` still aborts later on pre-existing
-  `queues_attack_and_spell_intents` (`spell-1|20,fire,120` parse). Not
-  introduced by this change. Earlier note about
-  `dispatches_pending_commands_in_fifo_order` no longer the first abort on
-  this branch.
+- 2026-08-20: Full `./build/seed_tests` in worktree
+  `/Users/nn0cl/Documents/git/seed-origin-prediction` — **EXIT 0** (entire
+  suite green, including combat spell enqueue cases previously noted as
+  aborting on this branch).
+- Owner-only ack, full-vs-delta, login Field placement, RequestSnapshot,
+  Disconnect lifecycle, reconnect I/O: covered by Gherkin-mapped CTest cases
+  (`ClientPredictionSyncTest`, `ClientTransportShellTest`,
+  `FieldSessionPresenceTest`, `RequestSnapshotCommandTest`,
+  `DisconnectCommandHandlerTest`, `RemotePlayerPoseStoreTest`,
+  `LocalMovementPredictorTest`, and related WorldFrame tests).
+- Production server tick loop (`src/ServerMain.cpp`) publishes owner acks and
+  coalesced join/reconnect Snapshots on the shared WorldUpdate sequence.
+- Client prediction/render separation: `LocalMovementPredictor` and
+  `RemotePlayerPoseStore` implement 150 ms smooth / 5.0 snap thresholds
+  (`PREDICTION_CORRECTION_SECONDS`, `PREDICTION_SNAP_DISTANCE`).
+- Completion handoff:
+  `docs/collaboration/traces/2026-08-20-liss-0152-completion-handoff.md`.
