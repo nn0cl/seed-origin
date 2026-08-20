@@ -1,4 +1,4 @@
-package com.seed.auth.adapter.postgres
+package com.seed.auth.adapter.mybatis
 
 import com.seed.auth.domain.ChallengeKey
 import com.seed.auth.domain.PlayerSessionKey
@@ -13,19 +13,22 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
- * LISS-0151 Phase 1 Red — Postgres + pgcrypto adapters for seed_auth ports.
+ * LISS-0156 Phase 1 Red — MyBatis + pgcrypto port adapters for seed_auth.
  *
- * Skips when SEED_IDENTITY_DB_URL is unset (same convention as C++ postgres tests).
- * Expected Red before Green: unresolved references to adapter types.
+ * Same acceptance scenarios as LISS-0151 Postgres JDBC adapters, but through
+ * MyBatis-backed types. Skips when SEED_IDENTITY_DB_URL is unset.
+ *
+ * Expected Red before Green: unresolved references to MyBatis adapter types
+ * (and Boot 4.1 / MyBatis 4.1 wiring not yet applied).
  */
-class PostgresAuthAdapterTest {
+class MyBatisAuthAdapterTest {
     @Test
     fun saves_user_with_pgcrypto_hash_and_finds_by_username() {
         assumeEnv()
-        val username = "adapter-user-${UUID.randomUUID()}"
+        val username = "mybatis-user-${UUID.randomUUID()}"
         val password = "secret-password"
-        val codec = PgcryptoPasswordCodec.fromEnvironment()
-        val users = PostgresUserStore.fromEnvironment()
+        val codec = MyBatisPasswordCodec.fromEnvironment()
+        val users = MyBatisUserStore.fromEnvironment()
 
         assertFalse(users.exists(username))
         users.save(username, codec.hash(password))
@@ -42,13 +45,13 @@ class PostgresAuthAdapterTest {
     @Test
     fun issues_player_challenge_row() {
         assumeEnv()
-        val username = "challenge-user-${UUID.randomUUID()}"
-        val codec = PgcryptoPasswordCodec.fromEnvironment()
-        val users = PostgresUserStore.fromEnvironment()
+        val username = "mybatis-challenge-${UUID.randomUUID()}"
+        val codec = MyBatisPasswordCodec.fromEnvironment()
+        val users = MyBatisUserStore.fromEnvironment()
         users.save(username, codec.hash("secret"))
         val userId = users.find(username)!!.userId
 
-        val challenges = PostgresPlayerChallengeStore.fromEnvironment()
+        val challenges = MyBatisPlayerChallengeStore.fromEnvironment()
         val key = ChallengeKey("challenge-${UUID.randomUUID()}")
         val expiresAt = Instant.parse("2026-08-20T12:00:00Z")
         challenges.issue(userId, key, expiresAt)
@@ -59,13 +62,13 @@ class PostgresAuthAdapterTest {
     @Test
     fun revoke_marks_player_session_revoked() {
         assumeEnv()
-        val username = "session-user-${UUID.randomUUID()}"
-        val codec = PgcryptoPasswordCodec.fromEnvironment()
-        val users = PostgresUserStore.fromEnvironment()
+        val username = "mybatis-session-${UUID.randomUUID()}"
+        val codec = MyBatisPasswordCodec.fromEnvironment()
+        val users = MyBatisUserStore.fromEnvironment()
         users.save(username, codec.hash("secret"))
         val userId = users.find(username)!!.userId
 
-        val sessions = PostgresPlayerSessionStore.fromEnvironment()
+        val sessions = MyBatisPlayerSessionStore.fromEnvironment()
         val key = PlayerSessionKey("session-${UUID.randomUUID()}")
         sessions.insertActiveForTest(userId, key, Instant.parse("2026-08-20T13:00:00Z"))
         assertTrue(sessions.isActive(key, Instant.parse("2026-08-20T12:00:00Z")))
@@ -78,7 +81,7 @@ class PostgresAuthAdapterTest {
         val url = System.getenv("SEED_IDENTITY_DB_URL")
         assumeTrue(
             !url.isNullOrBlank(),
-            "SEED_IDENTITY_DB_URL not set; skipping Postgres auth adapter test",
+            "SEED_IDENTITY_DB_URL not set; skipping MyBatis auth adapter test",
         )
     }
 }
