@@ -37,7 +37,7 @@ canonicalに定義する。
 | 1.2 | LISS-0155 | `seed_auth` Spring Boot HTTP Adapter（MyBatis 配線） | **done**（PR #18） |
 | 1.3 | LISS-0156 | `seed_auth` MyBatis mapper 置換 + Spring Boot アップグレード | **done**（PR #21；Boot **4.1.0** + MyBatis **4.1.0**） |
 | 2 | LISS-0147 | チャレンジclaim・正規セッション発行・検証・更新 | done（PR #7–#12; last: #12 remove anonymous login） |
-| 3 | LISS-0148 | クラシックMMORPG型プレイヤープログレッション永続化 | phase-1-red（depends: 0146） |
+| 3 | LISS-0148 | クラシックMMORPG型プレイヤープログレッション永続化 | in_progress / phase-2-green（branch `feature/liss-0148-player-progression-persistence`；イベント駆動） |
 | 4 | LISS-0149 | 登録・アカウント管理用React SPA（ゲームログインなし） | phase-1-red（depends: 0146） |
 | 5 | LISS-0150 | LISS-0123／LISS-0130／ADR 0016の廃止処理 | done（PR #14 docs supersession；コード削除は後続） |
 
