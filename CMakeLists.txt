@@ -27,6 +27,7 @@ set(SEED_CORE_SOURCES
     src/FrameAccumulator.cpp
     src/LoginCommandHandler.cpp
     src/ChallengeSessionLogin.cpp
+    src/ChallengeLoginCommandHandler.cpp
     src/DisconnectCommandHandler.cpp
     src/ServerCommandDispatcher.cpp
     src/CommandRateLimiter.cpp
@@ -169,6 +170,7 @@ add_executable(seed_tests
     tests/FrameAccumulatorTest.cpp
     tests/LoginCommandHandlerTest.cpp
     tests/ChallengeSessionLoginTest.cpp
+    tests/ChallengeLoginCommandHandlerTest.cpp
     tests/DisconnectCommandHandlerTest.cpp
     tests/ServerCommandDispatcherTest.cpp
     tests/CommandRateLimiterTest.cpp

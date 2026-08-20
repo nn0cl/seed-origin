@@ -115,6 +115,12 @@ void keep_alive_extends_active_session_by_thirty_minutes();
 void validate_session_accepts_unexpired_key_for_reconnect();
 }
 
+namespace challenge_login_command_handler_tests {
+void accepts_login_when_payload_is_a_valid_challenge_key();
+void rejects_login_when_challenge_is_invalid();
+void rejects_client_supplied_internal_id_on_challenge_login();
+}
+
 namespace server_runtime_tests {
 void rejects_commands_before_start();
 void drains_valid_commands_in_fifo_order();
@@ -411,6 +417,9 @@ int main() {
     challenge_session_login_tests::rejects_already_claimed_challenge();
     challenge_session_login_tests::keep_alive_extends_active_session_by_thirty_minutes();
     challenge_session_login_tests::validate_session_accepts_unexpired_key_for_reconnect();
+    challenge_login_command_handler_tests::accepts_login_when_payload_is_a_valid_challenge_key();
+    challenge_login_command_handler_tests::rejects_login_when_challenge_is_invalid();
+    challenge_login_command_handler_tests::rejects_client_supplied_internal_id_on_challenge_login();
     server_runtime_tests::rejects_commands_before_start();
     server_runtime_tests::drains_valid_commands_in_fifo_order();
     server_runtime_tests::dispatches_pending_commands_in_fifo_order();
