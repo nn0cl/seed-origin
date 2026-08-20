@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "ClientTransportShell.h"
+#include "AuthenticatedPlayerIdPort.h"
 #include "Field.h"
 #include "FieldSessionPresence.h"
 #include "LoginFieldSpawnSettings.h"
@@ -21,6 +22,18 @@
 
 namespace client_transport_shell_tests {
 namespace {
+
+class FixedPlayerIdPort : public server::AuthenticatedPlayerIdPort {
+public:
+    explicit FixedPlayerIdPort(int64_t playerId) : playerId(playerId) {}
+    bool resolvePlayerId(int64_t, const std::string&, int64_t& out) const {
+        out = playerId;
+        return playerId > 0;
+    }
+
+private:
+    int64_t playerId;
+};
 
 void clearFieldPlayers() {
     Field* field = Field::getInstance();
@@ -211,6 +224,120 @@ void loopback_reconnect_sends_request_snapshot_and_applies_server_snapshot() {
     assert(!transport.snapshotRequested());
     assert(transport.worldReceiver().environment().value().hasLocalPlayer ||
            !transport.worldReceiver().environment().value().players.empty());
+    assert(runtime.stop());
+    server::FieldSessionPresence::useSpawnSettings(server::LoginFieldSpawnSettings());
+    server::FieldSessionPresence::usePlayerIdPort(0);
+    clearFieldPlayers();
+}
+
+void disconnect_resets_auth_while_tcp_stays_connected() {
+    int sockets[2] = {-1, -1};
+    assert(::socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) == 0);
+    client::ClientTransportShell transport;
+    std::string error;
+    assert(transport.attachConnectedSocket(sockets[1], error));
+
+    const network::LoginResponse accepted = {
+        network::CURRENT_PROTOCOL_VERSION, network::LoginResponseStatus::Accepted,
+        21, std::string()};
+    std::vector<uint8_t> loginFrame;
+    assert(network::encodeLoginResponseFrame(accepted, loginFrame, error));
+    assert(::send(sockets[0], loginFrame.data(), loginFrame.size(), 0) ==
+           static_cast<ssize_t>(loginFrame.size()));
+    assert(transport.pump(error));
+    assert(transport.authState() == client::TransportAuthState::LoggedIn);
+    assert(transport.sessionId() == 21);
+
+    assert(transport.enqueueDisconnect(error));
+    assert(transport.pump(error));
+    assert(transport.authState() == client::TransportAuthState::Anonymous);
+    assert(transport.sessionId() == 0);
+    assert(transport.isOpen());
+    assert(transport.linkState() == client::TransportLinkState::Connected);
+    assert(transport.snapshotRequested());
+
+    std::vector<uint8_t> received(64, 0);
+    const ssize_t n = ::recv(sockets[0], received.data(), received.size(), 0);
+    assert(n > 0);
+    received.resize(static_cast<size_t>(n));
+    network::NetworkCommand command = {};
+    assert(network::decodeFrame(received, command, error));
+    assert(command.type == network::CommandType::Disconnect);
+    assert(command.sessionId == 21);
+    assert(command.payload.empty());
+    ::close(sockets[0]);
+}
+
+void loopback_disconnect_ends_session_and_resets_client_auth() {
+    clearFieldPlayers();
+    const FixedPlayerIdPort port(9001);
+    server::FieldSessionPresence::usePlayerIdPort(&port);
+    assert(server::FieldSessionPresence::operatorSetPlayerName(9001, "Hero"));
+    session::SessionRegistry registry;
+    server::ServerCommandDispatcher dispatcher(registry);
+    server::ServerRuntime runtime;
+    server::WorldFrameApplier applier(*Field::getInstance());
+    assert(runtime.start(0));
+    server::LoginFieldSpawnSettings spawn;
+    spawn.playerName = "Hero";
+    server::FieldSessionPresence::useSpawnSettings(spawn);
+    const uint16_t portNum = runtime.listeningPort();
+    assert(portNum != 0);
+
+    client::ClientTransportShell transport;
+    std::string error;
+    assert(transport.connectTcp("127.0.0.1", portNum, error));
+    assert(transport.enqueueLogin("liss0152-disconnect", error));
+    assert(transport.flushOutbound(error) == server::SendStatus::Sent);
+
+    server::ServerFrameResult frame = {};
+    bool loggedIn = false;
+    for (int i = 0; i < 8 && !loggedIn; ++i) {
+        serverTick(runtime, dispatcher, applier, frame);
+        assert(transport.pump(error));
+        loggedIn = transport.authState() == client::TransportAuthState::LoggedIn;
+    }
+    assert(loggedIn);
+    const int64_t sessionId = transport.sessionId();
+    Field* field = Field::getInstance();
+    const Player* placed = field->findPlayer(sessionId);
+    assert(placed != 0);
+    const int64_t gameplayId = placed->getPlayerId();
+    assert(placed->getAuthPlayerId() == 9001);
+    assert(!field->publicPlayerPoses().empty());
+
+    assert(transport.enqueueDisconnect(error));
+    assert(transport.pump(error));
+    assert(transport.authState() == client::TransportAuthState::Anonymous);
+    assert(transport.sessionId() == 0);
+    assert(transport.isOpen());
+
+    for (int i = 0; i < 8 && registry.isActive(sessionId); ++i) {
+        serverTick(runtime, dispatcher, applier, frame);
+        assert(transport.pump(error));
+    }
+    assert(!registry.isActive(sessionId));
+    assert(!field->hasPlayer(sessionId));
+    assert(field->hasPlayer(gameplayId));
+    assert(field->findPlayer(gameplayId)->getAuthPlayerId() == 9001);
+    assert(field->publicPlayerPoses().empty());
+    assert(!server::FieldSessionPresence::operatorSetPlayerName(9002, "Hero"));
+
+    assert(transport.enqueueLogin("liss0152-disconnect", error));
+    assert(transport.flushOutbound(error) == server::SendStatus::Sent);
+    loggedIn = false;
+    for (int i = 0; i < 8 && !loggedIn; ++i) {
+        serverTick(runtime, dispatcher, applier, frame);
+        assert(transport.pump(error));
+        loggedIn = transport.authState() == client::TransportAuthState::LoggedIn;
+    }
+    assert(loggedIn);
+    const Player* rebound = field->findPlayer(transport.sessionId());
+    assert(rebound != 0);
+    assert(rebound->getPlayerId() == gameplayId);
+    assert(rebound->getAuthPlayerId() == 9001);
+    assert(rebound->getPlayerName() == "Hero");
+
     assert(runtime.stop());
     server::FieldSessionPresence::useSpawnSettings(server::LoginFieldSpawnSettings());
     server::FieldSessionPresence::usePlayerIdPort(0);

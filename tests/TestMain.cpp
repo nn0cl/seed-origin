@@ -265,6 +265,7 @@ void routes_combat_only_for_an_active_session();
 namespace disconnect_command_handler_tests {
 void ends_active_session_without_unsetting_the_player();
 void rejects_inactive_or_missing_session();
+void rejects_non_empty_disconnect_payload();
 }
 
 namespace command_rate_limiter_tests {
@@ -326,6 +327,8 @@ void after_reconnect_and_login_writes_request_snapshot_on_the_socket();
 void unauthenticated_reconnect_does_not_write_request_snapshot();
 void snapshot_from_peer_clears_request_after_skipped_events();
 void loopback_reconnect_sends_request_snapshot_and_applies_server_snapshot();
+void disconnect_resets_auth_while_tcp_stays_connected();
+void loopback_disconnect_ends_session_and_resets_client_auth();
 }
 
 namespace remote_player_pose_store_tests {
@@ -447,6 +450,8 @@ int main() {
     client_transport_shell_tests::unauthenticated_reconnect_does_not_write_request_snapshot();
     client_transport_shell_tests::snapshot_from_peer_clears_request_after_skipped_events();
     client_transport_shell_tests::loopback_reconnect_sends_request_snapshot_and_applies_server_snapshot();
+    client_transport_shell_tests::disconnect_resets_auth_while_tcp_stays_connected();
+    client_transport_shell_tests::loopback_disconnect_ends_session_and_resets_client_auth();
     combat_command_handler_tests::queues_attack_and_spell_intents();
     combat_command_handler_tests::rejects_malformed_or_oversized_power();
     combat_command_handler_tests::rejects_duplicate_request_id();
@@ -491,6 +496,7 @@ int main() {
     server_command_dispatcher_tests::routes_combat_only_for_an_active_session();
     disconnect_command_handler_tests::ends_active_session_without_unsetting_the_player();
     disconnect_command_handler_tests::rejects_inactive_or_missing_session();
+    disconnect_command_handler_tests::rejects_non_empty_disconnect_payload();
     command_rate_limiter_tests::limits_commands_per_session_and_kind_per_world_frame();
     command_rate_limiter_tests::keeps_sessions_isolated_and_releases_counters();
     movement_command_handler_tests::rejects_malformed_or_unknown_move();

@@ -35,6 +35,7 @@ public:
     bool attachConnectedSocket(int socketFd, std::string& error);
     void beginReconnect();
     bool enqueueLogin(const std::string& claimedId, std::string& error);
+    bool enqueueDisconnect(std::string& error);
     bool enqueueCommand(const network::NetworkCommand& command, std::string& error);
     server::SendStatus flushOutbound(std::string& error);
     bool pump(std::string& error);
@@ -53,6 +54,7 @@ private:
     TransportAuthState auth;
     int64_t localSessionId;
     bool snapshotCommandQueued;
+    bool disconnectQueued;
     server::OutboundFrameQueue outboundFrames;
     ClientInboundDemux inbound;
     ClientWorldUpdateReceiver receiver;
@@ -61,6 +63,7 @@ private:
     bool enqueueRequestSnapshotIfNeeded(std::string& error);
     bool handleInboundFrames(const std::vector<InboundFrame>& frames,
                              std::string& error);
+    void resetAuthAfterDisconnect();
     void markFailed();
 };
 

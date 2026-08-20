@@ -24,14 +24,14 @@ test now that Move is handled.
 ## Omitted
 
 - seed-auth, LISS-0155, zone/logout spawn
-- client-side auth reset after Disconnect (transport still LoggedIn locally)
-- socket close on Disconnect (session ends; TCP may stay open)
 
 ## Adjudicator decisions applied
 
 - Logout/Field unset does not release claimed PlayerName (LISS-0153 / CSP spec).
 - Reconnect rebinds same auth PlayerId entity (existing presence tests).
 - Inactive Disconnect rejects with explicit error (no silent no-op).
+- Client transport resets `auth` to Anonymous after Disconnect is flushed; TCP stays open.
+- Disconnect and RequestSnapshot reject non-empty payload (`validateCommand`).
 
 ## Verification
 
@@ -39,6 +39,6 @@ Full `seed_tests` in `seed-origin-prediction/build`.
 
 ## Open decisions
 
-- Should client transport reset `auth` to Anonymous after a successful server
-  Disconnect without closing the socket?
-- Should Disconnect payload non-empty be rejected explicitly?
+- Should Disconnect explicitly close the TCP connection, or remain session-only end?
+  Current behavior: session ends via lifecycle unbind; socket stays open (matches
+  `beginReconnect` / re-login on same connection).

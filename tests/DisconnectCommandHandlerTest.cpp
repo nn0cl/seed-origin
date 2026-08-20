@@ -95,4 +95,16 @@ void rejects_inactive_or_missing_session() {
     assert(invalid.error == "command requires an active session id");
 }
 
+void rejects_non_empty_disconnect_payload() {
+    session::SessionRegistry registry;
+    const session::SessionInfo session = registry.login("alice");
+    server::DisconnectCommandHandler handler(registry);
+    const network::NetworkCommand command = {
+        network::CURRENT_PROTOCOL_VERSION, network::CommandType::Disconnect,
+        session.internalId, "extra"};
+    const server::DisconnectResult result = handler.handle(command);
+    assert(!result.accepted);
+    assert(result.error == "command payload must be empty");
+}
+
 } // namespace disconnect_command_handler_tests

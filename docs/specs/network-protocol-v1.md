@@ -14,7 +14,7 @@
 | 12 | 4 | payload length | unsigned, big endian |
 | 16 | N | payload | opaque command-specific bytes |
 
-`N`は`MAX_COMMAND_PAYLOAD`以下でなければならない。Version 1のCommand typeはLogin、Move、Chat、Attack、CastSpell、Disconnect、RequestSnapshotである。RequestSnapshotのpayloadは空。session IDは接続が持つ正の内部ID（Login以外と同じ）。protocol versionは1のまま（Command型追加はv2に上げない）。
+`N`は`MAX_COMMAND_PAYLOAD`以下でなければならない。Version 1のCommand typeはLogin、Move、Chat、Attack、CastSpell、Disconnect、RequestSnapshotである。RequestSnapshotとDisconnectのpayloadは空。session IDは接続が持つ正の内部ID（Login以外と同じ）。protocol versionは1のまま（Command型追加はv2に上げない）。
 
 Loginだけsession ID 0を許可し、それ以外はサーバーが発行した正の内部IDを要求する。クライアントは攻撃結果、魔法結果、座標、時刻を権威値として送信しない。
 

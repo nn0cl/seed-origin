@@ -40,6 +40,13 @@ bool validateCommand(const NetworkCommand& command, std::string& error) {
         error = "command requires an active session id";
         return false;
     }
+    if (command.type == CommandType::Disconnect ||
+        command.type == CommandType::RequestSnapshot) {
+        if (!command.payload.empty()) {
+            error = "command payload must be empty";
+            return false;
+        }
+    }
     error.clear();
     return true;
 }

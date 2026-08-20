@@ -19,7 +19,8 @@ constexpr std::size_t READ_BUFFER_SIZE = 4096;
 ClientTransportShell::ClientTransportShell()
     : clientSocket(-1), link(TransportLinkState::Disconnected),
       auth(TransportAuthState::Anonymous), localSessionId(0),
-      snapshotCommandQueued(false), outboundFrames(), inbound(), receiver() {}
+      snapshotCommandQueued(false), disconnectQueued(false), outboundFrames(),
+      inbound(), receiver() {}
 
 ClientTransportShell::~ClientTransportShell() {
     close();
@@ -99,6 +100,7 @@ void ClientTransportShell::beginReconnect() {
     auth = TransportAuthState::Anonymous;
     localSessionId = 0;
     snapshotCommandQueued = false;
+    disconnectQueued = false;
     receiver.beginReconnect();
 }
 
@@ -108,6 +110,19 @@ bool ClientTransportShell::enqueueLogin(const std::string& claimedId,
         network::CURRENT_PROTOCOL_VERSION, network::CommandType::Login, 0,
         claimedId};
     return enqueueCommand(command, error);
+}
+
+bool ClientTransportShell::enqueueDisconnect(std::string& error) {
+    if (auth != TransportAuthState::LoggedIn) {
+        error = "disconnect requires a logged-in session";
+        return false;
+    }
+    const network::NetworkCommand command = {
+        network::CURRENT_PROTOCOL_VERSION, network::CommandType::Disconnect,
+        localSessionId, ""};
+    if (!enqueueCommand(command, error)) return false;
+    disconnectQueued = true;
+    return true;
 }
 
 bool ClientTransportShell::enqueueCommand(const network::NetworkCommand& command,
@@ -244,6 +259,10 @@ bool ClientTransportShell::pump(std::string& error) {
         if (status == server::SendStatus::NoData) break;
         if (status != server::SendStatus::Sent) return false;
     }
+    if (disconnectQueued && outboundFrames.empty()) {
+        resetAuthAfterDisconnect();
+        disconnectQueued = false;
+    }
     error.clear();
     return true;
 }
@@ -281,6 +300,13 @@ const ClientWorldUpdateReceiver& ClientTransportShell::worldReceiver() const {
     return receiver;
 }
 
+void ClientTransportShell::resetAuthAfterDisconnect() {
+    auth = TransportAuthState::Anonymous;
+    localSessionId = 0;
+    snapshotCommandQueued = false;
+    receiver.beginReconnect();
+}
+
 void ClientTransportShell::markFailed() {
     if (clientSocket >= 0) {
         ::close(clientSocket);
@@ -288,6 +314,7 @@ void ClientTransportShell::markFailed() {
     }
     link = TransportLinkState::Failed;
     auth = TransportAuthState::Anonymous;
+    disconnectQueued = false;
 }
 
 }
