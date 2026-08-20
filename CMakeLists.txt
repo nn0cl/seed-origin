@@ -173,6 +173,7 @@ add_executable(seed_tests
     tests/ChallengeLoginCommandHandlerTest.cpp
     tests/DisconnectCommandHandlerTest.cpp
     tests/ServerCommandDispatcherTest.cpp
+    tests/ServerCommandDispatcherChallengeLoginTest.cpp
     tests/CommandRateLimiterTest.cpp
     tests/MovementCommandHandlerTest.cpp
     tests/ClientInputSequenceTest.cpp

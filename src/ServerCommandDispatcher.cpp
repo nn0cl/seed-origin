@@ -15,11 +15,28 @@ session::SessionInfo emptySession() {
 }
 
 ServerCommandDispatcher::ServerCommandDispatcher(session::SessionRegistry& registry)
-    : loginHandler(registry), inputQueue(0), snapshotRequests(0) {}
+    : loginHandler(registry),
+      inputQueue(0),
+      snapshotRequests(0),
+      challengeAuth(0),
+      gameplaySessions(0) {}
 
 ServerCommandDispatcher::ServerCommandDispatcher(session::SessionRegistry& registry,
                                                  WorldInputQueue& queue)
-    : loginHandler(registry), inputQueue(&queue), snapshotRequests(0) {}
+    : loginHandler(registry),
+      inputQueue(&queue),
+      snapshotRequests(0),
+      challengeAuth(0),
+      gameplaySessions(0) {}
+
+ServerCommandDispatcher::ServerCommandDispatcher(session::SessionRegistry& registry,
+                                                 ChallengeSessionLoginService& auth,
+                                                 GameplaySessionPort& gameplay)
+    : loginHandler(registry),
+      inputQueue(0),
+      snapshotRequests(0),
+      challengeAuth(&auth),
+      gameplaySessions(&gameplay) {}
 
 void ServerCommandDispatcher::bindWorldInputQueue(WorldInputQueue& queue) {
     inputQueue = &queue;
@@ -51,11 +68,7 @@ CommandDispatchResult ServerCommandDispatcher::dispatch(
     CommandDispatchResult result = {false, command.type, emptySession(), std::string()};
 
     if (command.type == network::CommandType::Login) {
-        const LoginResult login = loginHandler.handle(command);
-        result.accepted = login.accepted;
-        result.session = login.session;
-        result.error = login.error;
-        return result;
+        return dispatchLogin(command);
     }
 
     if (command.type == network::CommandType::Chat) {
@@ -152,6 +165,30 @@ CommandDispatchResult ServerCommandDispatcher::dispatch(
     }
 
     result.error = "command handler is not implemented";
+    return result;
+}
+
+bool ServerCommandDispatcher::usesChallengeLogin() const {
+    return challengeAuth != 0 && gameplaySessions != 0;
+}
+
+CommandDispatchResult ServerCommandDispatcher::dispatchLogin(
+    const network::NetworkCommand& command) {
+    CommandDispatchResult result = {false, command.type, emptySession(), std::string()};
+    if (usesChallengeLogin()) {
+        ChallengeLoginCommandHandler challengeLogin(*challengeAuth, *gameplaySessions);
+        const ChallengeLoginCommandResult login = challengeLogin.handle(command);
+        result.accepted = login.accepted;
+        result.session = login.session;
+        result.error = login.error;
+        result.playerSessionKey = login.playerSessionKey;
+        return result;
+    }
+
+    const LoginResult login = loginHandler.handle(command);
+    result.accepted = login.accepted;
+    result.session = login.session;
+    result.error = login.error;
     return result;
 }
 

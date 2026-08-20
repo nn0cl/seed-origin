@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "LoginCommandHandler.h"
+#include "ChallengeLoginCommandHandler.h"
 #include "CommandRateLimiter.h"
 #include "WorldInputQueue.h"
 
@@ -16,6 +17,7 @@ struct CommandDispatchResult {
     network::CommandType type;
     session::SessionInfo session;
     std::string error;
+    PlayerSessionKey playerSessionKey;
 };
 
 class ServerCommandDispatcher {
@@ -23,6 +25,9 @@ public:
     explicit ServerCommandDispatcher(session::SessionRegistry& registry);
     ServerCommandDispatcher(session::SessionRegistry& registry,
                             WorldInputQueue& inputQueue);
+    ServerCommandDispatcher(session::SessionRegistry& registry,
+                            ChallengeSessionLoginService& auth,
+                            GameplaySessionPort& gameplaySessions);
     void bindWorldInputQueue(WorldInputQueue& inputQueue);
     void beginFrame(uint64_t worldTick);
     void forgetSession(int64_t sessionId);
@@ -35,10 +40,15 @@ public:
         const std::vector<network::NetworkCommand>& commands);
 
 private:
+    CommandDispatchResult dispatchLogin(const network::NetworkCommand& command);
+    bool usesChallengeLogin() const;
+
     LoginCommandHandler loginHandler;
     WorldInputQueue* inputQueue;
     CommandRateLimiter rateLimiter;
     std::size_t snapshotRequests;
+    ChallengeSessionLoginService* challengeAuth;
+    GameplaySessionPort* gameplaySessions;
 };
 
 }

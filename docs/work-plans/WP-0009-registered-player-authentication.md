@@ -33,7 +33,7 @@ canonicalに定義する。
 | --- | --- | --- | --- |
 | 0 | ADR 0018 | 登録制認証アーキテクチャ決定 | accepted |
 | 1 | LISS-0146 | `users`・`player_challenges`・`player_sessions`・`seed_auth` | done（UseCase Green verified; HTTP/MyBatis/Postgres Adapter は後続） |
-| 2 | LISS-0147 | チャレンジclaim・正規セッション発行・検証・更新 | review / wire-slice-complete（dispatcher・Postgres・匿名login削除は残; branch `feature/liss-0147-login-wire`） |
+| 2 | LISS-0147 | チャレンジclaim・正規セッション発行・検証・更新 | review / dispatcher-slice-complete（Runtime bind・Postgres・匿名login削除は残; branch `feature/liss-0147-dispatcher-challenge-login`） |
 | 3 | LISS-0148 | クラシックMMORPG型プレイヤープログレッション永続化 | phase-1-red（depends: 0146） |
 | 4 | LISS-0149 | 登録・アカウント管理用React SPA（ゲームログインなし） | phase-1-red（depends: 0146） |
 | 5 | LISS-0150 | LISS-0123／LISS-0130／ADR 0016の廃止処理 | proposed（depends: 0147） |
