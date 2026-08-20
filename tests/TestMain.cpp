@@ -297,6 +297,7 @@ void create_dispatcher_uses_challenge_login_when_bundle_provided();
 void create_dispatcher_uses_anonymous_login_when_bundle_is_null();
 void production_dispatcher_uses_anonymous_path_when_env_is_unset();
 void production_dispatcher_fails_when_challenge_auth_env_is_set_without_postgres();
+void production_dispatcher_reports_missing_identity_db_url();
 void production_dispatcher_uses_challenge_login_when_env_and_test_hook_provided();
 void challenge_auth_enabled_from_environment();
 }
@@ -573,6 +574,7 @@ int main() {
     server_bootstrap_tests::create_dispatcher_uses_anonymous_login_when_bundle_is_null();
     server_bootstrap_tests::production_dispatcher_uses_anonymous_path_when_env_is_unset();
     server_bootstrap_tests::production_dispatcher_fails_when_challenge_auth_env_is_set_without_postgres();
+    server_bootstrap_tests::production_dispatcher_reports_missing_identity_db_url();
     server_bootstrap_tests::production_dispatcher_uses_challenge_login_when_env_and_test_hook_provided();
     server_bootstrap_tests::challenge_auth_enabled_from_environment();
     disconnect_command_handler_tests::ends_active_session_without_unsetting_the_player();
