@@ -77,6 +77,18 @@ SessionInfo SessionRegistry::login(const std::string& claimedId, uint64_t worldT
     return result;
 }
 
+SessionInfo SessionRegistry::openAuthenticatedSession(int64_t userId) {
+    SessionInfo result = {0, 0, std::string(), false};
+    if (userId <= 0 || nextInternalId == std::numeric_limits<int64_t>::max()) {
+        return result;
+    }
+
+    result.internalId = nextInternalId++;
+    result.authenticated = true;
+    activeSessions.insert(result.internalId);
+    return result;
+}
+
 bool SessionRegistry::logout(int64_t internalId) {
     return activeSessions.erase(internalId) > 0;
 }

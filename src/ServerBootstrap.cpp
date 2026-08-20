@@ -2,6 +2,12 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <memory>
+
+#include "ChallengeSessionLogin.h"
+#include "RandomSessionKeyIssuer.h"
+#include "RegistryGameplaySessionPort.h"
+#include "SystemWallClock.h"
 
 namespace server {
 
@@ -12,6 +18,19 @@ bool isTruthyEnvValue(const char* value) {
         return false;
     }
     return std::strcmp(value, "1") == 0 || std::strcmp(value, "true") == 0;
+}
+
+std::unique_ptr<ChallengeSessionLoginService>& retainedHookAuth() {
+    static std::unique_ptr<ChallengeSessionLoginService> instance;
+    return instance;
+}
+
+bool hasCompleteTestHook(const ChallengeProductionTestHook& hook) {
+    return hook.challenges != nullptr &&
+           hook.sessions != nullptr &&
+           hook.keys != nullptr &&
+           hook.clock != nullptr &&
+           hook.gameplay != nullptr;
 }
 
 }
@@ -32,14 +51,27 @@ std::unique_ptr<ServerCommandDispatcher> ServerBootstrap::createCommandDispatche
 
 std::unique_ptr<ServerCommandDispatcher> ServerBootstrap::createProductionCommandDispatcher(
     session::SessionRegistry& registry,
-    std::string& error) {
+    std::string& error,
+    ChallengeProductionTestHook* testHook) {
     error.clear();
-    if (challengeAuthEnabledFromEnvironment()) {
-        error = "seed_server: SEED_CHALLENGE_AUTH is set but Postgres "
-                "challenge adapters are not wired yet (LISS-0147)";
-        return nullptr;
+    if (!challengeAuthEnabledFromEnvironment()) {
+        return createCommandDispatcher(registry, nullptr);
     }
-    return createCommandDispatcher(registry, nullptr);
+
+    if (testHook != nullptr && hasCompleteTestHook(*testHook)) {
+        std::unique_ptr<ChallengeSessionLoginService>& auth =
+            retainedHookAuth();
+        auth =
+            std::make_unique<ChallengeSessionLoginService>(
+                *testHook->challenges, *testHook->sessions, *testHook->keys,
+                *testHook->clock);
+        ChallengeAuthBundle bundle = {*auth, *testHook->gameplay};
+        return createCommandDispatcher(registry, &bundle);
+    }
+
+    error = "seed_server: SEED_CHALLENGE_AUTH is set but Postgres "
+            "challenge adapters are not wired yet (LISS-0147)";
+    return nullptr;
 }
 
 }

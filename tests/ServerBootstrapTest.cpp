@@ -181,7 +181,7 @@ void production_dispatcher_uses_anonymous_path_when_env_is_unset() {
     restoreChallengeAuthEnv(saved);
 }
 
-void production_dispatcher_fails_when_challenge_auth_env_is_set() {
+void production_dispatcher_fails_when_challenge_auth_env_is_set_without_postgres() {
     const char* saved = std::getenv("SEED_CHALLENGE_AUTH");
     setenv("SEED_CHALLENGE_AUTH", "1", 1);
 
@@ -189,9 +189,58 @@ void production_dispatcher_fails_when_challenge_auth_env_is_set() {
     std::string error;
     const std::unique_ptr<server::ServerCommandDispatcher> dispatcher =
         server::ServerBootstrap::createProductionCommandDispatcher(registry,
-                                                                   error);
+                                                                   error,
+                                                                   nullptr);
     assert(dispatcher.get() == nullptr);
     assert(!error.empty());
+
+    restoreChallengeAuthEnv(saved);
+}
+
+void production_dispatcher_uses_challenge_login_when_env_and_test_hook_provided() {
+    const char* saved = std::getenv("SEED_CHALLENGE_AUTH");
+    setenv("SEED_CHALLENGE_AUTH", "1", 1);
+
+    const int64_t now = 1700000000;
+    FixedWallClock clock(now);
+    FakeChallengeClaimPort challenges;
+    FakeSessionStore sessions;
+    FixedKeyIssuer keys("production-session-key");
+    server::ChallengeSessionLoginService auth(challenges, sessions, keys, clock);
+    FakeGameplaySessionPort gameplay;
+    session::SessionRegistry registry;
+
+    server::ChallengeProductionTestHook hook = {&challenges, &sessions, &keys,
+                                                &clock, &gameplay};
+    std::string error;
+    const std::unique_ptr<server::ServerCommandDispatcher> dispatcher =
+        server::ServerBootstrap::createProductionCommandDispatcher(registry,
+                                                                   error,
+                                                                   &hook);
+    assert(dispatcher.get() != nullptr);
+    assert(error.empty());
+
+    const network::NetworkCommand nicknameLogin = {
+        network::CURRENT_PROTOCOL_VERSION, network::CommandType::Login, 0,
+        "player"};
+    const server::CommandDispatchResult nicknameResult =
+        dispatcher->dispatch(nicknameLogin);
+    assert(!nicknameResult.accepted);
+    assert(nicknameResult.error == "invalid_challenge");
+
+    FakeChallengeClaimPort::Row row;
+    row.userId = 42;
+    row.expiresAtUnix = now + 120;
+    row.claimed = false;
+    challenges.rows["production-challenge"] = row;
+
+    const network::NetworkCommand challengeLogin = {
+        network::CURRENT_PROTOCOL_VERSION, network::CommandType::Login, 0,
+        "production-challenge"};
+    const server::CommandDispatchResult challengeResult =
+        dispatcher->dispatch(challengeLogin);
+    assert(challengeResult.accepted);
+    assert(challengeResult.playerSessionKey.value == "production-session-key");
 
     restoreChallengeAuthEnv(saved);
 }
