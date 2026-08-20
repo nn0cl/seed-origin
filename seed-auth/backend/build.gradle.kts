@@ -10,7 +10,9 @@ repositories {
 }
 
 dependencies {
+    implementation("org.postgresql:postgresql:42.7.4")
     testImplementation(kotlin("test"))
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.3")
 }
 
 kotlin {
