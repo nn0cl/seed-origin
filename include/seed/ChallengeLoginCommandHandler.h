@@ -5,20 +5,13 @@
 #include <string>
 
 #include "ChallengeSessionLogin.h"
+#include "GameplaySessionPort.h"
 #include "NetworkCommand.h"
 #include "SessionRegistry.h"
 
 namespace server {
 
 // LISS-0147 wire slice: Login Command payload is a ChallengeKey.
-// Gameplay session allocation stays behind a port so SessionRegistry can be
-// adapted without the use-case depending on alias/claimed-id rules.
-
-class GameplaySessionPort {
-public:
-    virtual ~GameplaySessionPort() {}
-    virtual session::SessionInfo openAuthenticated(int64_t userId) = 0;
-};
 
 struct ChallengeLoginCommandResult {
     bool accepted;
@@ -36,6 +29,11 @@ public:
     ChallengeLoginCommandResult handle(const network::NetworkCommand& command);
 
 private:
+    static ChallengeLoginCommandResult rejected(const std::string& error);
+    static ChallengeLoginCommandResult accepted(int64_t userId,
+                                                const PlayerSessionKey& sessionKey,
+                                                const session::SessionInfo& session);
+
     ChallengeSessionLoginService& auth;
     GameplaySessionPort& gameplaySessions;
 };
