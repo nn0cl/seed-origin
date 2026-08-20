@@ -36,7 +36,7 @@ canonicalに定義する。
 | 2 | LISS-0147 | チャレンジclaim・正規セッション発行・検証・更新 | done（PR #7–#12; last: #12 remove anonymous login） |
 | 3 | LISS-0148 | クラシックMMORPG型プレイヤープログレッション永続化 | phase-1-red（depends: 0146） |
 | 4 | LISS-0149 | 登録・アカウント管理用React SPA（ゲームログインなし） | phase-1-red（depends: 0146） |
-| 5 | LISS-0150 | LISS-0123／LISS-0130／ADR 0016の廃止処理 | proposed（depends: 0147 — now unblocked） |
+| 5 | LISS-0150 | LISS-0123／LISS-0130／ADR 0016の廃止処理 | review / docs-supersession-complete（branch `docs/liss-0150-supersede-alias`；コード削除は後続） |
 
 ## 廃止対象の扱い
 

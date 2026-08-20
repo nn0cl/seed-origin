@@ -1,6 +1,7 @@
 # LISS-0123: 匿名ログインと申告ID名寄せ
 
-- Status: review
+- Status: superseded
+- Superseded by: ADR 0018 / LISS-0147 / LISS-0150（2026-08-20）
 - Priority: high
 - Depends on: LISS-0042, LISS-0053, LISS-0066
 
@@ -21,6 +22,14 @@
 
 `SessionRegistry`で内部IDを自動採番し、認証状態を常にfalseの匿名セッションとして保持する。申告IDは形式検証後にASCII大小文字を正規化して一時aliasへ名寄せする。永続化はLISS-0130で扱う。テスト・ビルドは実行していない。
 
+## Supersession（LISS-0150、2026-08-20）
+
+- プレイヤー認証は登録制（ADR 0018）へ移行済み。匿名 claimed-ID Login は
+  LISS-0147（PR #12）で削除された。
+- 本Issueは削除せず `superseded` として残す。
+- `IdentityAliasStore` コードの削除タイミングは LISS-0150 / ADR 0023 決定5参照。
+
 ## English
 
-Create anonymous sessions with server-assigned internal IDs. Treat a claimed user ID as an alias or reconnect hint, never as authentication, and define collision, privacy, persistence, and impersonation rules before production use.
+Superseded by registered-player authentication (ADR 0018). Anonymous login
+and claimed-ID aliasing are no longer the player identity path; see LISS-0150.

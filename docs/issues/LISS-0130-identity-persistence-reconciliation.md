@@ -1,10 +1,8 @@
 # LISS-0130: ID永続化と名寄せ
 
-- Status: in_progress（⚠️ 2026-07-18: ADR 0018によりsuperseded予定。
-  LISS-0147着地後にLISS-0150で正式廃止するまでは、このIssueの続きの
-  実装（保存期間purge等）に新規着手しないこと。詳細は本ファイル末尾の
-  「Remaining decisions」参照）
-- Phase: phase-2-green
+- Status: superseded
+- Superseded by: ADR 0018 / LISS-0150（2026-08-20）
+- Phase: superseded（no further Phase 1/2/3 work）
 - Priority: high
 - Depends on: LISS-0123, LISS-0053
 
@@ -63,6 +61,15 @@
 - 警告有効C++20ビルドを実行し成功を確認した。Adjudicator方針によりテスト実行
   （ctest）は保留し、成果物・サーバーは未実行。
 
+## Supersession（LISS-0150、2026-08-20）
+
+- プレイヤー認証は登録制（ADR 0018）へ移行済み。本Issueの続き（purge、追加
+  retention 実装等）には着手しない。
+- 本Issueは削除せず `superseded` として残す。
+- `IdentityAliasStore` / `PostgresIdentityAliasStore` コードは当面残置
+  （Admin alias review API 等が参照）。削除は ADR 0023 決定5どおり
+  `seed_auth` と `seed_admin` Kotlin 移行完了後。
+
 ## English
 
-Persist anonymous identity aliases safely without treating them as authentication. Separate internal IDs and claims, define confidence, human adjudication, privacy, deletion, retention, backup, and future authentication migration.
+Persist anonymous identity aliases safely without treating them as authentication. Separate internal IDs and claims, define confidence, human adjudication, privacy, deletion, retention, backup, and future authentication migration. Formally superseded by ADR 0018 / LISS-0150.

@@ -1,12 +1,12 @@
 # LISS-0143: PostgreSQL IdentityAliasStoreアダプタ
 
-- Status: in_progress（⚠️ 2026-07-18: ADR 0018によりsuperseded予定。
-  LISS-0150での正式廃止まで新規実装に着手しないこと）
-- Phase: phase-2-green
+- Status: superseded
+- Superseded by: ADR 0018 / LISS-0150（2026-08-20）
+- Phase: superseded（no further Phase 1/2/3 work）
 - Priority: high
 - Depends on: LISS-0130
 - Related ADR: `docs/architecture/adr/0016-identity-alias-persistence-and-review.md`
-  （ADR 0018により実質置換、正式廃止はLISS-0150）
+  （superseded for player identity; historical record）
 
 ## 目的
 
