@@ -103,10 +103,12 @@ through the versioned network protocol rather than depend on World internals.
 - `adr/0013-project-main-branch-and-adjudicator-roles.md`
 - `adr/0014-adjudicator-and-developer-role-model.md`
 - `adr/0015-cpp20-language-standard-adoption.md`
-- `adr/0016-identity-alias-persistence-and-review.md`
+- `adr/0016-identity-alias-persistence-and-review.md` (**Superseded** by
+  ADR 0018 for player identity; formalized by LISS-0150, 2026-08-20 —
+  historical record only)
 - `adr/0017-admin-authentication-and-http-surface.md`
 - `adr/0018-registered-player-authentication.md` (supersedes ADR 0016 for
-  player identity; ADR 0016 remains for historical record)
+  player identity)
 - `adr/0022-restore-per-issue-branching.md` (supersedes ADR 0013's
   branching/push decision only; ADR 0013's Adjudicator/Developer
   role-boundary decision remains in effect)
@@ -142,8 +144,8 @@ Technology choices still open for ADR decision:
 - snapshot/event wire encoding extension.
 - deployment and observability stack.
 
-Retired by ADR 0018 (no longer open — player identity is resolved by
-registered accounts, not these): identity-alias persistence schema/driver
-selection detail, and the wall-clock-to-WorldTick retention mapping (ADR
-0016 decisions 2/... — ADR 0016 itself remains as a historical record, see
-LISS-0150 for the formal deprecation Issue).
+Retired by ADR 0018 / LISS-0150 (no longer open — player identity is
+resolved by registered accounts): identity-alias persistence schema/driver
+selection detail, and the wall-clock-to-WorldTick retention mapping.
+ADR 0016 is **Superseded** (historical record). `IdentityAliasStore` code
+remains until seed_auth + seed_admin Kotlin migration complete (ADR 0023).

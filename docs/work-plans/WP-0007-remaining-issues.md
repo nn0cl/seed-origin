@@ -20,17 +20,17 @@
 | 5 | LISS-0139-C | NPC配置・死亡・再配置 | review（実装済み） |
 | 6 | LISS-0139-D | NPC AIの決定論的入力 | review（実装済み） |
 | 7 | LISS-0131 | 不正入力・レート制限 | review（実装済み） |
-| 8 | LISS-0130 | ID名寄せの永続化と削除方針 | in_progress（ADR 0018により今後supersededの見込み、正式廃止はLISS-0150） |
-| 8.1 | LISS-0143 | PostgreSQL IdentityAliasStoreアダプタ（ADR 0016） | in_progress（同上） |
+| 8 | LISS-0130 | ID名寄せの永続化と削除方針 | superseded（LISS-0150 / ADR 0018；2026-08-20） |
+| 8.1 | LISS-0143 | PostgreSQL IdentityAliasStoreアダプタ（ADR 0016） | superseded（LISS-0150；コードは残置、削除は後続） |
 | 8.2 | LISS-0144 | 管理者認証・エクスポート・衝突解決HTTP API（ADR 0017、実装言語をADR 0019でC++からKotlin/Spring Bootへ移行提案中・未承認） | in_progress（管理者認証は継続、プレイヤー認証とは別系統） |
 | 8.3 | LISS-0145 | 管理者UI（React+TypeScript SPA、`seed-admin/frontend/`、ADR 0019） | proposed（design intake） |
 
 **2026-07-18追加**: プレイヤー認証は登録制へ移行することがADR 0018で決定した。
 匿名ログイン・ID名寄せ（LISS-0123／LISS-0130／ADR 0016）の置き換え計画は
 `docs/work-plans/WP-0009-registered-player-authentication.md`を正とする。
-本表の8／8.1行は、WP-0009のLISS-0147着地後にLISS-0150で正式にsuperseded
-処理される。管理者バックエンドのC++→Kotlin/Spring Boot移行（ADR 0019）は
-未承認のまま。
+**2026-08-20**: LISS-0150 により 8／8.1／LISS-0123／ADR 0016 を正式に
+`superseded`。`IdentityAliasStore` コード削除は ADR 0023 決定5どおり後続。
+管理者バックエンドのC++→Kotlin/Spring Boot移行（ADR 0019）は未承認のまま。
 | 9 | LISS-0128 | クライアント通信シェル（ADR 0020、Godot 4.7 MVP、depends: LISS-0147） | proposed |
 | 10 | LISS-0129 | クライアントプレイシェル（ADR 0020、Godot MVPスコープ） | proposed |
 | 11 | LISS-0132 | 再接続・backpressure・観測性 | proposed |

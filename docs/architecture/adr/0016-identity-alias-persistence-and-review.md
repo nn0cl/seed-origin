@@ -2,7 +2,8 @@
 
 ## Status
 
-Accepted
+Superseded by ADR 0018 for player identity (formalized by LISS-0150,
+2026-08-20). Kept as a historical record; no new work proceeds from this ADR.
 
 ## Ratification
 

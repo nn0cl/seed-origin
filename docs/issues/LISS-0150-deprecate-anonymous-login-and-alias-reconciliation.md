@@ -1,9 +1,10 @@
 # LISS-0150: 匿名ログイン・ID名寄せの廃止処理
 
-- Status: proposed
-- Phase: phase-0-design-intake
+- Status: review
+- Phase: docs-supersession-complete
+- Related branch: `docs/liss-0150-supersede-alias`
 - Priority: medium
-- Depends on: LISS-0147（done — PR #12 merged; Adjudicator may start 0150）
+- Depends on: LISS-0147（done — PR #12）
 - Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
 
 ## 目的
@@ -16,15 +17,14 @@ mainへ着地した後、匿名ログイン・ID名寄せ関連の資産を正�
 
 - `docs/issues/LISS-0123-anonymous-login-alias.md`
 - `docs/issues/LISS-0130-identity-persistence-reconciliation.md`
+- `docs/issues/LISS-0143-postgres-identity-alias-adapter.md`
 - `docs/architecture/adr/0016-identity-alias-persistence-and-review.md`
 - `IdentityAliasStore`／`InMemoryIdentityAliasStore`／
-  `PostgresIdentityAliasStore`（`SessionRegistry`からの参照を含め、
-  コードとして削除するか、残すが未使用であることを明記するかは
-  本Issueで決定する）
+  `PostgresIdentityAliasStore`（コード削除は本Issueでは行わない）
 - `docs/work-plans/WP-0007-remaining-issues.md`のcanonical表の該当行
-- `docs/architecture/README.md`のADR一覧・Non-Decision一覧
+- `docs/architecture/README.md`のADR一覧
 
-## 受入条件（ドラフト）
+## 受入条件
 
 - 削除ではなく`superseded`ステータスへの更新（
   `docs/collaboration/local-issue-planning.md`の方針に従う）。
@@ -40,15 +40,31 @@ mainへ着地した後、匿名ログイン・ID名寄せ関連の資産を正�
 - 本番データは存在しないため、`identity_aliases`のデータ移行・削除方針の
   検討は不要（本番運用が始まった場合は別途再検討）。
 
+## Docs supersession slice（2026-08-20、Adjudicator承認）
+
+### 実施内容
+
+- LISS-0123 / LISS-0130 / LISS-0143 / ADR 0016 → `superseded`
+- WP-0007 canonical 表の 8 / 8.1 行と architecture README を同期
+- コード方針: **残置**（pending deletion）
+  - `ServerMain` / `SessionRegistry` / `AdminMain` alias review API がまだ参照
+  - 削除は ADR 0023 決定5どおり、後続 Issue（seed_auth HTTP + seed_admin
+    Kotlin 完了後）で行う
+- データ方針: 本番 `identity_aliases` データなし → 移行・削除方針の検討は不要
+
+### 本スライスでやらなかったこと
+
+- `IdentityAliasStore` / Postgres adapter / Admin alias UI のコード削除
+- 新規 purge / マイグレーション
+
 ## Remaining decisions
 
-- 前提（削除タイミング、データ移行不要）は確定済み。他のissue
-  （LISS-0146/0147/0149）の検討が進んだ後に、本Issue自体の着手可否を
-  改めて検討する（Adjudicator指示、2026-07-18）。
+- 本スライスの docs 受入は完了。コード削除の着手可否は ADR 0019 /
+  LISS-0146 HTTP Adapter 完了後に再検討する。
 
 ## English
 
-Once LISS-0147 lands, formally mark LISS-0123, LISS-0130, and ADR 0016 as
-superseded (not deleted) per this repository's local-issue-planning
-convention, and decide the fate of the now-unused IdentityAliasStore code
-and any existing identity_aliases data.
+Formally mark LISS-0123, LISS-0130, LISS-0143, and ADR 0016 as superseded
+(not deleted). Retain IdentityAliasStore code until seed_auth and seed_admin
+Kotlin migration complete (ADR 0023). No identity_aliases production data
+migration is required.

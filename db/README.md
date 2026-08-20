@@ -1,7 +1,14 @@
 # Local PostgreSQL (LISS-0143/0144 / ADR 0016/0017)
 
-Development-only PostgreSQL instance for `PostgresIdentityAliasStore` and
-`AdminAuthStore`.
+Development-only PostgreSQL instance for `PostgresIdentityAliasStore`,
+`AdminAuthStore`, and registered-player auth tables.
+
+> **Note (LISS-0150, 2026-08-20):** ADR 0016 / LISS-0143 are **superseded**
+> for player identity. `identity_aliases` and `PostgresIdentityAliasStore`
+> remain for the current C++ admin alias-review surface until seed_admin
+> Kotlin migration (ADR 0019) and related cleanup. New player identity work
+> uses `player_challenges` / `player_sessions` (migration 0003), not
+> `identity_aliases`.
 
 ## Start
 
