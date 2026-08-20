@@ -1,7 +1,7 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
-- Status: in_progress
-- Phase: phase-2-green-dispatcher
+- Status: review
+- Phase: phase-3-refactor-dispatcher
 - Related branch: `feature/liss-0147-dispatcher-challenge-login`
 - Priority: high
 - Depends on: LISS-0146
@@ -161,6 +161,11 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 - Login dispatch uses `ChallengeLoginCommandHandler` when bound; otherwise the
   existing anonymous `LoginCommandHandler`
 - `CommandDispatchResult.playerSessionKey` populated on challenge login
+
+## Phase 3 Refactor — Dispatcher challenge login（2026-08-20）
+
+- `dispatchLogin` / `usesChallengeLogin` を抽出（挙動不変）
+- 匿名 constructor 経路は既存テスト互換のため残置
 
 ## Remaining decisions
 

@@ -68,21 +68,7 @@ CommandDispatchResult ServerCommandDispatcher::dispatch(
     CommandDispatchResult result = {false, command.type, emptySession(), std::string()};
 
     if (command.type == network::CommandType::Login) {
-        if (challengeAuth != 0 && gameplaySessions != 0) {
-            ChallengeLoginCommandHandler challengeLogin(*challengeAuth,
-                                                        *gameplaySessions);
-            const ChallengeLoginCommandResult login = challengeLogin.handle(command);
-            result.accepted = login.accepted;
-            result.session = login.session;
-            result.error = login.error;
-            result.playerSessionKey = login.playerSessionKey;
-            return result;
-        }
-        const LoginResult login = loginHandler.handle(command);
-        result.accepted = login.accepted;
-        result.session = login.session;
-        result.error = login.error;
-        return result;
+        return dispatchLogin(command);
     }
 
     if (command.type == network::CommandType::Chat) {
@@ -179,6 +165,30 @@ CommandDispatchResult ServerCommandDispatcher::dispatch(
     }
 
     result.error = "command handler is not implemented";
+    return result;
+}
+
+bool ServerCommandDispatcher::usesChallengeLogin() const {
+    return challengeAuth != 0 && gameplaySessions != 0;
+}
+
+CommandDispatchResult ServerCommandDispatcher::dispatchLogin(
+    const network::NetworkCommand& command) {
+    CommandDispatchResult result = {false, command.type, emptySession(), std::string()};
+    if (usesChallengeLogin()) {
+        ChallengeLoginCommandHandler challengeLogin(*challengeAuth, *gameplaySessions);
+        const ChallengeLoginCommandResult login = challengeLogin.handle(command);
+        result.accepted = login.accepted;
+        result.session = login.session;
+        result.error = login.error;
+        result.playerSessionKey = login.playerSessionKey;
+        return result;
+    }
+
+    const LoginResult login = loginHandler.handle(command);
+    result.accepted = login.accepted;
+    result.session = login.session;
+    result.error = login.error;
     return result;
 }
 

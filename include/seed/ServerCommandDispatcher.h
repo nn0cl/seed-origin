@@ -40,6 +40,9 @@ public:
         const std::vector<network::NetworkCommand>& commands);
 
 private:
+    CommandDispatchResult dispatchLogin(const network::NetworkCommand& command);
+    bool usesChallengeLogin() const;
+
     LoginCommandHandler loginHandler;
     WorldInputQueue* inputQueue;
     CommandRateLimiter rateLimiter;
