@@ -1,7 +1,7 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
 - Status: review
-- Phase: phase-3-refactor-wire
+- Phase: wire-slice-complete
 - Related branch: `feature/liss-0147-login-wire`
 - Priority: high
 - Depends on: LISS-0146
@@ -138,6 +138,13 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 
 - `GameplaySessionPort` を `GameplaySessionPort.h` へ分離
 - `rejected` / `accepted` 結果構築をメンバヘルパーへ整理（挙動不変）
+
+## Wire slice Adjudicator approval（2026-08-20）
+
+- Phase 1–3 Login wire (`ChallengeLoginCommandHandler`) approved.
+- Remaining for full LISS-0147 closure: ServerCommandDispatcher swap,
+  Postgres adapters, anonymous `LoginCommandHandler` /
+  `SessionRegistry::login(claimedId)` removal.
 
 ## Remaining decisions
 
