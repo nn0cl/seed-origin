@@ -58,6 +58,8 @@ set(SEED_CORE_SOURCES
     src/ClientWorldUpdateReceiver.cpp
     src/ClientInboundDemux.cpp
     src/ClientTransportShell.cpp
+    src/TransportWaitDeadline.cpp
+    src/TransportErrorDetail.cpp
     src/MovementCommandHandler.cpp
     src/Npc.cpp
     src/NpcAi.cpp
@@ -176,6 +178,7 @@ add_executable(seed_tests
     tests/RequestSnapshotCommandTest.cpp
     tests/ClientInboundDemuxTest.cpp
     tests/ClientTransportShellTest.cpp
+    tests/ClientTransportShellTimeoutTest.cpp
     tests/NpcCombatTargetTest.cpp
     tests/NpcAiTest.cpp
     tests/StatusSaturationTest.cpp

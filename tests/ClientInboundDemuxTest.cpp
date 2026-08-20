@@ -100,4 +100,24 @@ void joins_partial_inbound_frames_without_dispatch() {
     assert(frames[0].bytes == world);
 }
 
+void rejects_invalid_inbound_prefix_after_two_bytes() {
+    const uint8_t corrupt[] = {0xDE, 0xAD};
+    client::ClientInboundDemux demux;
+    std::vector<client::InboundFrame> frames;
+    std::string error;
+    assert(!demux.append(std::vector<uint8_t>(corrupt, corrupt + 2), frames, error));
+    assert(error == "inbound frame prefix is invalid");
+    assert(demux.failed());
+}
+
+void waits_for_second_prefix_byte_before_dispatch() {
+    const uint8_t partial[] = {0x57};
+    client::ClientInboundDemux demux;
+    std::vector<client::InboundFrame> frames;
+    std::string error;
+    assert(demux.append(std::vector<uint8_t>(partial, partial + 1), frames, error));
+    assert(frames.empty());
+    assert(!demux.failed());
+}
+
 } // namespace client_inbound_demux_tests

@@ -9,7 +9,11 @@
 #include "ClientSession.h"
 #include "ClientWorldUpdateReceiver.h"
 #include "DisconnectResponse.h"
+#include "MonotonicClockPort.h"
 #include "OutboundFrameQueue.h"
+#include "TransportErrorReason.h"
+#include "TransportTimeouts.h"
+#include "TransportWaitDeadline.h"
 
 namespace client {
 
@@ -49,6 +53,13 @@ public:
     bool snapshotRequested() const;
     const ClientWorldUpdateReceiver& worldReceiver() const;
 
+    void setClock(MonotonicClockPort* clock);
+    void setTimeouts(const TransportTimeouts& timeouts);
+    TransportErrorReason lastError() const;
+    const std::string& lastErrorDetail() const;
+    uint32_t reconnectCount() const;
+    uint32_t snapshotRequestCount() const;
+
 private:
     int clientSocket;
     TransportLinkState link;
@@ -69,7 +80,24 @@ private:
     bool handleDisconnectResponseFrame(const std::vector<uint8_t>& bytes,
                                        std::string& error);
     void applyDisconnectResponse(const network::DisconnectResponse& response);
-    void markFailed();
+    void recordError(TransportErrorReason reason, const std::string& detail);
+    void markFailed(TransportErrorReason reason, const std::string& detail);
+    bool checkDeadlines(std::string& error);
+    void armLoginResponseWaitIfNeeded();
+    void armSnapshotWaitIfNeeded();
+    void clearWaitDeadlines();
+    void noteSnapshotRequestQueued();
+    void noteReconnectCompletedIfReady();
+
+    MonotonicClockPort* clock;
+    TransportTimeouts timeouts;
+    TransportErrorReason lastErrorReason;
+    std::string lastErrorDetailText;
+    uint32_t reconnectCounter;
+    uint32_t snapshotRequestCounter;
+    bool reconnectPending;
+    TransportWaitDeadline loginResponseDeadline;
+    TransportWaitDeadline snapshotWaitDeadline;
 };
 
 }
