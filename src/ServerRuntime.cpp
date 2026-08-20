@@ -249,6 +249,8 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
                                                             responseError) ||
                     !session->enqueueFrame(frame, responseError)) {
                     if (error.empty()) error = responseError;
+                } else if (result.accepted) {
+                    session->requestCloseAfterFlush();
                 }
             }
             if (result.accepted) {

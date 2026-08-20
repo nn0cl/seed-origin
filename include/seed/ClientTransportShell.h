@@ -65,7 +65,6 @@ private:
     bool handleInboundFrames(const std::vector<InboundFrame>& frames,
                              std::string& error);
     void applyDisconnectResponse(const network::DisconnectResponse& response);
-    void resetAuthAfterDisconnect();
     void markFailed();
 };
 

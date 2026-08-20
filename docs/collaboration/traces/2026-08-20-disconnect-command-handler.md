@@ -30,7 +30,9 @@ test now that Move is handled.
 - Logout/Field unset does not release claimed PlayerName (LISS-0153 / CSP spec).
 - Reconnect rebinds same auth PlayerId entity (existing presence tests).
 - Inactive Disconnect rejects with explicit error (no silent no-op).
-- Client transport resets `auth` to Anonymous after an Accepted Disconnect ack; TCP stays open.
+- Client transport resets `auth` to Anonymous after an Accepted Disconnect ack; TCP stays open
+  (superseded the same day by `2026-08-20-disconnect-tcp-close-after-ack.md`:
+  Accepted ack then explicit TCP close; Rejected keeps the socket).
 - A Rejected Disconnect ack leaves the client LoggedIn.
 - Disconnect and RequestSnapshot reject non-empty payload (`validateCommand`).
 
@@ -40,5 +42,5 @@ Full `seed_tests` in `seed-origin-prediction/build`.
 
 ## Open decisions
 
-- Should Disconnect explicitly close the TCP connection after the ack, or remain
-  session-only end with the socket open (current: open, matching re-login)?
+- None remaining for TCP close-after-ack; see
+  `2026-08-20-disconnect-tcp-close-after-ack.md`.

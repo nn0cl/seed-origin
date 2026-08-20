@@ -16,7 +16,7 @@
 
 `N`は`MAX_COMMAND_PAYLOAD`以下でなければならない。Version 1のCommand typeはLogin、Move、Chat、Attack、CastSpell、Disconnect、RequestSnapshotである。RequestSnapshotとDisconnectのpayloadは空。session IDは接続が持つ正の内部ID（Login以外と同じ）。protocol versionは1のまま（Command型追加はv2に上げない）。
 
-サーバーはDisconnectを受理または拒否したあと、同じ16バイトCommandヘッダで **Disconnect ack** を返す（type=`Disconnect`=6）。Acceptedは空payloadと終了したsession ID。Rejectedは非空の理由文字列。クライアントはAccepted ackを見てからauthをAnonymousに戻す。RejectedではLoggedInのまま。TCPはcloseしない。
+サーバーはDisconnectを受理または拒否したあと、同じ16バイトCommandヘッダで **Disconnect ack** を返す（type=`Disconnect`=6）。Acceptedは空payloadと終了したsession ID。Rejectedは非空の理由文字列。クライアントはAccepted ackを見てからauthをAnonymousに戻し、TCPを明示closeする。RejectedではLoggedInのまま、TCPは閉じない。サーバーはAccepted ackをflushしてからconnectionをcloseする。再接続は新しいTCP（`beginReconnect` / `connectTcp`）。Disconnect ackのwireは変えない。
 
 Loginだけsession ID 0を許可し、それ以外はサーバーが発行した正の内部IDを要求する。クライアントは攻撃結果、魔法結果、座標、時刻を権威値として送信しない。
 

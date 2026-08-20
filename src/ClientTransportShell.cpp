@@ -207,6 +207,10 @@ bool ClientTransportShell::handleInboundFrames(
                 return false;
             }
             applyDisconnectResponse(response);
+            if (!isOpen()) {
+                error.clear();
+                return true;
+            }
             continue;
         }
         worldBytes.insert(worldBytes.end(), it->bytes.begin(), it->bytes.end());
@@ -315,15 +319,7 @@ void ClientTransportShell::applyDisconnectResponse(
         return;
     }
     if (response.sessionId != localSessionId) return;
-    resetAuthAfterDisconnect();
-}
-
-void ClientTransportShell::resetAuthAfterDisconnect() {
-    auth = TransportAuthState::Anonymous;
-    localSessionId = 0;
-    snapshotCommandQueued = false;
-    disconnectQueued = false;
-    receiver.beginReconnect();
+    beginReconnect();
 }
 
 void ClientTransportShell::markFailed() {

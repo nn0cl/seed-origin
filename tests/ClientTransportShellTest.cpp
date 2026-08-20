@@ -209,7 +209,7 @@ void loopback_reconnect_sends_request_snapshot_and_applies_server_snapshot() {
     assert(transport.flushOutbound(error) == server::SendStatus::Sent);
     loggedIn = false;
     size_t snapshotRequestsSeen = 0;
-    for (int i = 0; i < 8; ++i) {
+    for (int i = 0; i < 32; ++i) {
         serverTick(runtime, dispatcher, applier, frame);
         snapshotRequestsSeen += frame.snapshotRequests;
         assert(transport.pump(error));
@@ -231,7 +231,7 @@ void loopback_reconnect_sends_request_snapshot_and_applies_server_snapshot() {
     clearFieldPlayers();
 }
 
-void disconnect_resets_auth_while_tcp_stays_connected() {
+void rejected_disconnect_keeps_tcp_accepted_ack_closes_it() {
     int sockets[2] = {-1, -1};
     assert(::socketpair(AF_UNIX, SOCK_STREAM, 0, sockets) == 0);
     client::ClientTransportShell transport;
@@ -276,6 +276,8 @@ void disconnect_resets_auth_while_tcp_stays_connected() {
     assert(transport.pump(error));
     assert(transport.authState() == client::TransportAuthState::LoggedIn);
     assert(transport.sessionId() == 21);
+    assert(transport.isOpen());
+    assert(transport.linkState() == client::TransportLinkState::Connected);
 
     assert(transport.enqueueDisconnect(error));
     assert(transport.pump(error));
@@ -291,9 +293,13 @@ void disconnect_resets_auth_while_tcp_stays_connected() {
     assert(transport.pump(error));
     assert(transport.authState() == client::TransportAuthState::Anonymous);
     assert(transport.sessionId() == 0);
-    assert(transport.isOpen());
-    assert(transport.linkState() == client::TransportLinkState::Connected);
+    assert(!transport.isOpen());
+    assert(transport.linkState() == client::TransportLinkState::Disconnected);
     assert(transport.snapshotRequested());
+    uint8_t eofPeek[8];
+    const ssize_t peerClosed =
+        ::recv(sockets[0], eofPeek, sizeof(eofPeek), MSG_DONTWAIT);
+    assert(peerClosed == 0);
     ::close(sockets[0]);
 }
 
@@ -341,7 +347,7 @@ void loopback_disconnect_ends_session_and_resets_client_auth() {
     assert(transport.sessionId() == sessionId);
     assert(transport.isOpen());
 
-    for (int i = 0; i < 8 &&
+    for (int i = 0; i < 32 &&
                     transport.authState() == client::TransportAuthState::LoggedIn;
          ++i) {
         serverTick(runtime, dispatcher, applier, frame);
@@ -349,7 +355,8 @@ void loopback_disconnect_ends_session_and_resets_client_auth() {
     }
     assert(transport.authState() == client::TransportAuthState::Anonymous);
     assert(transport.sessionId() == 0);
-    assert(transport.isOpen());
+    assert(!transport.isOpen());
+    assert(transport.linkState() == client::TransportLinkState::Disconnected);
     assert(!registry.isActive(sessionId));
     assert(!field->hasPlayer(sessionId));
     assert(field->hasPlayer(gameplayId));
@@ -357,10 +364,12 @@ void loopback_disconnect_ends_session_and_resets_client_auth() {
     assert(field->publicPlayerPoses().empty());
     assert(!server::FieldSessionPresence::operatorSetPlayerName(9002, "Hero"));
 
+    transport.beginReconnect();
+    assert(transport.connectTcp("127.0.0.1", portNum, error));
     assert(transport.enqueueLogin("liss0152-disconnect", error));
     assert(transport.flushOutbound(error) == server::SendStatus::Sent);
     loggedIn = false;
-    for (int i = 0; i < 8 && !loggedIn; ++i) {
+    for (int i = 0; i < 32 && !loggedIn; ++i) {
         serverTick(runtime, dispatcher, applier, frame);
         assert(transport.pump(error));
         loggedIn = transport.authState() == client::TransportAuthState::LoggedIn;

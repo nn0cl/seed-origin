@@ -334,7 +334,7 @@ void after_reconnect_and_login_writes_request_snapshot_on_the_socket();
 void unauthenticated_reconnect_does_not_write_request_snapshot();
 void snapshot_from_peer_clears_request_after_skipped_events();
 void loopback_reconnect_sends_request_snapshot_and_applies_server_snapshot();
-void disconnect_resets_auth_while_tcp_stays_connected();
+void rejected_disconnect_keeps_tcp_accepted_ack_closes_it();
 void loopback_disconnect_ends_session_and_resets_client_auth();
 }
 
@@ -461,7 +461,7 @@ int main() {
     client_transport_shell_tests::unauthenticated_reconnect_does_not_write_request_snapshot();
     client_transport_shell_tests::snapshot_from_peer_clears_request_after_skipped_events();
     client_transport_shell_tests::loopback_reconnect_sends_request_snapshot_and_applies_server_snapshot();
-    client_transport_shell_tests::disconnect_resets_auth_while_tcp_stays_connected();
+    client_transport_shell_tests::rejected_disconnect_keeps_tcp_accepted_ack_closes_it();
     client_transport_shell_tests::loopback_disconnect_ends_session_and_resets_client_auth();
     combat_command_handler_tests::queues_attack_and_spell_intents();
     combat_command_handler_tests::rejects_malformed_or_oversized_power();

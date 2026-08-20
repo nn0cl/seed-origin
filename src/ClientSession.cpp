@@ -12,7 +12,8 @@ constexpr std::size_t READ_BUFFER_SIZE = 4096;
 }
 
 ClientSession::ClientSession(int clientSocket)
-    : clientSocket(clientSocket), accumulator(), outboundFrames() {
+    : clientSocket(clientSocket), closeAfterFlush(false), accumulator(),
+      outboundFrames() {
     if (this->clientSocket < 0) return;
     const int flags = fcntl(this->clientSocket, F_GETFL, 0);
     if (flags < 0 || fcntl(this->clientSocket, F_SETFL, flags | O_NONBLOCK) != 0) {
@@ -69,40 +70,62 @@ bool ClientSession::enqueueFrame(const std::vector<uint8_t>& frame, std::string&
 }
 
 SendStatus ClientSession::flushOutbound(std::string& error) {
-    if (!isOpen()) {
-        error = "client session is closed";
-        return SendStatus::Closed;
-    }
-
-    std::vector<uint8_t> frame;
-    if (!outboundFrames.front(frame)) return SendStatus::NoData;
-    const ssize_t sent = ::send(clientSocket, frame.data(), frame.size(), 0);
-    if (sent < 0) {
-        if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
-            return SendStatus::NoData;
-        }
-        if (errno == ECONNRESET || errno == EPIPE) {
-            close();
+    SendStatus last = SendStatus::NoData;
+    for (;;) {
+        if (!isOpen()) {
+            error = "client session is closed";
             return SendStatus::Closed;
         }
-        error = "client socket write failed";
-        close();
-        return SendStatus::Failed;
+
+        std::vector<uint8_t> frame;
+        if (!outboundFrames.front(frame)) {
+            if (closeAfterFlush) {
+                close();
+                return last == SendStatus::Sent ? SendStatus::Sent
+                                                : SendStatus::Closed;
+            }
+            return last == SendStatus::Sent ? SendStatus::Sent : SendStatus::NoData;
+        }
+        const ssize_t sent = ::send(clientSocket, frame.data(), frame.size(), 0);
+        if (sent < 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
+                return last == SendStatus::Sent ? SendStatus::Sent
+                                                : SendStatus::NoData;
+            }
+            if (errno == ECONNRESET || errno == EPIPE) {
+                close();
+                return SendStatus::Closed;
+            }
+            error = "client socket write failed";
+            close();
+            return SendStatus::Failed;
+        }
+        if (sent == 0) {
+            return last == SendStatus::Sent ? SendStatus::Sent : SendStatus::NoData;
+        }
+        if (!outboundFrames.consumeFront(static_cast<size_t>(sent))) {
+            error = "outbound frame progress is invalid";
+            close();
+            return SendStatus::Failed;
+        }
+        error.clear();
+        last = SendStatus::Sent;
+        if (!closeAfterFlush) return SendStatus::Sent;
     }
-    if (sent == 0) return SendStatus::NoData;
-    if (!outboundFrames.consumeFront(static_cast<size_t>(sent))) {
-        error = "outbound frame progress is invalid";
-        close();
-        return SendStatus::Failed;
-    }
-    error.clear();
-    return SendStatus::Sent;
+}
+
+void ClientSession::requestCloseAfterFlush() {
+    closeAfterFlush = true;
 }
 
 bool ClientSession::close() {
     if (clientSocket < 0) return true;
+    if (closeAfterFlush) {
+        ::shutdown(clientSocket, SHUT_WR);
+    }
     const bool closed = (::close(clientSocket) == 0);
     clientSocket = -1;
+    closeAfterFlush = false;
     return closed;
 }
 
