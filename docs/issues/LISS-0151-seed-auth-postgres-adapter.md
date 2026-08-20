@@ -1,8 +1,8 @@
 # LISS-0151: `seed_auth` PostgreSQL / pgcrypto Adapter
 
-- Status: in_progress
-- Phase: phase-3-refactor
-- Related branch: `feature/liss-0151-seed-auth-postgres-adapter`
+- Status: done
+- Phase: done
+- Related branch: merged via PR #16 (`feature/liss-0151-seed-auth-postgres-adapter`)
 - Priority: high
 - Depends on: LISS-0146（UseCase done）
 - Parent: LISS-0146
@@ -25,7 +25,7 @@ Adapter を追加する。HTTP / Spring Boot は含めない（次スライス�
 
 ## スコープ外
 
-- Spring Boot HTTP（`POST /register` `/login` `/logout`）— 次スライス
+- Spring Boot HTTP（`POST /register` `/login` `/logout`）— **LISS-0155**
 - ロックアウトの Postgres 永続化（UseCase のプロセス内メモリを維持）
 - Keep-Alive / セッション発行（LISS-0147 / `seed_server`）
 
@@ -70,7 +70,12 @@ Adapter を追加する。HTTP / Spring Boot は含めない（次スライス�
 - SQL・ポート契約・受入アサーションは変更なし
 - Adjudicator: Phase 3 実施後 commit / PR 承認
 
+## Completion（2026-08-20）
+
+- Merged via PR #16 (`5ed266c`).
+- Follow-up HTTP / Spring Boot Adapter: **LISS-0155**.
+
 ## English
 
 Add PostgreSQL + pgcrypto adapters for seed_auth ports from LISS-0146.
-HTTP/Spring Boot is a follow-up slice.
+HTTP/Spring Boot is a follow-up slice (LISS-0155).

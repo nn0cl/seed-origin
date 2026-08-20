@@ -32,8 +32,9 @@ canonicalに定義する。
 | 順序 | Issue | 内容 | 状態 |
 | --- | --- | --- | --- |
 | 0 | ADR 0018 | 登録制認証アーキテクチャ決定 | accepted |
-| 1 | LISS-0146 | `users`・`player_challenges`・`player_sessions`・`seed_auth` | done（UseCase）；Adapter は LISS-0151→HTTP 後続 |
-| 1.1 | LISS-0151 | `seed_auth` PostgreSQL / pgcrypto Adapter | in_progress / phase-3-refactor（JDBC；MyBatis→HTTP；branch `feature/liss-0151-seed-auth-postgres-adapter`） |
+| 1 | LISS-0146 | `users`・`player_challenges`・`player_sessions`・`seed_auth` | done（UseCase）；Adapter は LISS-0151→**0155 HTTP** |
+| 1.1 | LISS-0151 | `seed_auth` PostgreSQL / pgcrypto Adapter | **done**（PR #16） |
+| 1.2 | LISS-0155 | `seed_auth` Spring Boot HTTP Adapter（MyBatis 配線） | open / design |
 | 2 | LISS-0147 | チャレンジclaim・正規セッション発行・検証・更新 | done（PR #7–#12; last: #12 remove anonymous login） |
 | 3 | LISS-0148 | クラシックMMORPG型プレイヤープログレッション永続化 | phase-1-red（depends: 0146） |
 | 4 | LISS-0149 | 登録・アカウント管理用React SPA（ゲームログインなし） | phase-1-red（depends: 0146） |

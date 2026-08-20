@@ -166,7 +166,8 @@ JAVA_HOME=<jdk-23-or-newer> ./gradlew test --no-daemon
 - Merged via PR #4. Application UseCase + Gradle verification are on main.
 - Remaining outside UseCase completion: Spring HTTP, MyBatis, PostgreSQL
   Adapter, real `pgcrypto`.
-- Follow-up Issue for Postgres Adapter: **LISS-0151**（HTTP は次スライス）.
+- Follow-up Issue for Postgres Adapter: **LISS-0151**（done — PR #16）.
+- Follow-up Issue for Spring HTTP Adapter: **LISS-0155**.
 
 ## 設計契約（Phase 1 Redの入力）
 
