@@ -1,7 +1,7 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
 - Status: review
-- Phase: phase-3-refactor-dispatcher
+- Phase: dispatcher-slice-complete
 - Related branch: `feature/liss-0147-dispatcher-challenge-login`
 - Priority: high
 - Depends on: LISS-0146
@@ -166,6 +166,12 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 
 - `dispatchLogin` / `usesChallengeLogin` を抽出（挙動不変）
 - 匿名 constructor 経路は既存テスト互換のため残置
+
+## Dispatcher slice Adjudicator approval（2026-08-20）
+
+- Phase 1–3 dispatcher challenge Login wiring approved.
+- Remaining for full LISS-0147: ServerRuntime bind, Postgres adapters,
+  anonymous `LoginCommandHandler` / `SessionRegistry::login(claimedId)` removal.
 
 ## Remaining decisions
 
