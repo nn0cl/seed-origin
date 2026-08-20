@@ -1,8 +1,8 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
-- Status: review
-- Phase: review
-- Related branch: `feature/liss-0147-remove-anonymous-login`
+- Status: done
+- Phase: done
+- Related branch: merged via PR #12 (`feature/liss-0147-remove-anonymous-login`); prior slices via PR #7–#11
 - Priority: high
 - Depends on: LISS-0146
 - Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
@@ -388,12 +388,17 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 ## Remove anonymous login Adjudicator approval（2026-08-20）
 
 - Phase 1–3 remove anonymous login approved.
-- Remaining: LISS-0150 IdentityAliasStore formal supersession.
+- Merged to `main` via PR #12 (`6ae6d22`).
+- LISS-0147 acceptance criteria for world-server challenge / session-key
+  login and anonymous claimed-ID removal are satisfied.
+- Follow-up (out of LISS-0147): LISS-0150 IdentityAliasStore / LISS-0123 /
+  LISS-0130 / ADR 0016 formal supersession.
 
 ## Remaining decisions
 
-- TTL、Keep-Alive、再接続の基本方針は確定済み。Phase 1 Redのテストレビュー後に
-  Phase 2 Greenへ進む。
+- LISS-0147 itself has no remaining decisions.
+- IdentityAliasStore formal supersession and related ADR/issue status updates
+  are tracked by LISS-0150.
 
 ## English
 

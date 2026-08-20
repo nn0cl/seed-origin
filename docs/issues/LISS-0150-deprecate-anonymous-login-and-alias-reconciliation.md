@@ -3,7 +3,7 @@
 - Status: proposed
 - Phase: phase-0-design-intake
 - Priority: medium
-- Depends on: LISS-0147
+- Depends on: LISS-0147（done — PR #12 merged; Adjudicator may start 0150）
 - Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
 
 ## 目的
