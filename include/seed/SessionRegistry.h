@@ -23,8 +23,6 @@ public:
     SessionRegistry();
     explicit SessionRegistry(IdentityAliasStore& aliasStore);
 
-    SessionInfo login(const std::string& claimedId);
-    SessionInfo login(const std::string& claimedId, uint64_t worldTick);
     SessionInfo openAuthenticatedSession(int64_t userId);
     bool logout(int64_t internalId);
     bool isActive(int64_t internalId) const;

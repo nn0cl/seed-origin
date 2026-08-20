@@ -110,8 +110,8 @@ void dispatcher_accepts_logged_in_request_and_coalesces_one_snapshot() {
     server::WorldInputQueue queue;
     server::ServerCommandDispatcher dispatcher(registry, queue);
     dispatcher.beginFrame(3);
-    const session::SessionInfo a = registry.login("snap-a");
-    const session::SessionInfo b = registry.login("snap-b");
+    const session::SessionInfo a = registry.openAuthenticatedSession(1);
+    const session::SessionInfo b = registry.openAuthenticatedSession(2);
     const network::NetworkCommand first =
         network::makeRequestSnapshotCommand(a.internalId);
     const network::NetworkCommand second =

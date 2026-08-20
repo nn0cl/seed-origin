@@ -5,9 +5,9 @@
 #include <string>
 #include <vector>
 
-#include "LoginCommandHandler.h"
 #include "ChallengeLoginCommandHandler.h"
 #include "CommandRateLimiter.h"
+#include "SessionRegistry.h"
 #include "WorldInputQueue.h"
 
 namespace server {
@@ -43,7 +43,7 @@ private:
     CommandDispatchResult dispatchLogin(const network::NetworkCommand& command);
     bool usesChallengeLogin() const;
 
-    LoginCommandHandler loginHandler;
+    session::SessionRegistry& registry;
     WorldInputQueue* inputQueue;
     CommandRateLimiter rateLimiter;
     std::size_t snapshotRequests;

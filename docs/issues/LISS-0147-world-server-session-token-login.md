@@ -1,8 +1,8 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
-- Status: in_progress
+- Status: review
 - Phase: review
-- Related branch: `feature/liss-0147-postgres-production-bootstrap`
+- Related branch: `feature/liss-0147-remove-anonymous-login`
 - Priority: high
 - Depends on: LISS-0146
 - Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
@@ -353,6 +353,42 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 
 - Phase 1–3 ServerMain live Postgres bootstrap approved.
 - Remaining for full LISS-0147: anonymous login removal.
+
+## Phase 1 Red — Remove anonymous login（2026-08-20）
+
+- Tests:
+  - `rejects_nickname_login_when_challenge_auth_is_unbound`
+  - `create_dispatcher_without_bundle_rejects_nickname_login`
+  - `production_dispatcher_without_challenge_env_rejects_nickname_login`
+- Covered: unbound / env-unset Login path rejects nickname payload with
+  `challenge_auth_required` (no unconditional claimed-ID accept)
+- Expected Red: assertion failure（anonymous Login still accepted）
+- Out of this Red / Green follow-up: delete `LoginCommandHandler` and
+  `SessionRegistry::login(claimedId)`; migrate tests to
+  `openAuthenticatedSession`; IdentityAliasStore formal supersession remains
+  LISS-0150
+- Recommended Green policy: `SEED_CHALLENGE_AUTH` unset still starts the
+  server, but Login is rejected until challenge auth is wired
+
+## Phase 2 Green — Remove anonymous login（2026-08-20）
+
+- Unbound Login returns `challenge_auth_required`
+- Deleted `LoginCommandHandler` and `SessionRegistry::login(claimedId)`
+- Session setup in tests uses `openAuthenticatedSession` or challenge fakes
+- Loopback transport tests wire challenge auth + stable `FixedPlayerIdPort`
+- IdentityAliasStore remains for LISS-0150 formal supersession
+
+## Phase 3 Refactor — Remove anonymous login（2026-08-20）
+
+- `ServerCommandErrors.h` に `kChallengeAuthRequiredError` を集約（挙動不変）
+- `requireActiveSession` helper へ session ガードを抽出（挙動不変）
+- loopback transport 向け `ChallengeAuthTestFixtures.h` /
+  `TransportLoopbackTestSupport.h` を追加（重複 fake / serverTick 削除）
+
+## Remove anonymous login Adjudicator approval（2026-08-20）
+
+- Phase 1–3 remove anonymous login approved.
+- Remaining: LISS-0150 IdentityAliasStore formal supersession.
 
 ## Remaining decisions
 

@@ -3,6 +3,7 @@
 #include "CombatCommandHandler.h"
 #include "DisconnectCommandHandler.h"
 #include "MovementCommandHandler.h"
+#include "ServerCommandErrors.h"
 
 namespace server {
 
@@ -12,10 +13,21 @@ session::SessionInfo emptySession() {
     return {0, 0, std::string(), false};
 }
 
+bool requireActiveSession(session::SessionRegistry& registry,
+                          int64_t sessionId,
+                          const char* commandName,
+                          std::string& error) {
+    if (registry.isActive(sessionId)) {
+        return true;
+    }
+    error = std::string(commandName) + " requires an active session";
+    return false;
+}
+
 }
 
 ServerCommandDispatcher::ServerCommandDispatcher(session::SessionRegistry& registry)
-    : loginHandler(registry),
+    : registry(registry),
       inputQueue(0),
       snapshotRequests(0),
       challengeAuth(0),
@@ -23,7 +35,7 @@ ServerCommandDispatcher::ServerCommandDispatcher(session::SessionRegistry& regis
 
 ServerCommandDispatcher::ServerCommandDispatcher(session::SessionRegistry& registry,
                                                  WorldInputQueue& queue)
-    : loginHandler(registry),
+    : registry(registry),
       inputQueue(&queue),
       snapshotRequests(0),
       challengeAuth(0),
@@ -32,7 +44,7 @@ ServerCommandDispatcher::ServerCommandDispatcher(session::SessionRegistry& regis
 ServerCommandDispatcher::ServerCommandDispatcher(session::SessionRegistry& registry,
                                                  ChallengeSessionLoginService& auth,
                                                  GameplaySessionPort& gameplay)
-    : loginHandler(registry),
+    : registry(registry),
       inputQueue(0),
       snapshotRequests(0),
       challengeAuth(&auth),
@@ -56,7 +68,7 @@ void ServerCommandDispatcher::clearRateLimits() {
 }
 
 session::SessionRegistry& ServerCommandDispatcher::sessionRegistry() {
-    return loginHandler.sessionRegistry();
+    return registry;
 }
 
 std::size_t ServerCommandDispatcher::snapshotRequestCount() const {
@@ -76,8 +88,7 @@ CommandDispatchResult ServerCommandDispatcher::dispatch(
             result.error = "chat world input queue is not bound";
             return result;
         }
-        if (!loginHandler.sessionRegistry().isActive(command.sessionId)) {
-            result.error = "chat requires an active anonymous session";
+        if (!requireActiveSession(registry, command.sessionId, "chat", result.error)) {
             return result;
         }
         if (!rateLimiter.allow(command.sessionId, command.type)) {
@@ -95,8 +106,7 @@ CommandDispatchResult ServerCommandDispatcher::dispatch(
             result.error = "combat world input queue is not bound";
             return result;
         }
-        if (!loginHandler.sessionRegistry().isActive(command.sessionId)) {
-            result.error = "combat requires an active anonymous session";
+        if (!requireActiveSession(registry, command.sessionId, "combat", result.error)) {
             return result;
         }
         if (!rateLimiter.allow(command.sessionId, command.type)) {
@@ -115,8 +125,7 @@ CommandDispatchResult ServerCommandDispatcher::dispatch(
             result.error = "movement world input queue is not bound";
             return result;
         }
-        if (!loginHandler.sessionRegistry().isActive(command.sessionId)) {
-            result.error = "movement requires an active anonymous session";
+        if (!requireActiveSession(registry, command.sessionId, "movement", result.error)) {
             return result;
         }
         if (!rateLimiter.allow(command.sessionId, command.type)) {
@@ -131,8 +140,8 @@ CommandDispatchResult ServerCommandDispatcher::dispatch(
     }
 
     if (command.type == network::CommandType::RequestSnapshot) {
-        if (!loginHandler.sessionRegistry().isActive(command.sessionId)) {
-            result.error = "snapshot request requires an active anonymous session";
+        if (!requireActiveSession(registry, command.sessionId,
+                                  "snapshot request", result.error)) {
             return result;
         }
         if (!rateLimiter.allow(command.sessionId, command.type)) {
@@ -145,15 +154,14 @@ CommandDispatchResult ServerCommandDispatcher::dispatch(
     }
 
     if (command.type == network::CommandType::Disconnect) {
-        if (!loginHandler.sessionRegistry().isActive(command.sessionId)) {
-            result.error = "disconnect requires an active anonymous session";
+        if (!requireActiveSession(registry, command.sessionId, "disconnect", result.error)) {
             return result;
         }
         if (!rateLimiter.allow(command.sessionId, command.type)) {
             result.error = "disconnect command rate limit exceeded";
             return result;
         }
-        DisconnectCommandHandler handler(loginHandler.sessionRegistry());
+        DisconnectCommandHandler handler(registry);
         const DisconnectResult ended = handler.handle(command);
         result.accepted = ended.accepted;
         result.session = ended.session;
@@ -175,20 +183,17 @@ bool ServerCommandDispatcher::usesChallengeLogin() const {
 CommandDispatchResult ServerCommandDispatcher::dispatchLogin(
     const network::NetworkCommand& command) {
     CommandDispatchResult result = {false, command.type, emptySession(), std::string()};
-    if (usesChallengeLogin()) {
-        ChallengeLoginCommandHandler challengeLogin(*challengeAuth, *gameplaySessions);
-        const ChallengeLoginCommandResult login = challengeLogin.handle(command);
-        result.accepted = login.accepted;
-        result.session = login.session;
-        result.error = login.error;
-        result.playerSessionKey = login.playerSessionKey;
+    if (!usesChallengeLogin()) {
+        result.error = kChallengeAuthRequiredError;
         return result;
     }
 
-    const LoginResult login = loginHandler.handle(command);
+    ChallengeLoginCommandHandler challengeLogin(*challengeAuth, *gameplaySessions);
+    const ChallengeLoginCommandResult login = challengeLogin.handle(command);
     result.accepted = login.accepted;
     result.session = login.session;
     result.error = login.error;
+    result.playerSessionKey = login.playerSessionKey;
     return result;
 }
 

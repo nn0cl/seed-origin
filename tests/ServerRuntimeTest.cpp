@@ -2,6 +2,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "ServerCommandErrors.h"
 #include "ServerRuntime.h"
 #include "ServerCommandDispatcher.h"
 #include "NetworkFrameCodec.h"
@@ -49,9 +50,11 @@ void dispatches_pending_commands_in_fifo_order() {
     session::SessionRegistry registry;
     server::ServerCommandDispatcher dispatcher(registry);
     server::ServerRuntime runtime;
+    const session::SessionInfo session = registry.openAuthenticatedSession(1);
     const std::vector<network::NetworkCommand> commands = {
-        {network::CURRENT_PROTOCOL_VERSION, network::CommandType::Login, 0, "first"},
-        {network::CURRENT_PROTOCOL_VERSION, network::CommandType::Disconnect, 1, ""}
+        {network::CURRENT_PROTOCOL_VERSION, network::CommandType::Login, 0, "nickname"},
+        {network::CURRENT_PROTOCOL_VERSION, network::CommandType::Disconnect,
+         session.internalId, ""}
     };
 
     assert(runtime.start(0));
@@ -60,9 +63,10 @@ void dispatches_pending_commands_in_fifo_order() {
     const std::vector<server::CommandDispatchResult> results =
         runtime.dispatchPendingCommands(dispatcher);
     assert(results.size() == 2);
-    assert(results[0].accepted);
+    assert(!results[0].accepted);
+    assert(results[0].error == server::kChallengeAuthRequiredError);
     assert(results[1].accepted);
-    assert(!registry.isActive(results[0].session.internalId));
+    assert(!registry.isActive(session.internalId));
     assert(runtime.pendingCommandCount() == 0);
     assert(runtime.stop());
 }
@@ -87,7 +91,7 @@ void ingests_decoded_commands_from_client_session() {
     ::close(sockets[0]);
 }
 
-void dispatches_ingested_login_to_session_registry() {
+void rejects_unbound_nickname_login_from_pending_commands() {
     session::SessionRegistry registry;
     server::ServerCommandDispatcher dispatcher(registry);
     server::ServerRuntime runtime;
@@ -99,8 +103,8 @@ void dispatches_ingested_login_to_session_registry() {
     const std::vector<server::CommandDispatchResult> results =
         runtime.dispatchPendingCommands(dispatcher);
     assert(results.size() == 1);
-    assert(results[0].accepted);
-    assert(results[0].session.internalId > 0);
+    assert(!results[0].accepted);
+    assert(results[0].error == server::kChallengeAuthRequiredError);
     assert(runtime.pendingCommandCount() == 0);
     assert(runtime.stop());
 }

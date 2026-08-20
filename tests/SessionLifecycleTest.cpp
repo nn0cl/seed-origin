@@ -6,8 +6,8 @@ namespace session_lifecycle_tests {
 
 void rejects_duplicate_login_on_one_connection() {
     session::SessionRegistry registry;
-    const session::SessionInfo first = registry.login("player-a");
-    const session::SessionInfo second = registry.login("player-b");
+    const session::SessionInfo first = registry.openAuthenticatedSession(1);
+    const session::SessionInfo second = registry.openAuthenticatedSession(2);
     server::SessionLifecycle lifecycle;
     std::string error;
     assert(lifecycle.bind(1, first, error));
@@ -18,7 +18,7 @@ void rejects_duplicate_login_on_one_connection() {
 
 void logs_out_bound_session_on_disconnect() {
     session::SessionRegistry registry;
-    const session::SessionInfo info = registry.login("player-a");
+    const session::SessionInfo info = registry.openAuthenticatedSession(1);
     server::SessionLifecycle lifecycle;
     std::string error;
     assert(lifecycle.bind(1, info, error));
@@ -38,8 +38,8 @@ void rejects_invalid_binding_without_mutation() {
 
 void clears_all_bound_sessions() {
     session::SessionRegistry registry;
-    const session::SessionInfo first = registry.login("player-a");
-    const session::SessionInfo second = registry.login("player-b");
+    const session::SessionInfo first = registry.openAuthenticatedSession(1);
+    const session::SessionInfo second = registry.openAuthenticatedSession(2);
     server::SessionLifecycle lifecycle;
     std::string error;
     assert(lifecycle.bind(1, first, error));

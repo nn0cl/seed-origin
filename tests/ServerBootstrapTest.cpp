@@ -6,6 +6,7 @@
 #include "ChallengeSessionLogin.h"
 #include "GameplaySessionPort.h"
 #include "ServerBootstrap.h"
+#include "ServerCommandErrors.h"
 
 namespace server_bootstrap_tests {
 namespace {
@@ -159,7 +160,7 @@ void create_dispatcher_uses_challenge_login_when_bundle_provided() {
     assert(challengeResult.playerSessionKey.value == "player-session-1");
 }
 
-void create_dispatcher_uses_anonymous_login_when_bundle_is_null() {
+void create_dispatcher_without_bundle_rejects_nickname_login() {
     session::SessionRegistry registry;
     const std::unique_ptr<server::ServerCommandDispatcher> dispatcher =
         server::ServerBootstrap::createCommandDispatcher(registry, nullptr);
@@ -169,12 +170,12 @@ void create_dispatcher_uses_anonymous_login_when_bundle_is_null() {
         network::CURRENT_PROTOCOL_VERSION, network::CommandType::Login, 0,
         "player"};
     const server::CommandDispatchResult result = dispatcher->dispatch(command);
-    assert(result.accepted);
-    assert(result.session.internalId != 0);
-    assert(!result.session.authenticated);
+    assert(!result.accepted);
+    assert(result.session.internalId == 0);
+    assert(result.error == server::kChallengeAuthRequiredError);
 }
 
-void production_dispatcher_uses_anonymous_path_when_env_is_unset() {
+void production_dispatcher_starts_when_challenge_env_is_unset() {
     const char* saved = std::getenv("SEED_CHALLENGE_AUTH");
     unsetenv("SEED_CHALLENGE_AUTH");
 
@@ -185,6 +186,28 @@ void production_dispatcher_uses_anonymous_path_when_env_is_unset() {
                                                                    error);
     assert(dispatcher.get() != nullptr);
     assert(error.empty());
+
+    restoreChallengeAuthEnv(saved);
+}
+
+void production_dispatcher_without_challenge_env_rejects_nickname_login() {
+    const char* saved = std::getenv("SEED_CHALLENGE_AUTH");
+    unsetenv("SEED_CHALLENGE_AUTH");
+
+    session::SessionRegistry registry;
+    std::string error;
+    const std::unique_ptr<server::ServerCommandDispatcher> dispatcher =
+        server::ServerBootstrap::createProductionCommandDispatcher(registry,
+                                                                   error);
+    assert(dispatcher.get() != nullptr);
+    assert(error.empty());
+
+    const network::NetworkCommand command = {
+        network::CURRENT_PROTOCOL_VERSION, network::CommandType::Login, 0,
+        "player"};
+    const server::CommandDispatchResult result = dispatcher->dispatch(command);
+    assert(!result.accepted);
+    assert(result.error == server::kChallengeAuthRequiredError);
 
     restoreChallengeAuthEnv(saved);
 }

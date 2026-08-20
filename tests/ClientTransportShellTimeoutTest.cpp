@@ -1,31 +1,39 @@
 #include <cassert>
+#include <map>
 #include <string>
 #include <sys/socket.h>
 #include <time.h>
 #include <unistd.h>
 #include <vector>
 
+#include "ChallengeAuthTestFixtures.h"
+#include "TransportLoopbackTestSupport.h"
 #include "ClientTransportShell.h"
-#include "AuthenticatedPlayerIdPort.h"
-#include "Field.h"
 #include "FieldSessionPresence.h"
 #include "LoginFieldSpawnSettings.h"
 #include "LoginResponseCodec.h"
 #include "MonotonicClockPort.h"
 #include "NetworkFrameCodec.h"
-#include "Player.h"
-#include "Position.h"
+#include "RegistryGameplaySessionPort.h"
 #include "ServerCommandDispatcher.h"
 #include "ServerRuntime.h"
 #include "SessionRegistry.h"
-#include "Status.h"
+#include "WorldFrameApplier.h"
 #include "TransportErrorReason.h"
 #include "TransportTimeouts.h"
-#include "WorldFrameApplier.h"
 #include "WorldUpdateFrameCodec.h"
 
 namespace client_transport_shell_timeout_tests {
 namespace {
+
+using seed_test::clearFieldPlayers;
+using seed_test::FakeChallengeClaimPort;
+using seed_test::FakeSessionStore;
+using seed_test::FixedKeyIssuer;
+using seed_test::FixedPlayerIdPort;
+using seed_test::FixedWallClock;
+using seed_test::resetFieldSessionPresence;
+using seed_test::serverTick;
 
 class FakeMonotonicClock : public client::MonotonicClockPort {
 public:
@@ -46,25 +54,6 @@ public:
                static_cast<uint64_t>(ts.tv_nsec / 1000000ULL);
     }
 };
-
-void serverTick(server::ServerRuntime& runtime,
-                server::ServerCommandDispatcher& dispatcher,
-                server::WorldFrameApplier& applier,
-                server::ServerFrameResult& frame) {
-    std::string error;
-    frame = runtime.processFrame(dispatcher, error);
-    assert(error.empty());
-    std::vector<network::WorldUpdate> updates;
-    assert(applier.apply(
-        server::WorldFrameInputs{frame.worldTick, frame.inputs}, updates, error));
-    std::vector<server::MovementAck> acks = applier.ownerMovementAcks();
-    assert(applier.capturePublicSnapshotIfNewSessions(
-        frame.newAuthenticatedSessions + frame.snapshotRequests, frame.worldTick,
-        updates, acks, error));
-    if (updates.empty()) return;
-    std::string publishError;
-    runtime.publishWorldUpdates(updates, acks, publishError);
-}
 
 }
 
@@ -188,15 +177,21 @@ void connect_timeout_records_connect_timeout() {
 }
 
 void successful_reconnect_increments_reconnect_counter() {
-    Field* field = Field::getInstance();
-    const std::vector<PlayerPoseSnapshot> poses = field->publicPlayerPoses();
-    for (std::size_t i = 0; i < poses.size(); ++i) {
-        const int64_t sessionId = poses[i].sessionId;
-        Field::unsetPlayer(Player(sessionId, Status(), Position(sessionId, 0, 0, 0)));
-    }
+    clearFieldPlayers();
 
+    const FixedPlayerIdPort playerIdPort(9001);
+    server::FieldSessionPresence::usePlayerIdPort(&playerIdPort);
+    assert(server::FieldSessionPresence::operatorSetPlayerName(9001, "Hero"));
+
+    const int64_t now = 1700000000;
+    FixedWallClock clock(now);
+    FakeChallengeClaimPort challenges;
+    FakeSessionStore sessions;
+    FixedKeyIssuer keys("timeout-session");
+    server::ChallengeSessionLoginService auth(challenges, sessions, keys, clock);
     session::SessionRegistry registry;
-    server::ServerCommandDispatcher dispatcher(registry);
+    server::RegistryGameplaySessionPort gameplay(registry);
+    server::ServerCommandDispatcher dispatcher(registry, auth, gameplay);
     server::ServerRuntime runtime;
     server::WorldFrameApplier applier(*Field::getInstance());
     assert(runtime.start(0));
@@ -206,10 +201,13 @@ void successful_reconnect_increments_reconnect_counter() {
     const uint16_t port = runtime.listeningPort();
     assert(port != 0);
 
+    const std::string challengeKey = "liss0128-timeout-ops";
+    challenges.putUnclaimed(challengeKey, 42, now + 120);
+
     client::ClientTransportShell transport;
     std::string error;
     assert(transport.connectTcp("127.0.0.1", port, error));
-    assert(transport.enqueueLogin("liss0128-timeout-ops", error));
+    assert(transport.enqueueLogin(challengeKey, error));
     assert(transport.flushOutbound(error) == server::SendStatus::Sent);
 
     server::ServerFrameResult frame = {};
@@ -224,8 +222,9 @@ void successful_reconnect_increments_reconnect_counter() {
     assert(transport.lastError() == client::TransportErrorReason::None);
 
     transport.beginReconnect();
+    challenges.putUnclaimed(challengeKey, 42, now + 120);
     assert(transport.connectTcp("127.0.0.1", port, error));
-    assert(transport.enqueueLogin("liss0128-timeout-ops", error));
+    assert(transport.enqueueLogin(challengeKey, error));
     assert(transport.flushOutbound(error) == server::SendStatus::Sent);
     loggedIn = false;
     for (int i = 0; i < 32; ++i) {
@@ -242,13 +241,8 @@ void successful_reconnect_increments_reconnect_counter() {
     assert(transport.lastError() == client::TransportErrorReason::None);
 
     assert(runtime.stop());
-    server::FieldSessionPresence::useSpawnSettings(server::LoginFieldSpawnSettings());
-    server::FieldSessionPresence::usePlayerIdPort(0);
-    const std::vector<PlayerPoseSnapshot> cleared = field->publicPlayerPoses();
-    for (std::size_t i = 0; i < cleared.size(); ++i) {
-        const int64_t sessionId = cleared[i].sessionId;
-        Field::unsetPlayer(Player(sessionId, Status(), Position(sessionId, 0, 0, 0)));
-    }
+    resetFieldSessionPresence();
+    clearFieldPlayers();
 }
 
 } // namespace client_transport_shell_timeout_tests
