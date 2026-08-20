@@ -73,7 +73,8 @@ Adapter を追加する。HTTP / Spring Boot は含めない（次スライス�
 ## Completion（2026-08-20）
 
 - Merged via PR #16 (`5ed266c`).
-- Follow-up HTTP / Spring Boot Adapter: **LISS-0155**.
+- Follow-up HTTP / Spring Boot Adapter: **LISS-0155**（done — PR #18）.
+- Follow-up MyBatis + Boot upgrade: **LISS-0156**（done — PR #21；JDBC path retired）.
 
 ## English
 
