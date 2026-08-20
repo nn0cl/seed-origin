@@ -168,7 +168,8 @@ JAVA_HOME=<jdk-23-or-newer> ./gradlew test --no-daemon
   Adapter, real `pgcrypto`.
 - Follow-up Issue for Postgres Adapter: **LISS-0151**（done — PR #16）.
 - Follow-up Issue for Spring HTTP Adapter: **LISS-0155**（done — PR #18）.
-- Remaining after 0155: MyBatis mapper 置換、Spring Boot 3.5/4.x、LISS-0149 SPA.
+- Follow-up Issue for MyBatis mapper + Boot upgrade: **LISS-0156**.
+- Remaining after 0155/0156 path: LISS-0149 SPA；Boot/MyBatis 詳細は 0156.
 
 ## 設計契約（Phase 1 Redの入力）
 
