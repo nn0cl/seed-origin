@@ -53,16 +53,16 @@ LISS-0155 で残した二点を解消する。
 
 ## Remaining decisions（Adjudicator）
 
-1. **Spring Boot ターゲット**（2026-08 時点で 3.4/3.5 は OSS EOL）
-   - 提案 A: **4.1.x**（現行 OSS サポート、推奨）
-   - 提案 B: **4.0.x**（サポート短い）
-   - 非推奨: 3.5.16（既に OSS EOL）
-2. **MyBatis Spring Boot Starter**
-   - Boot 4 なら提案: **mybatis-spring-boot-starter 4.x**
-   - Boot 3 に留める場合のみ 3.0.x 継続
-3. **移行単位**
-   - 提案: 単一 Issue で Boot アップグレード + MyBatis 置換をまとめる
-   - 代替: Boot だけ先、MyBatis は次 Issue
+~~1–3 は下記で確定。~~
+
+## Adjudicator decisions（2026-08-20）
+
+- **方針**: 各種ミドルウェアは **OSS サポート範囲内の最新** を採用する。
+- Spring Boot: **4.1.0**（4.1 系の現行最新・OSS サポート中）
+- MyBatis Spring Boot Starter: **4.1.0**（Boot 4.1 対応の現行最新）
+- 範囲: **単一 Issue**（Boot アップグレード + MyBatis mapper 置換）
+- その他（PostgreSQL JDBC・Kotlin プラグイン等）: Boot BOM / サポート行列に従い
+  サポート内最新へ追随（実装 Phase で確定）
 
 ## English
 
