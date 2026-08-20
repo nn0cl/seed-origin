@@ -1,8 +1,8 @@
 # LISS-0150: 匿名ログイン・ID名寄せの廃止処理
 
-- Status: review
-- Phase: docs-supersession-complete
-- Related branch: `docs/liss-0150-supersede-alias`
+- Status: done
+- Phase: done
+- Related branch: merged via PR #14 (`docs/liss-0150-supersede-alias`)
 - Priority: medium
 - Depends on: LISS-0147（done — PR #12）
 - Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
@@ -57,9 +57,16 @@ mainへ着地した後、匿名ログイン・ID名寄せ関連の資産を正�
 - `IdentityAliasStore` / Postgres adapter / Admin alias UI のコード削除
 - 新規 purge / マイグレーション
 
+## Adjudicator approval / Issue completion（2026-08-20）
+
+- Docs supersession slice approved and merged via PR #14 (`f77cf06`).
+- LISS-0150 docs acceptance criteria are satisfied.
+- Follow-up (out of this Issue): delete `IdentityAliasStore` code after
+  `seed_auth` HTTP + `seed_admin` Kotlin migration (ADR 0023 decision 5).
+
 ## Remaining decisions
 
-- 本スライスの docs 受入は完了。コード削除の着手可否は ADR 0019 /
+- 本Issueの docs 受入は完了。コード削除の着手可否は ADR 0019 /
   LISS-0146 HTTP Adapter 完了後に再検討する。
 
 ## English
