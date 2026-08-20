@@ -38,6 +38,22 @@ bool enqueueLoginResponse(ClientSession* session,
     return true;
 }
 
+network::LoginResponse loginResponseFromDispatch(
+    const CommandDispatchResult& result) {
+    network::LoginResponse response;
+    response.version = network::CURRENT_PROTOCOL_VERSION;
+    if (result.accepted) {
+        response.status = network::LoginResponseStatus::Accepted;
+        response.sessionId = result.session.internalId;
+        response.payload = result.playerSessionKey.value;
+    } else {
+        response.status = network::LoginResponseStatus::Rejected;
+        response.sessionId = 0;
+        response.payload = result.error;
+    }
+    return response;
+}
+
 bool enqueueDisconnectResponse(ClientSession* session,
                                const network::DisconnectResponse& response,
                                std::string& error) {
@@ -321,14 +337,7 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
                 ++newAuthenticatedSessions;
             }
         }
-        const network::LoginResponse response = {
-            network::CURRENT_PROTOCOL_VERSION,
-            result.accepted ? network::LoginResponseStatus::Accepted
-                            : network::LoginResponseStatus::Rejected,
-            result.accepted ? result.session.internalId : 0,
-            result.accepted ? result.playerSessionKey.value : result.error
-        };
-        enqueueLoginResponse(session, response, error);
+        enqueueLoginResponse(session, loginResponseFromDispatch(result), error);
     }
     removeClosedClients(dispatcher.sessionRegistry(), &dispatcher);
     return processed;

@@ -1,7 +1,7 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
-- Status: in_progress
-- Phase: phase-2-green-runtime
+- Status: review
+- Phase: phase-3-refactor-runtime
 - Related branch: `feature/liss-0147-runtime-challenge-login`
 - Priority: high
 - Depends on: LISS-0146
@@ -187,6 +187,10 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 - Accepted LoginResponse may include a PlayerSessionKey payload (empty still valid)
 - `processClientFrames` copies `CommandDispatchResult.playerSessionKey` into
   the accepted LoginResponse payload
+
+## Phase 3 Refactor — Runtime LoginResponse session key（2026-08-20）
+
+- `loginResponseFromDispatch` を抽出（挙動不変）
 
 ## Remaining decisions
 
