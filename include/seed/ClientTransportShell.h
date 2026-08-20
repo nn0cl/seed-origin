@@ -9,7 +9,10 @@
 #include "ClientSession.h"
 #include "ClientWorldUpdateReceiver.h"
 #include "DisconnectResponse.h"
+#include "MonotonicClockPort.h"
 #include "OutboundFrameQueue.h"
+#include "TransportErrorReason.h"
+#include "TransportTimeouts.h"
 
 namespace client {
 
@@ -48,6 +51,13 @@ public:
     int64_t sessionId() const;
     bool snapshotRequested() const;
     const ClientWorldUpdateReceiver& worldReceiver() const;
+
+    void setClock(MonotonicClockPort* clock);
+    void setTimeouts(const TransportTimeouts& timeouts);
+    TransportErrorReason lastError() const;
+    const std::string& lastErrorDetail() const;
+    uint32_t reconnectCount() const;
+    uint32_t snapshotRequestCount() const;
 
 private:
     int clientSocket;

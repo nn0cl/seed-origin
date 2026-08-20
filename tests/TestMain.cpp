@@ -338,6 +338,14 @@ void rejected_disconnect_keeps_tcp_accepted_ack_closes_it();
 void loopback_disconnect_ends_session_and_resets_client_auth();
 }
 
+namespace client_transport_shell_timeout_tests {
+void snapshot_wait_timeout_records_failure_and_keeps_snapshot_pending();
+void login_response_wait_timeout_records_failure_during_reconnect();
+void peer_close_records_peer_closed_on_logged_in_transport();
+void corrupt_inbound_frame_records_protocol_error();
+void successful_reconnect_increments_reconnect_counter();
+}
+
 namespace remote_player_pose_store_tests {
 void snaps_on_snapshot_replace_and_skips_local_session();
 void interpolates_small_error_and_snaps_large_error();
@@ -463,6 +471,11 @@ int main() {
     client_transport_shell_tests::loopback_reconnect_sends_request_snapshot_and_applies_server_snapshot();
     client_transport_shell_tests::rejected_disconnect_keeps_tcp_accepted_ack_closes_it();
     client_transport_shell_tests::loopback_disconnect_ends_session_and_resets_client_auth();
+    client_transport_shell_timeout_tests::snapshot_wait_timeout_records_failure_and_keeps_snapshot_pending();
+    client_transport_shell_timeout_tests::login_response_wait_timeout_records_failure_during_reconnect();
+    client_transport_shell_timeout_tests::peer_close_records_peer_closed_on_logged_in_transport();
+    client_transport_shell_timeout_tests::corrupt_inbound_frame_records_protocol_error();
+    client_transport_shell_timeout_tests::successful_reconnect_increments_reconnect_counter();
     combat_command_handler_tests::queues_attack_and_spell_intents();
     combat_command_handler_tests::rejects_malformed_or_oversized_power();
     combat_command_handler_tests::rejects_duplicate_request_id();

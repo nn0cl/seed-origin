@@ -176,6 +176,7 @@ add_executable(seed_tests
     tests/RequestSnapshotCommandTest.cpp
     tests/ClientInboundDemuxTest.cpp
     tests/ClientTransportShellTest.cpp
+    tests/ClientTransportShellTimeoutTest.cpp
     tests/NpcCombatTargetTest.cpp
     tests/NpcAiTest.cpp
     tests/StatusSaturationTest.cpp
