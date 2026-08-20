@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "ClientInboundDemux.h"
+#include "DisconnectResponseCodec.h"
 #include "LoginResponseCodec.h"
 #include "WorldUpdateFrameCodec.h"
 
@@ -45,6 +46,37 @@ void splits_login_response_and_world_update_from_one_buffer() {
     assert(frames[0].bytes == login);
     assert(frames[1].kind == client::InboundFrameKind::WorldUpdate);
     assert(frames[1].bytes == world);
+}
+
+void splits_disconnect_response_from_login_and_world_update() {
+    const network::LoginResponse accepted = {
+        network::CURRENT_PROTOCOL_VERSION, network::LoginResponseStatus::Accepted,
+        21, std::string()};
+    const network::DisconnectResponse ended = {
+        network::CURRENT_PROTOCOL_VERSION,
+        network::DisconnectResponseStatus::Accepted, 21, std::string()};
+    const network::WorldUpdate snapshot = {
+        1, network::UpdateKind::Snapshot, 1, 1, 0,
+        "ether.fire=0;ether.water=0;ether.earth=0;ether.air=0;ether.hazard=0"};
+    std::vector<uint8_t> login;
+    std::vector<uint8_t> disconnect;
+    std::vector<uint8_t> world;
+    std::string error;
+    assert(encodeLogin(accepted, login));
+    assert(network::encodeDisconnectResponseFrame(ended, disconnect, error));
+    assert(encodeUpdate(snapshot, world));
+    std::vector<uint8_t> mixed = login;
+    mixed.insert(mixed.end(), disconnect.begin(), disconnect.end());
+    mixed.insert(mixed.end(), world.begin(), world.end());
+
+    client::ClientInboundDemux demux;
+    std::vector<client::InboundFrame> frames;
+    assert(demux.append(mixed, frames, error));
+    assert(frames.size() == 3);
+    assert(frames[0].kind == client::InboundFrameKind::LoginResponse);
+    assert(frames[1].kind == client::InboundFrameKind::DisconnectResponse);
+    assert(frames[1].bytes == disconnect);
+    assert(frames[2].kind == client::InboundFrameKind::WorldUpdate);
 }
 
 void joins_partial_inbound_frames_without_dispatch() {

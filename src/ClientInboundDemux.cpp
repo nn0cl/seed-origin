@@ -1,5 +1,6 @@
 #include "ClientInboundDemux.h"
 
+#include "NetworkCommand.h"
 #include "NetworkFrameCodec.h"
 #include "WorldUpdate.h"
 #include "WorldUpdateFrameCodec.h"
@@ -58,10 +59,15 @@ bool ClientInboundDemux::append(const std::vector<uint8_t>& bytes,
             payloadLength = read32(buffered, 12);
             if (payloadLength > network::MAX_COMMAND_PAYLOAD) {
                 failedState = true;
-                error = "login response stream payload exceeds maximum size";
+                error = "command response stream payload exceeds maximum size";
                 return false;
             }
-            kind = InboundFrameKind::LoginResponse;
+            if (read16(buffered, 2) ==
+                static_cast<uint16_t>(network::CommandType::Disconnect)) {
+                kind = InboundFrameKind::DisconnectResponse;
+            } else {
+                kind = InboundFrameKind::LoginResponse;
+            }
         }
         const size_t frameSize = headerSize + payloadLength;
         if (buffered.size() < frameSize) {

@@ -31,6 +31,8 @@ set(SEED_CORE_SOURCES
     src/CommandRateLimiter.cpp
     src/LoginResponse.cpp
     src/LoginResponseCodec.cpp
+    src/DisconnectResponse.cpp
+    src/DisconnectResponseCodec.cpp
     src/OutboundFrameQueue.cpp
     src/SessionLifecycle.cpp
     src/WorldFrameUpdateBuilder.cpp
@@ -144,6 +146,7 @@ add_executable(seed_tests
     tests/ServerRuntimeTest.cpp
     tests/NetworkFrameCodecTest.cpp
     tests/LoginResponseCodecTest.cpp
+    tests/DisconnectResponseCodecTest.cpp
     tests/OutboundFrameQueueTest.cpp
     tests/SessionLifecycleTest.cpp
     tests/WorldFrameUpdateBuilderTest.cpp

@@ -1,5 +1,6 @@
 #include "ClientTransportShell.h"
 
+#include "DisconnectResponseCodec.h"
 #include "LoginResponseCodec.h"
 #include "NetworkFrameCodec.h"
 
@@ -198,6 +199,16 @@ bool ClientTransportShell::handleInboundFrames(
             receiver.bindLocalSession(localSessionId);
             continue;
         }
+        if (it->kind == InboundFrameKind::DisconnectResponse) {
+            network::DisconnectResponse response = {};
+            if (!network::decodeDisconnectResponseFrame(it->bytes, response,
+                                                        error)) {
+                markFailed();
+                return false;
+            }
+            applyDisconnectResponse(response);
+            continue;
+        }
         worldBytes.insert(worldBytes.end(), it->bytes.begin(), it->bytes.end());
     }
     if (worldBytes.empty()) {
@@ -259,10 +270,6 @@ bool ClientTransportShell::pump(std::string& error) {
         if (status == server::SendStatus::NoData) break;
         if (status != server::SendStatus::Sent) return false;
     }
-    if (disconnectQueued && outboundFrames.empty()) {
-        resetAuthAfterDisconnect();
-        disconnectQueued = false;
-    }
     error.clear();
     return true;
 }
@@ -300,10 +307,22 @@ const ClientWorldUpdateReceiver& ClientTransportShell::worldReceiver() const {
     return receiver;
 }
 
+void ClientTransportShell::applyDisconnectResponse(
+    const network::DisconnectResponse& response) {
+    if (!disconnectQueued) return;
+    if (response.status == network::DisconnectResponseStatus::Rejected) {
+        disconnectQueued = false;
+        return;
+    }
+    if (response.sessionId != localSessionId) return;
+    resetAuthAfterDisconnect();
+}
+
 void ClientTransportShell::resetAuthAfterDisconnect() {
     auth = TransportAuthState::Anonymous;
     localSessionId = 0;
     snapshotCommandQueued = false;
+    disconnectQueued = false;
     receiver.beginReconnect();
 }
 

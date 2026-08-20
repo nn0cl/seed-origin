@@ -135,6 +135,12 @@ void round_trips_rejected_response();
 void rejects_invalid_response_identity();
 }
 
+namespace disconnect_response_codec_tests {
+void round_trips_accepted_response();
+void round_trips_rejected_response();
+void rejects_accepted_response_without_session();
+}
+
 namespace outbound_frame_queue_tests {
 void preserves_fifo_order();
 void rejects_invalid_frame_without_mutation();
@@ -319,6 +325,7 @@ void snapshot_after_request_resumes_events_without_treating_movement_as_snapshot
 
 namespace client_inbound_demux_tests {
 void splits_login_response_and_world_update_from_one_buffer();
+void splits_disconnect_response_from_login_and_world_update();
 void joins_partial_inbound_frames_without_dispatch();
 }
 
@@ -395,6 +402,9 @@ int main() {
     login_response_codec_tests::round_trips_accepted_response();
     login_response_codec_tests::round_trips_rejected_response();
     login_response_codec_tests::rejects_invalid_response_identity();
+    disconnect_response_codec_tests::round_trips_accepted_response();
+    disconnect_response_codec_tests::round_trips_rejected_response();
+    disconnect_response_codec_tests::rejects_accepted_response_without_session();
     outbound_frame_queue_tests::preserves_fifo_order();
     outbound_frame_queue_tests::rejects_invalid_frame_without_mutation();
     outbound_frame_queue_tests::rejects_frame_after_capacity_without_mutation();
@@ -445,6 +455,7 @@ int main() {
     request_snapshot_command_tests::dispatcher_accepts_logged_in_request_and_coalesces_one_snapshot();
     request_snapshot_command_tests::snapshot_after_request_resumes_events_without_treating_movement_as_snapshot();
     client_inbound_demux_tests::splits_login_response_and_world_update_from_one_buffer();
+    client_inbound_demux_tests::splits_disconnect_response_from_login_and_world_update();
     client_inbound_demux_tests::joins_partial_inbound_frames_without_dispatch();
     client_transport_shell_tests::after_reconnect_and_login_writes_request_snapshot_on_the_socket();
     client_transport_shell_tests::unauthenticated_reconnect_does_not_write_request_snapshot();

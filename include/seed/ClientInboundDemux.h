@@ -9,6 +9,7 @@ namespace client {
 
 enum class InboundFrameKind {
     LoginResponse,
+    DisconnectResponse,
     WorldUpdate
 };
 

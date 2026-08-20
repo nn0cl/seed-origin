@@ -379,7 +379,10 @@ the spawn/game max).
 
 Reconnect binds the new session to the existing auth PlayerId entity (pose and
 Status stay). Disconnect unbinds the session and omits the entity from public
-poses until rebound; it does not `unsetPlayer`.
+poses until rebound; it does not `unsetPlayer`. The server replies with a
+Disconnect ack (Command type 6, empty payload on success). The client resets
+transport auth only after that Accepted ack. A Rejected ack leaves the client
+LoggedIn. TCP stays open.
 
 Observers track other people by Snapshot `player.<i>.id` (gameplay id). The
 remote pose store uses that id as the key. `player.<i>.session` is communication

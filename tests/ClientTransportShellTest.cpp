@@ -9,6 +9,7 @@
 #include "Field.h"
 #include "FieldSessionPresence.h"
 #include "LoginFieldSpawnSettings.h"
+#include "DisconnectResponseCodec.h"
 #include "LoginResponseCodec.h"
 #include "NetworkFrameCodec.h"
 #include "Player.h"
@@ -250,11 +251,9 @@ void disconnect_resets_auth_while_tcp_stays_connected() {
 
     assert(transport.enqueueDisconnect(error));
     assert(transport.pump(error));
-    assert(transport.authState() == client::TransportAuthState::Anonymous);
-    assert(transport.sessionId() == 0);
+    assert(transport.authState() == client::TransportAuthState::LoggedIn);
+    assert(transport.sessionId() == 21);
     assert(transport.isOpen());
-    assert(transport.linkState() == client::TransportLinkState::Connected);
-    assert(transport.snapshotRequested());
 
     std::vector<uint8_t> received(64, 0);
     const ssize_t n = ::recv(sockets[0], received.data(), received.size(), 0);
@@ -265,6 +264,36 @@ void disconnect_resets_auth_while_tcp_stays_connected() {
     assert(command.type == network::CommandType::Disconnect);
     assert(command.sessionId == 21);
     assert(command.payload.empty());
+
+    const network::DisconnectResponse rejected = {
+        network::CURRENT_PROTOCOL_VERSION,
+        network::DisconnectResponseStatus::Rejected, 21,
+        "disconnect command rate limit exceeded"};
+    std::vector<uint8_t> rejectFrame;
+    assert(network::encodeDisconnectResponseFrame(rejected, rejectFrame, error));
+    assert(::send(sockets[0], rejectFrame.data(), rejectFrame.size(), 0) ==
+           static_cast<ssize_t>(rejectFrame.size()));
+    assert(transport.pump(error));
+    assert(transport.authState() == client::TransportAuthState::LoggedIn);
+    assert(transport.sessionId() == 21);
+
+    assert(transport.enqueueDisconnect(error));
+    assert(transport.pump(error));
+    std::vector<uint8_t> ignored(64, 0);
+    (void)::recv(sockets[0], ignored.data(), ignored.size(), 0);
+    const network::DisconnectResponse acceptedAck = {
+        network::CURRENT_PROTOCOL_VERSION,
+        network::DisconnectResponseStatus::Accepted, 21, std::string()};
+    std::vector<uint8_t> ackFrame;
+    assert(network::encodeDisconnectResponseFrame(acceptedAck, ackFrame, error));
+    assert(::send(sockets[0], ackFrame.data(), ackFrame.size(), 0) ==
+           static_cast<ssize_t>(ackFrame.size()));
+    assert(transport.pump(error));
+    assert(transport.authState() == client::TransportAuthState::Anonymous);
+    assert(transport.sessionId() == 0);
+    assert(transport.isOpen());
+    assert(transport.linkState() == client::TransportLinkState::Connected);
+    assert(transport.snapshotRequested());
     ::close(sockets[0]);
 }
 
@@ -308,14 +337,19 @@ void loopback_disconnect_ends_session_and_resets_client_auth() {
 
     assert(transport.enqueueDisconnect(error));
     assert(transport.pump(error));
-    assert(transport.authState() == client::TransportAuthState::Anonymous);
-    assert(transport.sessionId() == 0);
+    assert(transport.authState() == client::TransportAuthState::LoggedIn);
+    assert(transport.sessionId() == sessionId);
     assert(transport.isOpen());
 
-    for (int i = 0; i < 8 && registry.isActive(sessionId); ++i) {
+    for (int i = 0; i < 8 &&
+                    transport.authState() == client::TransportAuthState::LoggedIn;
+         ++i) {
         serverTick(runtime, dispatcher, applier, frame);
         assert(transport.pump(error));
     }
+    assert(transport.authState() == client::TransportAuthState::Anonymous);
+    assert(transport.sessionId() == 0);
+    assert(transport.isOpen());
     assert(!registry.isActive(sessionId));
     assert(!field->hasPlayer(sessionId));
     assert(field->hasPlayer(gameplayId));

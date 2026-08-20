@@ -8,6 +8,7 @@
 #include "ClientInboundDemux.h"
 #include "ClientSession.h"
 #include "ClientWorldUpdateReceiver.h"
+#include "DisconnectResponse.h"
 #include "OutboundFrameQueue.h"
 
 namespace client {
@@ -63,6 +64,7 @@ private:
     bool enqueueRequestSnapshotIfNeeded(std::string& error);
     bool handleInboundFrames(const std::vector<InboundFrame>& frames,
                              std::string& error);
+    void applyDisconnectResponse(const network::DisconnectResponse& response);
     void resetAuthAfterDisconnect();
     void markFailed();
 };

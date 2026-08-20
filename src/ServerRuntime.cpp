@@ -1,5 +1,6 @@
 #include "ServerRuntime.h"
 #include "FieldSessionPresence.h"
+#include "DisconnectResponseCodec.h"
 #include "LoginResponseCodec.h"
 #include "ServerCommandDispatcher.h"
 #include "WorldFrameUpdateBuilder.h"
@@ -231,6 +232,25 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
             continue;
         }
         if (pending.command.type == network::CommandType::Disconnect) {
+            ClientSession* session = clientSession(pending.connectionId);
+            if (session != 0 && session->isOpen()) {
+                const network::DisconnectResponse response = {
+                    network::CURRENT_PROTOCOL_VERSION,
+                    result.accepted ? network::DisconnectResponseStatus::Accepted
+                                    : network::DisconnectResponseStatus::Rejected,
+                    pending.command.sessionId,
+                    result.accepted ? std::string()
+                                    : (result.error.empty()
+                                           ? std::string("disconnect was rejected")
+                                           : result.error)};
+                std::vector<uint8_t> frame;
+                std::string responseError;
+                if (!network::encodeDisconnectResponseFrame(response, frame,
+                                                            responseError) ||
+                    !session->enqueueFrame(frame, responseError)) {
+                    if (error.empty()) error = responseError;
+                }
+            }
             if (result.accepted) {
                 lifecycle.disconnect(pending.connectionId,
                                      dispatcher.sessionRegistry());
