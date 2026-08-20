@@ -79,7 +79,24 @@ private:
     bool handleDisconnectResponseFrame(const std::vector<uint8_t>& bytes,
                                        std::string& error);
     void applyDisconnectResponse(const network::DisconnectResponse& response);
-    void markFailed();
+    void recordError(TransportErrorReason reason, const std::string& detail);
+    void markFailed(TransportErrorReason reason, const std::string& detail);
+    bool checkDeadlines(std::string& error);
+    void armLoginResponseWaitIfNeeded();
+    void armSnapshotWaitIfNeeded();
+    void clearWaitDeadlines();
+    void noteSnapshotRequestQueued();
+    void noteReconnectCompletedIfReady();
+
+    MonotonicClockPort* clock;
+    TransportTimeouts timeouts;
+    TransportErrorReason lastErrorReason;
+    std::string lastErrorDetailText;
+    uint32_t reconnectCounter;
+    uint32_t snapshotRequestCounter;
+    bool reconnectPending;
+    uint64_t loginResponseDeadlineMs;
+    uint64_t snapshotWaitDeadlineMs;
 };
 
 }

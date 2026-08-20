@@ -1,7 +1,7 @@
 # LISS-0128: クライアント通信シェル
 
 - Status: in_progress
-- Phase: phase-1-red
+- Phase: phase-2-green
 - Related branch: `feature/liss-0128-reconnect-timeout-ops`
 - Type: feature + client transport
 - Priority: high

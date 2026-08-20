@@ -26,6 +26,7 @@ public:
                 std::string& error);
     void reset();
     bool failed() const;
+    bool hasBufferedData() const;
 
 private:
     std::vector<uint8_t> buffered;

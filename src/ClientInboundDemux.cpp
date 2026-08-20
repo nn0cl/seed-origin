@@ -81,4 +81,8 @@ bool ClientInboundDemux::failed() const {
     return failedState;
 }
 
+bool ClientInboundDemux::hasBufferedData() const {
+    return !buffered.empty();
+}
+
 }
