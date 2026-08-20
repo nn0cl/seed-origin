@@ -8,13 +8,17 @@
 #include <vector>
 
 #include "ChallengeSessionLogin.h"
+#include "Field.h"
 #include "FieldSessionPresence.h"
 #include "GameplaySessionPort.h"
 #include "LoginFieldSpawnSettings.h"
 #include "LoginResponseCodec.h"
 #include "NetworkFrameCodec.h"
+#include "Player.h"
+#include "Position.h"
 #include "ServerCommandDispatcher.h"
 #include "ServerRuntime.h"
+#include "Status.h"
 
 namespace server_runtime_challenge_login_tests {
 namespace {
@@ -98,6 +102,17 @@ public:
     }
 };
 
+void clearFieldPlayers() {
+    Field* field = Field::getInstance();
+    const std::vector<PlayerPoseSnapshot> poses = field->publicPlayerPoses();
+    for (std::size_t i = 0; i < poses.size(); ++i) {
+        const int64_t sessionId = poses[i].sessionId;
+        Field::unsetPlayer(Player(sessionId, Status(), Position(sessionId, 0, 0, 0)));
+    }
+    server::FieldSessionPresence::usePlayerIdPort(0);
+    server::FieldSessionPresence::useSpawnSettings(server::LoginFieldSpawnSettings());
+}
+
 int connectLoopback(uint16_t port) {
     const int fd = ::socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0) return -1;
@@ -115,6 +130,7 @@ int connectLoopback(uint16_t port) {
 } // namespace
 
 void process_frame_writes_player_session_key_on_accepted_login() {
+    clearFieldPlayers();
     const int64_t now = 1700000000;
     FixedWallClock clock(now);
     FakeChallengeClaimPort challenges;
@@ -131,7 +147,7 @@ void process_frame_writes_player_session_key_on_accepted_login() {
     server::ServerCommandDispatcher dispatcher(registry, auth, gameplay);
 
     server::LoginFieldSpawnSettings spawn;
-    spawn.playerName = "Hero";
+    spawn.playerName = "RuntimeKeyHero";
     server::FieldSessionPresence::useSpawnSettings(spawn);
 
     server::ServerRuntime runtime;
@@ -174,6 +190,7 @@ void process_frame_writes_player_session_key_on_accepted_login() {
 
     ::close(client);
     assert(runtime.stop(registry));
+    clearFieldPlayers();
 }
 
 } // namespace server_runtime_challenge_login_tests

@@ -326,7 +326,7 @@ size_t ServerRuntime::processClientFrames(ServerCommandDispatcher& dispatcher,
             result.accepted ? network::LoginResponseStatus::Accepted
                             : network::LoginResponseStatus::Rejected,
             result.accepted ? result.session.internalId : 0,
-            result.accepted ? std::string() : result.error
+            result.accepted ? result.playerSessionKey.value : result.error
         };
         enqueueLoginResponse(session, response, error);
     }

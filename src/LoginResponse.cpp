@@ -12,7 +12,7 @@ bool validateLoginResponse(const LoginResponse& response, std::string& error) {
         return false;
     }
     if (response.status == LoginResponseStatus::Accepted) {
-        if (response.sessionId <= 0 || !response.payload.empty()) {
+        if (response.sessionId <= 0) {
             error = "accepted login response is invalid";
             return false;
         }

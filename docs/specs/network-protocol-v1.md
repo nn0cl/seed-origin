@@ -26,9 +26,9 @@ TCPの部分read/write、切断、タイムアウト、再送はConnection/trans
 
 Loginのpayloadはネイティブクライアントが`seed_auth`から取得した**チャレンジキー**
 とする（フレームレイアウトは変更しない）。`seed_server`はチャレンジをclaimし、
-30分TTLの正規セッションキーを発行する。UseCase（`ChallengeSessionLoginService`）
-は main 済み。Login Command への配線は LISS-0147 wire スライス
-（`ChallengeLoginCommandHandler`）で進める。匿名ニックネーム受理は配線完了後に削除する。
+30分TTLの正規セッションキーを発行する。Accepted **LoginResponse** の payload は
+その `PlayerSessionKey`（空でも互換のため受理する）。匿名ニックネーム受理は
+配線完了後に削除する。
 
 ## Move payload (local-player prediction)
 

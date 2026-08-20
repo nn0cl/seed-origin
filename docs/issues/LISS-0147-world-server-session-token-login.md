@@ -1,7 +1,7 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
 - Status: in_progress
-- Phase: phase-1-red-runtime
+- Phase: phase-2-green-runtime
 - Related branch: `feature/liss-0147-runtime-challenge-login`
 - Priority: high
 - Depends on: LISS-0146
@@ -181,6 +181,12 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
   still sends empty payload on accept
 - Out of this Red: Postgres adapters, anonymous login deletion, ServerMain
   production constructor (follows codec/runtime Green)
+
+## Phase 2 Green — Runtime LoginResponse session key（2026-08-20）
+
+- Accepted LoginResponse may include a PlayerSessionKey payload (empty still valid)
+- `processClientFrames` copies `CommandDispatchResult.playerSessionKey` into
+  the accepted LoginResponse payload
 
 ## Remaining decisions
 
