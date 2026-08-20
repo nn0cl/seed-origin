@@ -1,7 +1,7 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
 - Status: in_progress
-- Phase: phase-1-red-wire
+- Phase: phase-2-green-wire
 - Related branch: `feature/liss-0147-login-wire`
 - Priority: high
 - Depends on: LISS-0146
@@ -126,6 +126,13 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 - Expected Red: link failure（handler 未実装）
 - Out of this Red: ServerCommandDispatcher swap, Postgres adapters, deleting
   anonymous `LoginCommandHandler` / `SessionRegistry::login(claimedId)`
+
+## Phase 2 Green — Login wire（2026-08-20）
+
+- Implementation: `src/ChallengeLoginCommandHandler.cpp`
+- Behavior: validate Login Command → `loginWithChallenge(payload)` →
+  `GameplaySessionPort::openAuthenticated(userId)` → return player session key
+- Still out of scope: dispatcher swap, Postgres adapters, anonymous login removal
 
 ## Remaining decisions
 

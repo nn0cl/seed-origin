@@ -27,6 +27,7 @@ set(SEED_CORE_SOURCES
     src/FrameAccumulator.cpp
     src/LoginCommandHandler.cpp
     src/ChallengeSessionLogin.cpp
+    src/ChallengeLoginCommandHandler.cpp
     src/DisconnectCommandHandler.cpp
     src/ServerCommandDispatcher.cpp
     src/CommandRateLimiter.cpp
