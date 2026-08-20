@@ -284,9 +284,16 @@ Scenario: Snapshot after RequestSnapshot resumes Events
 - Reconnect socket I/O remainder (timeout, ops, UI) stays LISS-0128.
   The 2026-08-19 slice sends RequestSnapshot on POSIX TCP after
   beginReconnect and Login. RequestSnapshot wire Command is LISS-0154.
-- Unicode or case-fold normalization of PlayerName.
-- Account-wide name ledger inside seed-auth (early uniqueness is an
-  in-memory claimed-name registry on the world server).
+- Unicode NFC or case-insensitive normalization of PlayerName (Adjudicator
+  2026-08-20: deferred to auth ledger Phase 2 in LISS-0146–0150).
+- Zone-specific spawn, logout-position restore, or collision-avoidance spawn
+  (Adjudicator 2026-08-20: second phase after auth spawn port; collision
+  priority still undecided; same origin allowed in early phase).
+- Account-wide authoritative name ledger in seed-auth (early world in-memory
+  claimed-name registry is provisional; auth becomes authoritative on Login
+  port migration — LISS-0146–0150).
+- Operator permission model for rename (separate ADR; early delivery is
+  `operatorSetPlayerName` + test/CLI stub; production via LISS-0144 admin API).
 
 ## Ambiguities
 
@@ -311,7 +318,15 @@ Scenario: Snapshot after RequestSnapshot resumes Events
   names are empty after ASCII trim. Uniqueness is trim-then-exact-match
   and survives logout and Field unset via an in-memory claimed-name
   registry. An operator rename releases the previous claim and monopolizes
-  the new name. Unicode and case-fold normalization stay out of scope.
+  the new name. Unicode and case-fold normalization stay out of scope for
+  early world policy; auth Phase 2 (LISS-0146–0150) owns NFC /
+  case-insensitive rules. Spawn position early phase uses
+  `LoginFieldSpawnSettings` only (default `(0,0,0)`); zone/logout spawn and
+  collision-avoidance priority are deferred (same origin allowed early).
+  World claimed-name registry is provisional; seed-auth is authoritative
+  after Login port returns PlayerName. Operator rename early path is
+  `operatorSetPlayerName` + stub; production admin API is LISS-0144;
+  permission model is a separate ADR.
 
 ## Move payload
 
@@ -369,10 +384,17 @@ Login places a Field entity and binds the connection session to it.
   `unsetPlayer` does not release the name. Operator rename of the same
   auth PlayerId does: the previous trimmed name is unclaimed and the new
   trimmed name is exclusive. Players still cannot rename themselves.
-  Early storage is in-memory on the world server. Auth persistence is
-  LISS-0146–0150.
+  Early storage is in-memory on the world server (provisional). Authoritative
+  account-wide uniqueness moves to seed-auth (LISS-0146–0150); Login port
+  will return PlayerName and the world server validates only. See
+  `docs/specs/player-authentication-flow-v1.md` and ADR 0023 on `seed-origin`
+  main.
 
-Early spawn defaults, when settings are unset: pose `(0,0,0)`, HP/MP `10,10`.
+Early spawn uses `LoginFieldSpawnSettings` only. Defaults when unset: pose
+`(0,0,0)`, HP/MP `10,10`. Zone spawn and logout-position restore are a
+second phase after the auth spawn port. Collision-avoidance spawn priority
+remains undecided; multiple placements at the same origin are allowed in the
+early phase.
 Spawn HP/MP clamp to settings max (early `1024,1024`). `Status::gainHp` still
 saturates at `long` max (existing overflow cap; Adjudicator proposed 1024 as
 the spawn/game max).

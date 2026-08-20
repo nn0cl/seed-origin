@@ -4,8 +4,8 @@
 
 - Local issue ID: LISS-0153
 - GitHub issue:
-- Status: proposed
-- Phase: awaiting-adjudicator-decisions
+- Status: done
+- Phase: adjudicator-policy-closure-complete
 - Type: feature + world
 - Priority: high
 - Initial planning size: M
@@ -76,6 +76,43 @@ Login 成功後の Field 配置を、設定可能な初期 pose/HP/MP と 4 役�
 - 運営改名は旧名をレジストリから外し、新名を独占する。プレイヤー改名は不可。
   空・空白のみは不可。一意は trim 後完全一致。ID は不変。
 
+## Adjudicator decisions (2026-08-20, durable policy closure)
+
+Adjudicator は推奨案を承認。以下 4 点は恒久ポリシーとして確定。
+
+### 1. PlayerName 正規化 — resolved
+
+- **早期（本 Issue / world 側）:** trim 後の完全一致。大小文字は区別する（`Hero` ≠ `hero`）。
+- **第2段（auth 帳票）:** Unicode NFC 正規化と case-insensitive 一意は LISS-0146–0150
+  の auth 永続帳票 Phase 2。world の trim/exact-match ルールはそのまま維持。
+- **Follow-up:** LISS-0146–0150（または専用 follow-up issue）で auth 側正規化ポリシーと
+  world 検証契約を定義する。
+
+### 2. スポーン位置 — resolved
+
+- **早期:** `LoginFieldSpawnSettings`（または `LoginFieldSpawnPolicy`）のみ。未設定時デフォルト
+  は origin `(0,0,0)`、HP/MP `10,10`（max `1024,1024`）を維持。
+- **第2段:** ゾーン別 spawn・ログアウト地点復帰は auth spawn port（LISS-0146–0150 後続）
+  導入後の拡張。`LoginFieldSpawnSettings` 拡張 vs 別 policy はその段階で再設計。
+- **未決（本 Issue 外）:** 衝突回避スポーンの優先順位は未決。同一 origin への複数配置は
+  早期では許容する。
+
+### 3. auth 側名前帳票 — resolved
+
+- **早期:** world サーバーの in-memory claimed-name レジストリは**暫定**。
+- **正（authoritative）:** seed-auth（LISS-0146–0150）がアカウント横断の global 一意帳票。
+- **移行:** Login 時に auth が PlayerName を返す port へ移行し、world は受け取った名前の
+  検証（trim 後非空・trim 後 exact-match 一意）のみ行う。world 主導の帳票は廃止。
+- **参照（main worktree）:** `docs/specs/player-authentication-flow-v1.md`、
+  `docs/architecture/adr/0023-player-auth-session-flow-details.md`。
+
+### 4. 運営 UI / 権限 — resolved
+
+- **早期:** `operatorSetPlayerName`、spawn 設定、テスト/CLI stub。ワイヤ上のプレイヤー改名
+  コマンドは作らない（維持）。
+- **本番:** LISS-0144 等の admin HTTP API / LISS-0145 admin UI へ移行。
+- **権限モデル:** 別 ADR（未作成）。本 Issue では関数レベル setter の delivery 面のみ確定。
+
 ## Implemented on branch (decided items only)
 
 以下は Adjudicator 既決（2026-08-19 / 2026-08-20）に基づき
@@ -94,24 +131,20 @@ Login 成功後の Field 配置を、設定可能な初期 pose/HP/MP と 4 役�
 - E2E: disconnect → reconnect で RequestSnapshot がサーバーに届く
   （`loopback_disconnect_ends_session_and_resets_client_auth`）
 
-## Adjudicator questions (blocking durable policy)
+## Resolved adjudicator questions (2026-08-20)
 
-1. **PlayerName 正規化:** 大小文字折りたたみ（case-insensitive 一意）を
-   採用するか。Unicode 正規化（NFC/NFKC 等）の要否。
-2. **スポーン位置:** ゾーン別 spawn、ログアウト地点復帰、衝突回避スポーンの
-   優先順位と設定 surface（`LoginFieldSpawnSettings` 拡張 vs 別 policy）。
-3. **auth 側名前帳票:** LISS-0146–0150 の Postgres 永続と claimed-name
-   レジストリの同期契約（いつ auth が正、いつ world が正、移行手順）。
-4. **運営 UI / 権限:** operator rename の delivery 面（CLI のみ / admin API /
-   権限モデル）。早期関数レベル setter からの移行条件。
+| # | 質問 | 決定 | 記載箇所 |
+| --- | --- | --- | --- |
+| 1 | PlayerName 正規化 | 早期 trim + exact-match（case-sensitive）。NFC / case-insensitive は auth Phase 2 | 上記 §1 |
+| 2 | スポーン位置 | 早期 `LoginFieldSpawnSettings` + `(0,0,0)`。ゾーン/ログアウトは第2段。衝突回避未決・同一 origin 許容 | 上記 §2 |
+| 3 | auth 名前帳票 | world claimed-name は暫定。正は seed-auth。Login port で PlayerName 返却、world は検証のみ | 上記 §3 |
+| 4 | 運営 UI / 権限 | 早期 `operatorSetPlayerName` + stub。本番 LISS-0144 等。権限は別 ADR | 上記 §4 |
 
-## Ambiguities
+## Ambiguities (remaining, out of scope for LISS-0153)
 
-- PlayerName の大文字小文字折りたたみと Unicode 正規化。
-- アカウント横断の一意帳票（auth 側）。ポート契約は「名前は一意」とし、
-  本物の帳票は LISS-0146–0150 後続。
-- ゾーン・ログアウト地点・衝突回避スポーン。
-- 運営 UI 全体と権限モデル（早期は関数レベルの operator setter のみ）。
+- 衝突回避スポーンの優先順位と設定 surface。
+- 運営 rename の権限モデル（別 ADR）。
+- auth Phase 2 の Unicode NFC / case-insensitive 正規化の具体契約（LISS-0146–0150 follow-up）。
 
 ## Context
 
@@ -216,9 +249,19 @@ Login 成功後の Field 配置を、設定可能な初期 pose/HP/MP と 4 役�
 - Assumptions: AIP-0153-004 already committed.
 - Confidence: high
 
+## References
+
+- `docs/specs/client-side-prediction-v1.md` — Login Field placement（LISS-0153）
+- `docs/work-plans/WP-0010-client-side-prediction.md` — issue graph
+- `docs/architecture/adr/0023-player-auth-session-flow-details.md`（`seed-origin` main）
+- `docs/specs/player-authentication-flow-v1.md`（`seed-origin` main）
+- `docs/architecture/adr/0024-language-specific-test-layouts.md`（`seed-origin` main、テスト配置のみ）
+
 ## Work Notes
 
 既存 Attack/CastSpell の `targetId` と Field `playerList` キーがゲーム内ID。
 認証 ID は `Player::authPlayerId`。session は `Field` の束縛マップ。
 クライアント `RemotePlayerPoseStore` のキーもゲーム内ID。session は
 movement 差分の引き当て。`RemotePlayerPose::name` が HUD 表示。
+
+- 2026-08-20: Adjudicator approved durable policy closure; issue `review` → `done`.
