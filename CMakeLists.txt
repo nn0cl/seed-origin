@@ -30,6 +30,7 @@ set(SEED_CORE_SOURCES
     src/ChallengeLoginCommandHandler.cpp
     src/DisconnectCommandHandler.cpp
     src/ServerCommandDispatcher.cpp
+    src/ServerBootstrap.cpp
     src/CommandRateLimiter.cpp
     src/LoginResponse.cpp
     src/LoginResponseCodec.cpp
@@ -175,6 +176,7 @@ add_executable(seed_tests
     tests/DisconnectCommandHandlerTest.cpp
     tests/ServerCommandDispatcherTest.cpp
     tests/ServerCommandDispatcherChallengeLoginTest.cpp
+    tests/ServerBootstrapTest.cpp
     tests/CommandRateLimiterTest.cpp
     tests/MovementCommandHandlerTest.cpp
     tests/ClientInputSequenceTest.cpp

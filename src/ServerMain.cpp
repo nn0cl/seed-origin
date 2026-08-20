@@ -8,7 +8,7 @@
 #include <thread>
 
 #include "Field.h"
-#include "ServerCommandDispatcher.h"
+#include "ServerBootstrap.h"
 #include "ServerRuntime.h"
 #include "SessionRegistry.h"
 #include "WorldFrameApplier.h"
@@ -58,7 +58,14 @@ int main(int argc, char** argv) {
         ? std::make_unique<session::SessionRegistry>(*aliasStore)
         : std::make_unique<session::SessionRegistry>();
 
-    server::ServerCommandDispatcher dispatcher(*registry);
+    std::string bootstrapError;
+    std::unique_ptr<server::ServerCommandDispatcher> dispatcher =
+        server::ServerBootstrap::createProductionCommandDispatcher(*registry,
+                                                                   bootstrapError);
+    if (dispatcher.get() == nullptr) {
+        std::cerr << bootstrapError << "\n";
+        return 1;
+    }
     server::ServerRuntime runtime;
     server::WorldFrameApplier applier(*Field::getInstance());
 
@@ -73,7 +80,8 @@ int main(int argc, char** argv) {
             std::chrono::steady_clock::now();
 
         std::string frameError;
-        const server::ServerFrameResult frame = runtime.processFrame(dispatcher, frameError);
+        const server::ServerFrameResult frame =
+            runtime.processFrame(*dispatcher, frameError);
         if (!frameError.empty()) {
             std::cerr << "seed_server: frame error: " << frameError << "\n";
         }

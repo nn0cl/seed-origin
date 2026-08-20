@@ -292,6 +292,14 @@ void dispatches_login_with_valid_challenge_key();
 void rejects_nickname_login_when_challenge_auth_is_bound();
 }
 
+namespace server_bootstrap_tests {
+void create_dispatcher_uses_challenge_login_when_bundle_provided();
+void create_dispatcher_uses_anonymous_login_when_bundle_is_null();
+void production_dispatcher_uses_anonymous_path_when_env_is_unset();
+void production_dispatcher_fails_when_challenge_auth_env_is_set();
+void challenge_auth_enabled_from_environment();
+}
+
 namespace disconnect_command_handler_tests {
 void ends_active_session_without_unsetting_the_player();
 void rejects_inactive_or_missing_session();
@@ -560,6 +568,11 @@ int main() {
     server_command_dispatcher_tests::routes_combat_only_for_an_active_session();
     server_command_dispatcher_challenge_login_tests::dispatches_login_with_valid_challenge_key();
     server_command_dispatcher_challenge_login_tests::rejects_nickname_login_when_challenge_auth_is_bound();
+    server_bootstrap_tests::create_dispatcher_uses_challenge_login_when_bundle_provided();
+    server_bootstrap_tests::create_dispatcher_uses_anonymous_login_when_bundle_is_null();
+    server_bootstrap_tests::production_dispatcher_uses_anonymous_path_when_env_is_unset();
+    server_bootstrap_tests::production_dispatcher_fails_when_challenge_auth_env_is_set();
+    server_bootstrap_tests::challenge_auth_enabled_from_environment();
     disconnect_command_handler_tests::ends_active_session_without_unsetting_the_player();
     disconnect_command_handler_tests::rejects_inactive_or_missing_session();
     disconnect_command_handler_tests::rejects_non_empty_disconnect_payload();

@@ -1,8 +1,8 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
 - Status: review
-- Phase: runtime-slice-complete
-- Related branch: `feature/liss-0147-runtime-challenge-login`
+- Phase: servermain-slice-complete
+- Related branch: `feature/liss-0147-servermain-challenge-bind`
 - Priority: high
 - Depends on: LISS-0146
 - Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
@@ -197,6 +197,38 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 - Phase 1–3 Runtime LoginResponse session key approved.
 - Remaining for full LISS-0147: ServerMain production bind, Postgres adapters,
   anonymous `LoginCommandHandler` / `SessionRegistry::login(claimedId)` removal.
+
+## Phase 1 Red — ServerMain bootstrap bind（2026-08-20）
+
+- Contract: `include/seed/ServerBootstrap.h`
+- Tests: `tests/ServerBootstrapTest.cpp`（3 scenarios）
+- Covered: `createCommandDispatcher` selects challenge path when
+  `ChallengeAuthBundle` is provided; anonymous path when nullptr;
+  `SEED_CHALLENGE_AUTH` env gate
+- Expected Red: link failure（`ServerBootstrap` 未実装）
+- Out of this Red: Postgres adapters, `ServerMain.cpp` wiring,
+  anonymous login removal
+
+## Phase 2 Green — ServerMain bootstrap bind（2026-08-20）
+
+- Implementation: `src/ServerBootstrap.cpp`
+- `ServerMain.cpp` uses `ServerBootstrap::createCommandDispatcher` (anonymous
+  path when `ChallengeAuthBundle` is nullptr)
+- `SEED_CHALLENGE_AUTH=1` without Postgres challenge adapters fails fast at
+  startup with a clear error
+- Still out of scope: Postgres adapters, anonymous login removal, full challenge
+  production wiring when env is set
+
+## Phase 3 Refactor — ServerMain bootstrap bind（2026-08-20）
+
+- `createProductionCommandDispatcher` を抽出（env gate + anonymous dispatcher）
+- `ServerMain.cpp` は production bootstrap 呼び出しのみ（挙動不変）
+
+## ServerMain slice Adjudicator approval（2026-08-20）
+
+- Phase 1–3 ServerMain bootstrap bind approved.
+- Remaining for full LISS-0147: Postgres adapters, challenge production wiring
+  when `SEED_CHALLENGE_AUTH` is set, anonymous login removal.
 
 ## Remaining decisions
 
