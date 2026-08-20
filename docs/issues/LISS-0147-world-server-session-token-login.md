@@ -1,7 +1,7 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
 - Status: in_progress
-- Phase: phase-1-red
+- Phase: phase-2-green
 - Related branch: `feature/liss-0147-challenge-session-login`
 - Priority: high
 - Depends on: LISS-0146
@@ -93,8 +93,17 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 - Covered: valid claim → 30 min session; expired / already-claimed reject;
   Keep-Alive extend; reconnect validation of unexpired `PlayerSessionKey`
 - Out of this Red: Login Command wire swap, Postgres adapters, anonymous
-  `SessionRegistry::login` removal（Phase 2 wiring）
+  `SessionRegistry::login` removal（Phase 2 wiring / later Green slice）
 - Expected Red: link failure（`ChallengeSessionLoginService` 未実装）
+
+## Phase 2 Green artifact（2026-08-20）
+
+- Implementation: `src/ChallengeSessionLogin.cpp`
+- Behavior: claim via port → issue session key → create 30 min session;
+  reject with `invalid_challenge`; keep-alive extends by 30 min from now;
+  `validateSession` delegates to `PlayerSessionStorePort::isActive`
+- Still out of scope: Login Command wire swap, Postgres adapters, anonymous
+  login removal
 
 ## Remaining decisions
 
