@@ -1,7 +1,7 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
-- Status: in_progress
-- Phase: phase-2-green
+- Status: review
+- Phase: phase-3-refactor
 - Related branch: `feature/liss-0147-challenge-session-login`
 - Priority: high
 - Depends on: LISS-0146
@@ -104,6 +104,12 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
   `validateSession` delegates to `PlayerSessionStorePort::isActive`
 - Still out of scope: Login Command wire swap, Postgres adapters, anonymous
   login removal
+
+## Phase 3 Refactor（2026-08-20）
+
+- Ports を `ChallengeSessionPorts.h` へ分離（サービス契約とポート境界の分離）
+- 結果構築と TTL 計算を private ヘルパーへ抽出（挙動不変）
+- Assertions / public API は変更なし
 
 ## Remaining decisions
 
