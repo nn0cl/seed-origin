@@ -31,6 +31,9 @@ set(SEED_CORE_SOURCES
     src/DisconnectCommandHandler.cpp
     src/ServerCommandDispatcher.cpp
     src/ServerBootstrap.cpp
+    src/RegistryGameplaySessionPort.cpp
+    src/SystemWallClock.cpp
+    src/RandomSessionKeyIssuer.cpp
     src/CommandRateLimiter.cpp
     src/LoginResponse.cpp
     src/LoginResponseCodec.cpp

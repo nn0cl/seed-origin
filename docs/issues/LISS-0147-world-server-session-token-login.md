@@ -1,8 +1,8 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
 - Status: review
-- Phase: postgres-adapter-slice-complete
-- Related branch: `feature/liss-0147-postgres-challenge-adapter`
+- Phase: phase-2-green-challenge-production
+- Related branch: `feature/liss-0147-challenge-production-wiring`
 - Priority: high
 - Depends on: LISS-0146
 - Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
@@ -259,6 +259,39 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 - Phase 1–3 Postgres challenge/session adapter approved.
 - Remaining for full LISS-0147: challenge production wiring when
   `SEED_CHALLENGE_AUTH` is set, anonymous login removal.
+
+## Phase 1 Red — Challenge production wiring（2026-08-20）
+
+- Contracts: `RegistryGameplaySessionPort`, `SystemWallClock`,
+  `RandomSessionKeyIssuer`; `SessionRegistry::openAuthenticatedSession`;
+  `ChallengeProductionTestHook` on `ServerBootstrap`
+- Tests: `production_dispatcher_uses_challenge_login_when_env_and_test_hook_provided`
+- Covered: `SEED_CHALLENGE_AUTH=1` + test hook selects challenge Login path;
+  fail-fast without Postgres when hook is absent
+- Expected Red: assertion failure（test hook ignored; production bootstrap still
+  fail-fast）
+- Out of this Red: production port implementations, anonymous login removal
+
+## Phase 2 Green — Challenge production wiring（2026-08-20）
+
+- Implementation: `RegistryGameplaySessionPort`, `SystemWallClock`,
+  `RandomSessionKeyIssuer`, `SessionRegistry::openAuthenticatedSession`
+- `ServerBootstrap::createProductionCommandDispatcher` selects challenge Login
+  when `SEED_CHALLENGE_AUTH=1` and a complete test hook is provided
+- Without a hook/Postgres wiring, production bootstrap still fails fast
+- Still out of scope: live Postgres-backed production bootstrap, anonymous
+  login removal
+
+## Phase 3 Refactor — Challenge production wiring（2026-08-20）
+
+- test hook validation を helper へ抽出（挙動不変）
+- hook 用 `ChallengeSessionLoginService` の保持を static helper に明示化
+
+## Challenge production wiring Adjudicator approval（2026-08-20）
+
+- Phase 1–3 challenge production wiring approved.
+- Remaining for full LISS-0147: live Postgres-backed production bootstrap,
+  anonymous login removal.
 
 ## Remaining decisions
 
