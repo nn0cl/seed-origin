@@ -88,7 +88,7 @@ LISS-0146 UseCase と LISS-0151 Postgres Adapter を、Spring Boot HTTP
 ## Completion（2026-08-20）
 
 - Merged via PR #18 (`fe04ec8`).
-- Remaining follow-ups: MyBatis mapper 置換、Spring Boot 3.5/4.x 移行、
+- Remaining follow-ups: **LISS-0156**（MyBatis mapper + Boot upgrade）、
   LISS-0149 SPA、パスワードリセット API。
 
 ## English
