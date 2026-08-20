@@ -1,8 +1,8 @@
 # LISS-0155: `seed_auth` Spring Boot HTTP Adapter
 
-- Status: in_progress
-- Phase: phase-3-refactor
-- Related branch: `feature/liss-0155-seed-auth-http-adapter`
+- Status: done
+- Phase: done
+- Related branch: merged via PR #18 (`feature/liss-0155-seed-auth-http-adapter`)
 - Priority: high
 - Depends on: LISS-0151（Postgres/pgcrypto Adapter done — PR #16）
 - Parent: LISS-0146
@@ -31,6 +31,7 @@ LISS-0146 UseCase と LISS-0151 Postgres Adapter を、Spring Boot HTTP
 - ロックアウトの Postgres 永続化（プロセス内メモリ維持）
 - `seed_server` Keep-Alive / challenge claim（LISS-0147）
 - パスワードリセット API（将来）
+- MyBatis mapper による JDBC 全置換（段階導入の次段）
 
 ## 受入条件（LISS-0146 API シナリオの HTTP 面）
 
@@ -83,6 +84,12 @@ LISS-0146 UseCase と LISS-0151 Postgres Adapter を、Spring Boot HTTP
 
 - HTTP JSON ヘルパー（`acceptedBody` / `reasonBody`）と DTO ファイル分離
 - 挙動・アサーションは変更なし
+
+## Completion（2026-08-20）
+
+- Merged via PR #18 (`fe04ec8`).
+- Remaining follow-ups: MyBatis mapper 置換、Spring Boot 3.5/4.x 移行、
+  LISS-0149 SPA、パスワードリセット API。
 
 ## English
 
