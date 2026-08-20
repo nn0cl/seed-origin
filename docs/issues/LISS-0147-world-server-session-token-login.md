@@ -1,7 +1,8 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
-- Status: proposed
+- Status: in_progress
 - Phase: phase-1-red
+- Related branch: `feature/liss-0147-challenge-session-login`
 - Priority: high
 - Depends on: LISS-0146
 - Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
@@ -84,6 +85,16 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
   （新規`PostgresPlayerSessionValidator`ポートを追加するか、既存クラスを
   改修するか）。
 - チャレンジキーと正規セッションキーの保存・検証ポートの具体的な分割。
+
+## Phase 1 Red artifact（2026-08-20）
+
+- Ports / UseCase contract: `include/seed/ChallengeSessionLogin.h`
+- Tests: `tests/ChallengeSessionLoginTest.cpp`（5 scenarios）
+- Covered: valid claim → 30 min session; expired / already-claimed reject;
+  Keep-Alive extend; reconnect validation of unexpired `PlayerSessionKey`
+- Out of this Red: Login Command wire swap, Postgres adapters, anonymous
+  `SessionRegistry::login` removal（Phase 2 wiring）
+- Expected Red: link failure（`ChallengeSessionLoginService` 未実装）
 
 ## Remaining decisions
 
