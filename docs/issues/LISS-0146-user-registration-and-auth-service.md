@@ -167,7 +167,8 @@ JAVA_HOME=<jdk-23-or-newer> ./gradlew test --no-daemon
 - Remaining outside UseCase completion: Spring HTTP, MyBatis, PostgreSQL
   Adapter, real `pgcrypto`.
 - Follow-up Issue for Postgres Adapter: **LISS-0151**（done — PR #16）.
-- Follow-up Issue for Spring HTTP Adapter: **LISS-0155**.
+- Follow-up Issue for Spring HTTP Adapter: **LISS-0155**（done — PR #18）.
+- Remaining after 0155: MyBatis mapper 置換、Spring Boot 3.5/4.x、LISS-0149 SPA.
 
 ## 設計契約（Phase 1 Redの入力）
 
