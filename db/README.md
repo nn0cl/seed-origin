@@ -10,9 +10,10 @@ cd db
 docker compose up -d
 ```
 
-The `identity_aliases` table (`db/migrations/0001_identity_aliases.sql`) and
-the `admin_users` table (`db/migrations/0002_admin_users.sql`) are applied
-automatically on first container start via `docker-entrypoint-initdb.d`. If
+The `identity_aliases` table (`db/migrations/0001_identity_aliases.sql`), the
+`admin_users` table (`db/migrations/0002_admin_users.sql`), and the registered-
+player auth tables (`db/migrations/0003_player_challenges_sessions.sql`) are
+applied automatically on first container start via `docker-entrypoint-initdb.d`. If
 the named volume already existed from before a migration file was added,
 apply it manually instead:
 

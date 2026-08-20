@@ -5,13 +5,8 @@
 #include "PostgresIdentityAliasStore.h"
 #include "SessionRegistry.h"
 
-namespace {
+namespace postgres_identity_alias_store_tests {
 
-// Adapter integration test per docs/architecture/testing-strategy.md's
-// "Adapter Integration Tests" rule and ADR 0016: requires a real PostgreSQL
-// instance (see db/docker-compose.yml) reachable via SEED_IDENTITY_DB_URL.
-// This is not part of the seed_tests in-memory suite; it only builds/links
-// when libpqxx is present (see CMakeLists.txt).
 void round_trips_records_through_postgres() {
     std::unique_ptr<session::PostgresIdentityAliasStore> store =
         session::PostgresIdentityAliasStore::fromEnvironment();
@@ -39,9 +34,4 @@ void round_trips_records_through_postgres() {
     assert(!store->find("postgres-test-user", record));
 }
 
-} // namespace
-
-int main() {
-    round_trips_records_through_postgres();
-    return 0;
-}
+} // namespace postgres_identity_alias_store_tests

@@ -1,8 +1,8 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
 - Status: review
-- Phase: servermain-slice-complete
-- Related branch: `feature/liss-0147-servermain-challenge-bind`
+- Phase: postgres-adapter-slice-complete
+- Related branch: `feature/liss-0147-postgres-challenge-adapter`
 - Priority: high
 - Depends on: LISS-0146
 - Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
@@ -229,6 +229,36 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 - Phase 1–3 ServerMain bootstrap bind approved.
 - Remaining for full LISS-0147: Postgres adapters, challenge production wiring
   when `SEED_CHALLENGE_AUTH` is set, anonymous login removal.
+
+## Phase 1 Red — Postgres challenge/session adapter（2026-08-20）
+
+- Contract: `include/seed/PostgresPlayerSessionStore.h`
+- DDL: `db/migrations/0003_player_challenges_sessions.sql`
+- Tests: `tests/PostgresPlayerSessionStoreTest.cpp`（6 scenarios, `seed_postgres_tests`）
+- Covered: atomic claim; expired / already-claimed reject; UseCase creates
+  `player_sessions` row; extend; expired `isActive` reject
+- Expected Red: link failure（`PostgresPlayerSessionStore` 未実装）
+- Out of this Red: `ServerBootstrap` challenge production wiring, anonymous
+  login removal
+
+## Phase 2 Green — Postgres challenge/session adapter（2026-08-20）
+
+- Implementation: `src/PostgresPlayerSessionStore.cpp`
+- `claim` uses `SELECT ... FOR UPDATE` + `claimed_at` update in one transaction
+- `create` / `extend` / `isActive` use parameterized SQL on `player_sessions`
+- Still out of scope: `ServerBootstrap` challenge production wiring when env is
+  set, anonymous login removal
+
+## Phase 3 Refactor — Postgres challenge/session adapter（2026-08-20）
+
+- active session predicate を private helper constant へ抽出（挙動不変）
+- Postgres integration tests を `tests/PostgresTestMain.cpp` に集約
+
+## Postgres adapter slice Adjudicator approval（2026-08-20）
+
+- Phase 1–3 Postgres challenge/session adapter approved.
+- Remaining for full LISS-0147: challenge production wiring when
+  `SEED_CHALLENGE_AUTH` is set, anonymous login removal.
 
 ## Remaining decisions
 
