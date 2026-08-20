@@ -1,8 +1,8 @@
 # LISS-0147: ワールドサーバーのチャレンジ／セッションキー認証への置換
 
 - Status: review
-- Phase: dispatcher-slice-complete
-- Related branch: `feature/liss-0147-dispatcher-challenge-login`
+- Phase: runtime-slice-complete
+- Related branch: `feature/liss-0147-runtime-challenge-login`
 - Priority: high
 - Depends on: LISS-0146
 - Related ADR: `docs/architecture/adr/0018-registered-player-authentication.md`
@@ -171,6 +171,31 @@ Keep-Aliveによる期限延長、再接続時のSnapshot要求をRedテスト�
 
 - Phase 1–3 dispatcher challenge Login wiring approved.
 - Remaining for full LISS-0147: ServerRuntime bind, Postgres adapters,
+  anonymous `LoginCommandHandler` / `SessionRegistry::login(claimedId)` removal.
+
+## Phase 1 Red — Runtime LoginResponse session key（2026-08-20）
+
+- Tests: accepted LoginResponse may carry PlayerSessionKey payload;
+  `processFrame` writes that payload after challenge Login
+- Expected Red: codec validation rejects non-empty Accepted payload; runtime
+  still sends empty payload on accept
+- Out of this Red: Postgres adapters, anonymous login deletion, ServerMain
+  production constructor (follows codec/runtime Green)
+
+## Phase 2 Green — Runtime LoginResponse session key（2026-08-20）
+
+- Accepted LoginResponse may include a PlayerSessionKey payload (empty still valid)
+- `processClientFrames` copies `CommandDispatchResult.playerSessionKey` into
+  the accepted LoginResponse payload
+
+## Phase 3 Refactor — Runtime LoginResponse session key（2026-08-20）
+
+- `loginResponseFromDispatch` を抽出（挙動不変）
+
+## Runtime slice Adjudicator approval（2026-08-20）
+
+- Phase 1–3 Runtime LoginResponse session key approved.
+- Remaining for full LISS-0147: ServerMain production bind, Postgres adapters,
   anonymous `LoginCommandHandler` / `SessionRegistry::login(claimedId)` removal.
 
 ## Remaining decisions

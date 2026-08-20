@@ -20,6 +20,23 @@ void round_trips_accepted_response() {
     assert(decoded.sessionId == original.sessionId);
 }
 
+void round_trips_accepted_response_with_player_session_key() {
+    const network::LoginResponse original = {
+        network::CURRENT_PROTOCOL_VERSION,
+        network::LoginResponseStatus::Accepted,
+        42,
+        "player-session-1"
+    };
+    std::vector<uint8_t> frame;
+    std::string error;
+    network::LoginResponse decoded = {};
+    assert(network::encodeLoginResponseFrame(original, frame, error));
+    assert(network::decodeLoginResponseFrame(frame, decoded, error));
+    assert(decoded.status == original.status);
+    assert(decoded.sessionId == original.sessionId);
+    assert(decoded.payload == "player-session-1");
+}
+
 void round_trips_rejected_response() {
     const network::LoginResponse original = {
         network::CURRENT_PROTOCOL_VERSION,
